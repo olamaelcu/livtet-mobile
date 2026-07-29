@@ -30,7 +30,7 @@ yes 2>/dev/null | mise exec -- sdkmanager --sdk_root="$ANDROID_SDK_ROOT" --licen
 PACKAGES=(
 	"platforms;android-36"
 	"build-tools;36.0.0"
-	"ndk;27.1.12297006"
+	"ndk;${ANDROID_NDK_VERSION:-27.1.12297006}"
 )
 
 echo "Installing SDK packages..."
