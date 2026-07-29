@@ -1,0 +1,1346 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 54;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		03E4E9CD4BB8401C7B8AC113 /* IsbnDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 814A1D237B65913F9AA72960 /* IsbnDetailView.swift */; };
+		0417FBD2DEB7FB9C10A1EB10 /* __Snapshots__.testGreetingCardDark.png in Resources */ = {isa = PBXBuildFile; fileRef = 45C036573DD62D8C572E8EA1 /* __Snapshots__.testGreetingCardDark.png */; };
+		04417DEFE259AC243A352140 /* LivtetKitFFI in Frameworks */ = {isa = PBXBuildFile; productRef = 400DA71DC73379FB62B439C7 /* LivtetKitFFI */; };
+		071B289AA66369C624476825 /* __Snapshots__.testSearchViewWithResults.png in Resources */ = {isa = PBXBuildFile; fileRef = 9298EF1DDDA5B03751F72DFB /* __Snapshots__.testSearchViewWithResults.png */; };
+		07D2A94E3D4CEBCC6C11B0DB /* __Snapshots__.testHubMinimal.png in Resources */ = {isa = PBXBuildFile; fileRef = 85CB71C8253F9655757D1064 /* __Snapshots__.testHubMinimal.png */; };
+		07FB19919D7728BEABCB9607 /* SnapshotTesting in Frameworks */ = {isa = PBXBuildFile; productRef = 93AC8861027FB4CCE8286EDE /* SnapshotTesting */; };
+		0D3E10CDC296D0E84D88B499 /* LanguageDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E826EBC2A9BB308FF45BC0D7 /* LanguageDetailView.swift */; };
+		0D8842C72D48787E319E6873 /* EditionPickerSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB803839C5FBEFE92D6E0A7B /* EditionPickerSheet.swift */; };
+		0D94B982820D4CFFEF4898A5 /* __Snapshots__.testQuickActionCardWithProgress.png in Resources */ = {isa = PBXBuildFile; fileRef = 5A634F8323EDCE88A9A11540 /* __Snapshots__.testQuickActionCardWithProgress.png */; };
+		0E37268666FB31B4C171D892 /* jetbrains_mono.ttf in Resources */ = {isa = PBXBuildFile; fileRef = B6847AF54660B63B67B44035 /* jetbrains_mono.ttf */; };
+		0F750AF992FB395A5077243C /* SyncManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A35A956E5F16FAB7CB96E2E5 /* SyncManager.swift */; };
+		10595F76ECAE46B06A49D989 /* LibraryViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0FAD9B43FBA4138715C247F /* LibraryViewModelTests.swift */; };
+		10BEABE8479CB64C78219ADC /* __Snapshots__.testRecentSearchesRow.png in Resources */ = {isa = PBXBuildFile; fileRef = 7B1A1C7D5AEC6DCA2AC322E8 /* __Snapshots__.testRecentSearchesRow.png */; };
+		136C62933A02D920EECA7094 /* __Snapshots__.testTitleAndAuthorsEmpty.png in Resources */ = {isa = PBXBuildFile; fileRef = 3D85F2464E3364C9082FFB81 /* __Snapshots__.testTitleAndAuthorsEmpty.png */; };
+		1571DDC3B7CC4A70CF38791D /* SyncManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 69234264BFE8C284F32C1143 /* SyncManagerTests.swift */; };
+		15A461FD5D9FBD15A2F7183E /* AddBookWizardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 41C7D1E31633C05E396007D5 /* AddBookWizardView.swift */; };
+		17664E3E2D6545E7813BC1A4 /* CoverDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDCAEDE10609C906301A956C /* CoverDetailView.swift */; };
+		1A86E872E9AB49D77CC374A1 /* LivtetKit in Frameworks */ = {isa = PBXBuildFile; productRef = 1F124C5567F37D72E359A34E /* LivtetKit */; };
+		1B6325B424C8ABD4FE59CC28 /* AddBookWizardViewTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F30E26B3EC98F9ABB906FD24 /* AddBookWizardViewTests.swift */; };
+		1FB15D2D4FFA118F5C8BF373 /* URLParser+LivtetSync.swift in Sources */ = {isa = PBXBuildFile; fileRef = FFE94884B385271514FA3A94 /* URLParser+LivtetSync.swift */; };
+		2353436A1768150D323D9567 /* KeychainServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 739D6F4A975BC5293DBE7B3D /* KeychainServiceTests.swift */; };
+		23C4DD724A68FEA462A7D16A /* QRScannerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A878955923EE250EE78D7C6 /* QRScannerView.swift */; };
+		28C84EC1F2FB16ED6669BC20 /* DuplicateMergeConflictView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D08A313FFAABD3CBB6160A3F /* DuplicateMergeConflictView.swift */; };
+		2B945F445CBF97B6F00BAF86 /* DiscoveryService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84FD3C7D54CAA844B65A9818 /* DiscoveryService.swift */; };
+		2F17BD9310352FD24201A005 /* DuplicateManagementViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 245407222257604C17695D27 /* DuplicateManagementViewModelTests.swift */; };
+		3026A9E4E2984F00AAB7C215 /* __Snapshots__.testQuickActionCardNoProgress.png in Resources */ = {isa = PBXBuildFile; fileRef = DA63B20D548B7946ED58FC67 /* __Snapshots__.testQuickActionCardNoProgress.png */; };
+		30A8F82F2D20FFA1A6B2EEE2 /* DescriptionDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBE33FF76F30826A7A370DA0 /* DescriptionDetailView.swift */; };
+		30EBE6202CAFDBB11D7A2584 /* WizardData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 512272EC7E99939EE6F1FADB /* WizardData.swift */; };
+		363A7C4F4B7534697F6DD4D3 /* LibraryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AACA5F074D38AF35F06398EA /* LibraryView.swift */; };
+		36960DDBC12BF90E93534F31 /* Inject in Frameworks */ = {isa = PBXBuildFile; productRef = 3A4FE4480D2F8D0CB897C6D7 /* Inject */; };
+		37B4A9358A23D664B7F0FCEA /* DashboardViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9D6DF567BE0A3ADDD91E731 /* DashboardViewModel.swift */; };
+		39B522DB253441038D5F05A6 /* RootTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FB6DB55C0059184FDFE7B37 /* RootTabView.swift */; };
+		3B28E9A3CF1C827FC5D493E6 /* SyncModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF6098BB4E061C07D83586E0 /* SyncModels.swift */; };
+		3BB19FE83406D147B69FA7B0 /* PairingSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1EB4E9F3D81C6A2FCA0F7179 /* PairingSheet.swift */; };
+		3D264CA3612990F9109BE6A7 /* __Snapshots__.testTitleAndAuthorsFilled.png in Resources */ = {isa = PBXBuildFile; fileRef = ED186DE7D4E95B89A8A070BC /* __Snapshots__.testTitleAndAuthorsFilled.png */; };
+		3ECCACBCA5108C01DF763839 /* SubjectsDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4186BBED190817860CFA6AC3 /* SubjectsDetailView.swift */; };
+		4149FCE6C1683692FC244F51 /* LibraryViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15C198FC666120E22ABD5923 /* LibraryViewModel.swift */; };
+		41C591F4852BB78FCA7BE54D /* Pods_LivtetUnitTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C0BAD18C6F37B983893546EE /* Pods_LivtetUnitTests.framework */; };
+		41EB6313BA4684D8D8A11D00 /* DeviceIdentityService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73AFF883928CF962187B9548 /* DeviceIdentityService.swift */; };
+		4391A7B98B5CFAA7B7D6BAC3 /* DetailPageScaffold.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83EC1710735B7CBF4BA8D9FA /* DetailPageScaffold.swift */; };
+		4579BD984FBC16917F1F09F1 /* Notifications.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3EFC8431CC0B59E7F3E5612B /* Notifications.swift */; };
+		45C0B24769A467D35DA74025 /* DuplicateManagementViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D6B452AD036607318FBA11E /* DuplicateManagementViewModel.swift */; };
+		46A0AFD454AFB30709C5C58E /* __Snapshots__.testDuplicateDialog.png in Resources */ = {isa = PBXBuildFile; fileRef = 6D35BC99EF16AC543D05E340 /* __Snapshots__.testDuplicateDialog.png */; };
+		46ED9E8B7FC9417EBC6AF25B /* StepSearchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAF2A0F81A01473FB8D66650 /* StepSearchView.swift */; };
+		47AF91D26680A0916DB14069 /* ChipInputRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = DAE1936FAFD77A40D027FC7D /* ChipInputRow.swift */; };
+		49EEF0A4E5BC65B1E7122020 /* PairingService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51FB0554DCA84E7E13336949 /* PairingService.swift */; };
+		4AF1551E15AC66137AEEC0B6 /* KeychainService.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF101E5388D58153067D6B4D /* KeychainService.swift */; };
+		4AFE445AA80E841F9CC2236D /* GenresDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B443D32729F50D97083EFB6E /* GenresDetailView.swift */; };
+		4BB6CE0F54D64B1011D61332 /* LibraryFilterSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A9A3924B57ADAAD8CFB707C /* LibraryFilterSheet.swift */; };
+		4D7A65145C98B65AF869E317 /* MockWizardBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EC19BE64A4CF0E80B0C4C75 /* MockWizardBridge.swift */; };
+		4DCDC7269B41C0C9B78FEB54 /* HubView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB393B90AEAA6B643671A094 /* HubView.swift */; };
+		4EC426F28739CBFB056FF2B3 /* StepTitleAndAuthorsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C6786AADF81E6902756A134C /* StepTitleAndAuthorsView.swift */; };
+		4F23BA81D89F184A995065DE /* LivtetRadius.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1291C8B2333D15708C032E8A /* LivtetRadius.swift */; };
+		4F34B1666046ED93546AC7C0 /* LivtetCoreBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = DBB92E0B63E8A93EB6C538E0 /* LivtetCoreBridge.swift */; };
+		4F591D8EF431369B064472FE /* DashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 852F8846AFD98D45E0F8D54C /* DashboardView.swift */; };
+		52A6E484B25127639600E7A5 /* cormorant_garamond.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 9F2CA64994D582980DA37835 /* cormorant_garamond.ttf */; };
+		570595B66479F20CAA46B02F /* PublishedDateDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AA488B03C2167E4A67B81FA /* PublishedDateDetailView.swift */; };
+		583A97916280DBDC2AD0ADE8 /* OpenLibraryClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E2FC9F80AEB51BE2399142F /* OpenLibraryClient.swift */; };
+		59BDE74043B6688C141DA4C0 /* __Snapshots__.testContinueReadingCardLight.png in Resources */ = {isa = PBXBuildFile; fileRef = 154573B8FB38E839D5451801 /* __Snapshots__.testContinueReadingCardLight.png */; };
+		59DB424C692FD6996CC5BA3F /* __Snapshots__.testGreetingCardLight.png in Resources */ = {isa = PBXBuildFile; fileRef = 6A5914FE6D4FC3887917C9F3 /* __Snapshots__.testGreetingCardLight.png */; };
+		608821BCB618A6A4543C7A78 /* FormatDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6481F6D1C3790D2530F68CFF /* FormatDetailView.swift */; };
+		61DED76F0C4F4F5474A6D932 /* __Snapshots__.testTitleAndAuthorsMultipleAuthors.png in Resources */ = {isa = PBXBuildFile; fileRef = 7747D547E26ABF8B8C59DE13 /* __Snapshots__.testTitleAndAuthorsMultipleAuthors.png */; };
+		63A04270A90E4FA32C3E9656 /* __Snapshots__.testHubFullyPopulated.png in Resources */ = {isa = PBXBuildFile; fileRef = 45DCCB34300332EF27023CDD /* __Snapshots__.testHubFullyPopulated.png */; };
+		6410727FFADBC98C3E3DBC1C /* ErrorBanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1B0C0C7B4837EEA917C38B3F /* ErrorBanner.swift */; };
+		6AC2447AA1968FF876CF8A28 /* PairingSheetSnapshotTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0B0B187AB69ACD861FBE0531 /* PairingSheetSnapshotTests.swift */; };
+		6BA58F2574495495620165CD /* CoverSearchResult.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D4A5F437618653376EBB27C /* CoverSearchResult.swift */; };
+		6C7A123C246F5094D64DBF91 /* CoverImageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D32893005E4AB862BD42CF96 /* CoverImageView.swift */; };
+		6D06D2328A5EDD7CE74CBECD /* PairStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = C566BCC766AE30A1BA63A0CF /* PairStatus.swift */; };
+		6E8970D7C322B9816D6FEEB1 /* MockLibraryBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64287863F3EA99371CDE5CAB /* MockLibraryBridge.swift */; };
+		70BAC393C0B1396D12511701 /* SyncPairToken.swift in Sources */ = {isa = PBXBuildFile; fileRef = 566077E453202FEB6B96D42C /* SyncPairToken.swift */; };
+		75EC32AB207298A1D150F036 /* DuplicateDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 097A38B5E9FF060FA974FA82 /* DuplicateDetailView.swift */; };
+		77F0F3B2214E16C78E30CBA3 /* PiiScrubberTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DFA2CDDFFEF521B7DA41FB1C /* PiiScrubberTests.swift */; };
+		789BB9940D24F2F4DE521F52 /* ContinueReadingCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD8BB3D8233085D12E1795FC /* ContinueReadingCard.swift */; };
+		7A5775B1CF05DB412804635A /* __Snapshots__.testFeedPlaceholderCard.png in Resources */ = {isa = PBXBuildFile; fileRef = 7FAF8C60A01E2F830029EA8C /* __Snapshots__.testFeedPlaceholderCard.png */; };
+		7B1E46FEF6C99D9ED1FF38B1 /* OpenLibraryModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 69EC5D718ED3E64651D7E2B1 /* OpenLibraryModels.swift */; };
+		7B9365413BB09FCF54A57BB4 /* NetworkClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA9E91543BE9E2519B2FDE7A /* NetworkClient.swift */; };
+		7BA8F05CF9254B3908E132A0 /* OverdriveLibrary.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2669578E2E4B03F9D4F0B525 /* OverdriveLibrary.swift */; };
+		7D8EA878A59D14AB1B74CDF5 /* BrandFont+Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = B13A4DBC6C94A0B1ABD53E24 /* BrandFont+Extension.swift */; };
+		7DC5D83EEDA8DC0271198271 /* GoogleBooksClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16293541F7664AE56312253E /* GoogleBooksClient.swift */; };
+		7F17781E87DF6038D4A06D54 /* DiscoveryServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16EDF64C66A556722AD8175B /* DiscoveryServiceTests.swift */; };
+		81501873546D1BB92F14B388 /* PendingDeepLink.swift in Sources */ = {isa = PBXBuildFile; fileRef = F3DF5B4FFA869F732DC01CC4 /* PendingDeepLink.swift */; };
+		834206FB5CB21A3EC6CAD622 /* PairedDesktop.swift in Sources */ = {isa = PBXBuildFile; fileRef = 531AEB3218036516E1442555 /* PairedDesktop.swift */; };
+		83C4A0DA087B4BE9AE05EC5A /* DashboardSnapshotTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5AE1DF4487EC45D613D3674 /* DashboardSnapshotTests.swift */; };
+		8AEBDD32590A12E1529669F0 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D07C619DE9D7F6FE4CF420B1 /* SettingsView.swift */; };
+		8B5E19D8CE7CD9AA4BAC69F9 /* SetCoverViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D6B678EED50DD706E8BBBB0 /* SetCoverViewModel.swift */; };
+		8CA4FF0B2DFABC78EA797340 /* SyncStatusView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB4ED0573CFD280EC0296AE6 /* SyncStatusView.swift */; };
+		93FAED97FD3EBF1D2C071D9E /* QuickActionCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E7333C99A6A29CC3B0754FF /* QuickActionCard.swift */; };
+		93FCE2122D390619DE4A3039 /* AppError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 229F2C478F137331D01EB9E0 /* AppError.swift */; };
+		95473ED9348AE90C83807690 /* BrandColor+Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9BF5C5AB6043E93215391328 /* BrandColor+Extension.swift */; };
+		9A64ED83F6D28AC598F20483 /* DeepLinkRouter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 983A0AEA33CAC2B47C268B18 /* DeepLinkRouter.swift */; };
+		9F07D40F00EC22B87E65CA43 /* TagsDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAC1A82E4B1D1873081E4733 /* TagsDetailView.swift */; };
+		9FA9E0A9119BB9B44BB25053 /* ManualPairingSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC19D5B52D77D50C7D9D5375 /* ManualPairingSheet.swift */; };
+		A00785E049EC5BB7331C796B /* LivtetApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = E65EDABB8FAF5BAA5F7D7019 /* LivtetApp.swift */; };
+		A2F6694D9F55E077D69F9F0E /* work_sans.ttf in Resources */ = {isa = PBXBuildFile; fileRef = B91EB150DDDCCF5DE2ED5279 /* work_sans.ttf */; };
+		A349F21E1B287862698B0508 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 7EFE931D12E3CC03B9D9B9D6 /* Assets.xcassets */; };
+		A457CF2FFDCDBA60281B4900 /* PairingDecision.swift in Sources */ = {isa = PBXBuildFile; fileRef = A32123C79C6EF2CD910C6DE7 /* PairingDecision.swift */; };
+		A73AFD91967AC56157F89629 /* geist.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 16B17938D8EB18217E886A77 /* geist.ttf */; };
+		A86CF25A06D33D00D2BF2CA8 /* AddBookWizardViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 23CA95FE18F73BFA8E8838A7 /* AddBookWizardViewModel.swift */; };
+		A90B399C0EED8A506C29DBFA /* SplashScreenView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB5FBB0A90DA2D1447076B51 /* SplashScreenView.swift */; };
+		A9B690C2AA87EC9169571CA3 /* EditionRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0D51C1753643A4AAE708D0E4 /* EditionRow.swift */; };
+		AC4B2762E2DE0C6EF144A662 /* SetCoverSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4DB967DDEB2D7D23AFC5ECFE /* SetCoverSheet.swift */; };
+		AC4B4EFEB0E2F100CE0C03CC /* FFIErrorBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36E985D211886D3C360087CC /* FFIErrorBridge.swift */; };
+		ACDAC9F1D4FB50A786A5C274 /* __Snapshots__.testHubSaving.png in Resources */ = {isa = PBXBuildFile; fileRef = 0D8E05F1DEEC886C4530FEEC /* __Snapshots__.testHubSaving.png */; };
+		AD0E554BF60F590D905AF6AA /* BuildConfig.generated.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76F698080D228CEC97B11085 /* BuildConfig.generated.swift */; };
+		AFF8D485F3E2E0EE72E424E4 /* ReadingProgressControl.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B0060B9C959B79E708ED72A /* ReadingProgressControl.swift */; };
+		B1BB82BECCF67E2C303BEC2E /* AddBookWizardViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 06FE914CEC50DDCFA59ADC4F /* AddBookWizardViewModelTests.swift */; };
+		B3F7DAC3C409F5EED0209681 /* OverdriveLibraryPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1FD2BB3637256ED97A82D24 /* OverdriveLibraryPicker.swift */; };
+		B9A356700756A8EB3D2339D3 /* __Snapshots__.testErrorBanner.png in Resources */ = {isa = PBXBuildFile; fileRef = 7A98EEBEF1D25EF25558C97C /* __Snapshots__.testErrorBanner.png */; };
+		C1F581A4867A3919B11BFFA7 /* AddBookWizardSnapshotTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F49E6B7252D4F49EAE5E664D /* AddBookWizardSnapshotTests.swift */; };
+		C2D7993869EB7890AE620516 /* DuplicateWorkDialog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 58C1B3943E65F0145D1B39C2 /* DuplicateWorkDialog.swift */; };
+		C412790734007B470FB65B6A /* RxBlocking in Frameworks */ = {isa = PBXBuildFile; productRef = 45DD54FD6DD9F66709E01119 /* RxBlocking */; };
+		C7D5D32F5C8E71A87FFE42C3 /* overdrive-libraries.json in Resources */ = {isa = PBXBuildFile; fileRef = A0A798D8F713031FA42158DB /* overdrive-libraries.json */; };
+		C81E39500E969F14407E0FC6 /* GoogleBooksModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1ACA760FD0B7C3A3D11A1C92 /* GoogleBooksModels.swift */; };
+		CC8B0149F392FEC5631ED176 /* DeviceIdentityServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2651DBBCBDBCB31F894A786A /* DeviceIdentityServiceTests.swift */; };
+		CCA657B80FF9D720B3C12CD8 /* RecentSearchesRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = B99FBF6F6B1850FA564B8A9B /* RecentSearchesRow.swift */; };
+		CDD690C461C6E42F4F02FB64 /* FeedPlaceholderCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 743CCEEA6542C1BACD3145BD /* FeedPlaceholderCard.swift */; };
+		CFAFF2506BB6C56059D78A8F /* DashboardViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC273EBCB130D4717ECFE983 /* DashboardViewModelTests.swift */; };
+		D3F0487D27729AD6EE1FAB2C /* BrandColor+Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9BF5C5AB6043E93215391328 /* BrandColor+Extension.swift */; };
+		D492AFDF95EF0D613EF75B93 /* LivtetCoreBridge+Wizard.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE46C783182A0E930A14A2D9 /* LivtetCoreBridge+Wizard.swift */; };
+		D701CC080D0DF83D06DE4A5C /* URLParserLivtetSyncTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BADCAF723FFE1C651B7C68BB /* URLParserLivtetSyncTests.swift */; };
+		D8B6FC10A1C5296C737A295D /* SearchSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 046853E9595D81F0819F1707 /* SearchSource.swift */; };
+		DA1499D1C87A89438C200484 /* ViewInspector in Frameworks */ = {isa = PBXBuildFile; productRef = 1137547E3020F295039A2301 /* ViewInspector */; };
+		DAC2F37CC69DB9B17363FEF0 /* StatsRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94296C9DF8F71C14735B0307 /* StatsRow.swift */; };
+		DB3B678BA70585DAC0068143 /* Desktop.swift in Sources */ = {isa = PBXBuildFile; fileRef = 873DE4340037DBFE245C0CA1 /* Desktop.swift */; };
+		DE528190DBF60A6670856F75 /* ImageDownloader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3706A85ACE8743E6B924F7CE /* ImageDownloader.swift */; };
+		DF0C21980820DE2AACA94527 /* DeviceIdentity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1BE50EE6082C8980491F8597 /* DeviceIdentity.swift */; };
+		E4821C5DB52BFE94679B5F76 /* GreetingCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2443EDF1CBA9C49CE9BC49F /* GreetingCard.swift */; };
+		E4D4E5A734D75101AA16C106 /* ProviderErrorCallout.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAD41CA0C114B4AD69E23205 /* ProviderErrorCallout.swift */; };
+		E7968B2F6E5108E3D642CF41 /* SplashScreenViewTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3E157CC031F2DBDB2839C12 /* SplashScreenViewTests.swift */; };
+		E921A1CE44666D9E47E1B567 /* Sentry in Frameworks */ = {isa = PBXBuildFile; productRef = 8124DA17C01F28198D179620 /* Sentry */; };
+		E9E19DB36D642F458A01F421 /* __Snapshots__.testStatsRowLight.png in Resources */ = {isa = PBXBuildFile; fileRef = 874D08656FBB9BA0DFDBBF7F /* __Snapshots__.testStatsRowLight.png */; };
+		EADDEC1F35AA32A0D0836686 /* PublisherDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E6C9162F9AF02696DA7E149A /* PublisherDetailView.swift */; };
+		F0F5E94906A3AFD988418903 /* EmptyStateQuoteView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E94A1B165D18B674CC5359CC /* EmptyStateQuoteView.swift */; };
+		F6A1694ADFFCE66D22B737BF /* __Snapshots__.testSearchViewProviderError.png in Resources */ = {isa = PBXBuildFile; fileRef = 21AEB4C6837F7F81E32E7FF3 /* __Snapshots__.testSearchViewProviderError.png */; };
+		F8FE9FFBBDE094AA3A490DCB /* LucideIcons.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6AA4028860E5D04953D8069B /* LucideIcons.swift */; };
+		FD3FDC5B7ED457C0AC4C7BDD /* __Snapshots__.testSearchViewEmpty.png in Resources */ = {isa = PBXBuildFile; fileRef = B92CAB33B28AA25B1348F831 /* __Snapshots__.testSearchViewEmpty.png */; };
+		FD67B1AE197C2DFC4E6A0246 /* Pods_Livtet.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F996DA4976F54F4BB0FA9C39 /* Pods_Livtet.framework */; };
+		FDACDDF1BF02E95830CDE8D3 /* DuplicateManagementView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6B6E5BA14C44D8923A72F23C /* DuplicateManagementView.swift */; };
+		FEFE9202303042C50CDC4D6D /* KeychainServiceIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B7F5B08CAD44170404CB4A4 /* KeychainServiceIntegrationTests.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		A3260AE30B013561AEAC4F8E /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 2A8D6BE875FA1C69F18C0019 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = B2BA3F2815A2B5DD3C18C614;
+			remoteInfo = Livtet;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		046853E9595D81F0819F1707 /* SearchSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchSource.swift; sourceTree = "<group>"; };
+		057DF8AE8F2EAECBDCC414D9 /* Pods-LivtetUnitTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-LivtetUnitTests.release.xcconfig"; path = "Target Support Files/Pods-LivtetUnitTests/Pods-LivtetUnitTests.release.xcconfig"; sourceTree = "<group>"; };
+		06FE914CEC50DDCFA59ADC4F /* AddBookWizardViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddBookWizardViewModelTests.swift; sourceTree = "<group>"; };
+		097A38B5E9FF060FA974FA82 /* DuplicateDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DuplicateDetailView.swift; sourceTree = "<group>"; };
+		0B0B187AB69ACD861FBE0531 /* PairingSheetSnapshotTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PairingSheetSnapshotTests.swift; sourceTree = "<group>"; };
+		0D51C1753643A4AAE708D0E4 /* EditionRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditionRow.swift; sourceTree = "<group>"; };
+		0D8E05F1DEEC886C4530FEEC /* __Snapshots__.testHubSaving.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = __Snapshots__.testHubSaving.png; sourceTree = "<group>"; };
+		1291C8B2333D15708C032E8A /* LivtetRadius.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LivtetRadius.swift; sourceTree = "<group>"; };
+		154573B8FB38E839D5451801 /* __Snapshots__.testContinueReadingCardLight.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = __Snapshots__.testContinueReadingCardLight.png; sourceTree = "<group>"; };
+		15C198FC666120E22ABD5923 /* LibraryViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryViewModel.swift; sourceTree = "<group>"; };
+		16293541F7664AE56312253E /* GoogleBooksClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GoogleBooksClient.swift; sourceTree = "<group>"; };
+		16B17938D8EB18217E886A77 /* geist.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = geist.ttf; sourceTree = "<group>"; };
+		16EDF64C66A556722AD8175B /* DiscoveryServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiscoveryServiceTests.swift; sourceTree = "<group>"; };
+		1AA488B03C2167E4A67B81FA /* PublishedDateDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PublishedDateDetailView.swift; sourceTree = "<group>"; };
+		1ACA760FD0B7C3A3D11A1C92 /* GoogleBooksModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GoogleBooksModels.swift; sourceTree = "<group>"; };
+		1B0C0C7B4837EEA917C38B3F /* ErrorBanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ErrorBanner.swift; sourceTree = "<group>"; };
+		1BE50EE6082C8980491F8597 /* DeviceIdentity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceIdentity.swift; sourceTree = "<group>"; };
+		1D6B678EED50DD706E8BBBB0 /* SetCoverViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetCoverViewModel.swift; sourceTree = "<group>"; };
+		1E42952677F67659B23C3B79 /* Pods-Livtet.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Livtet.release.xcconfig"; path = "Target Support Files/Pods-Livtet/Pods-Livtet.release.xcconfig"; sourceTree = "<group>"; };
+		1EB4E9F3D81C6A2FCA0F7179 /* PairingSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PairingSheet.swift; sourceTree = "<group>"; };
+		21AEB4C6837F7F81E32E7FF3 /* __Snapshots__.testSearchViewProviderError.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = __Snapshots__.testSearchViewProviderError.png; sourceTree = "<group>"; };
+		229F2C478F137331D01EB9E0 /* AppError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppError.swift; sourceTree = "<group>"; };
+		23CA95FE18F73BFA8E8838A7 /* AddBookWizardViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddBookWizardViewModel.swift; sourceTree = "<group>"; };
+		245407222257604C17695D27 /* DuplicateManagementViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DuplicateManagementViewModelTests.swift; sourceTree = "<group>"; };
+		2651DBBCBDBCB31F894A786A /* DeviceIdentityServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceIdentityServiceTests.swift; sourceTree = "<group>"; };
+		2669578E2E4B03F9D4F0B525 /* OverdriveLibrary.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OverdriveLibrary.swift; sourceTree = "<group>"; };
+		2B0060B9C959B79E708ED72A /* ReadingProgressControl.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReadingProgressControl.swift; sourceTree = "<group>"; };
+		2D6B452AD036607318FBA11E /* DuplicateManagementViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DuplicateManagementViewModel.swift; sourceTree = "<group>"; };
+		2D80694F270BB5B6C9AC6041 /* LivtetKit */ = {isa = PBXFileReference; lastKnownFileType = folder; name = LivtetKit; path = LivtetKit; sourceTree = SOURCE_ROOT; };
+		304DB2D80210F71A39C3529C /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		35C02B36D845148119AAEF22 /* Pods-LivtetUnitTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-LivtetUnitTests.debug.xcconfig"; path = "Target Support Files/Pods-LivtetUnitTests/Pods-LivtetUnitTests.debug.xcconfig"; sourceTree = "<group>"; };
+		36E985D211886D3C360087CC /* FFIErrorBridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FFIErrorBridge.swift; sourceTree = "<group>"; };
+		3706A85ACE8743E6B924F7CE /* ImageDownloader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageDownloader.swift; sourceTree = "<group>"; };
+		3A878955923EE250EE78D7C6 /* QRScannerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QRScannerView.swift; sourceTree = "<group>"; };
+		3B7F5B08CAD44170404CB4A4 /* KeychainServiceIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainServiceIntegrationTests.swift; sourceTree = "<group>"; };
+		3D85F2464E3364C9082FFB81 /* __Snapshots__.testTitleAndAuthorsEmpty.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = __Snapshots__.testTitleAndAuthorsEmpty.png; sourceTree = "<group>"; };
+		3E2FC9F80AEB51BE2399142F /* OpenLibraryClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenLibraryClient.swift; sourceTree = "<group>"; };
+		3EFC8431CC0B59E7F3E5612B /* Notifications.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Notifications.swift; sourceTree = "<group>"; };
+		4186BBED190817860CFA6AC3 /* SubjectsDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubjectsDetailView.swift; sourceTree = "<group>"; };
+		41C7D1E31633C05E396007D5 /* AddBookWizardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddBookWizardView.swift; sourceTree = "<group>"; };
+		45C036573DD62D8C572E8EA1 /* __Snapshots__.testGreetingCardDark.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = __Snapshots__.testGreetingCardDark.png; sourceTree = "<group>"; };
+		45DCCB34300332EF27023CDD /* __Snapshots__.testHubFullyPopulated.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = __Snapshots__.testHubFullyPopulated.png; sourceTree = "<group>"; };
+		4DB967DDEB2D7D23AFC5ECFE /* SetCoverSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetCoverSheet.swift; sourceTree = "<group>"; };
+		4FB6DB55C0059184FDFE7B37 /* RootTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootTabView.swift; sourceTree = "<group>"; };
+		512272EC7E99939EE6F1FADB /* WizardData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WizardData.swift; sourceTree = "<group>"; };
+		51FB0554DCA84E7E13336949 /* PairingService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PairingService.swift; sourceTree = "<group>"; };
+		531AEB3218036516E1442555 /* PairedDesktop.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PairedDesktop.swift; sourceTree = "<group>"; };
+		566077E453202FEB6B96D42C /* SyncPairToken.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncPairToken.swift; sourceTree = "<group>"; };
+		58C1B3943E65F0145D1B39C2 /* DuplicateWorkDialog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DuplicateWorkDialog.swift; sourceTree = "<group>"; };
+		5A634F8323EDCE88A9A11540 /* __Snapshots__.testQuickActionCardWithProgress.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = __Snapshots__.testQuickActionCardWithProgress.png; sourceTree = "<group>"; };
+		5D4A5F437618653376EBB27C /* CoverSearchResult.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoverSearchResult.swift; sourceTree = "<group>"; };
+		5E7333C99A6A29CC3B0754FF /* QuickActionCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuickActionCard.swift; sourceTree = "<group>"; };
+		64287863F3EA99371CDE5CAB /* MockLibraryBridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockLibraryBridge.swift; sourceTree = "<group>"; };
+		6481F6D1C3790D2530F68CFF /* FormatDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FormatDetailView.swift; sourceTree = "<group>"; };
+		69234264BFE8C284F32C1143 /* SyncManagerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncManagerTests.swift; sourceTree = "<group>"; };
+		69EC5D718ED3E64651D7E2B1 /* OpenLibraryModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenLibraryModels.swift; sourceTree = "<group>"; };
+		6A5914FE6D4FC3887917C9F3 /* __Snapshots__.testGreetingCardLight.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = __Snapshots__.testGreetingCardLight.png; sourceTree = "<group>"; };
+		6AA4028860E5D04953D8069B /* LucideIcons.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LucideIcons.swift; sourceTree = "<group>"; };
+		6B6E5BA14C44D8923A72F23C /* DuplicateManagementView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DuplicateManagementView.swift; sourceTree = "<group>"; };
+		6D35BC99EF16AC543D05E340 /* __Snapshots__.testDuplicateDialog.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = __Snapshots__.testDuplicateDialog.png; sourceTree = "<group>"; };
+		739D6F4A975BC5293DBE7B3D /* KeychainServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainServiceTests.swift; sourceTree = "<group>"; };
+		73AFF883928CF962187B9548 /* DeviceIdentityService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceIdentityService.swift; sourceTree = "<group>"; };
+		743CCEEA6542C1BACD3145BD /* FeedPlaceholderCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedPlaceholderCard.swift; sourceTree = "<group>"; };
+		76F698080D228CEC97B11085 /* BuildConfig.generated.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BuildConfig.generated.swift; sourceTree = "<group>"; };
+		7747D547E26ABF8B8C59DE13 /* __Snapshots__.testTitleAndAuthorsMultipleAuthors.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = __Snapshots__.testTitleAndAuthorsMultipleAuthors.png; sourceTree = "<group>"; };
+		7A98EEBEF1D25EF25558C97C /* __Snapshots__.testErrorBanner.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = __Snapshots__.testErrorBanner.png; sourceTree = "<group>"; };
+		7B1A1C7D5AEC6DCA2AC322E8 /* __Snapshots__.testRecentSearchesRow.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = __Snapshots__.testRecentSearchesRow.png; sourceTree = "<group>"; };
+		7EFE931D12E3CC03B9D9B9D6 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		7FAF8C60A01E2F830029EA8C /* __Snapshots__.testFeedPlaceholderCard.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = __Snapshots__.testFeedPlaceholderCard.png; sourceTree = "<group>"; };
+		814A1D237B65913F9AA72960 /* IsbnDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IsbnDetailView.swift; sourceTree = "<group>"; };
+		83EC1710735B7CBF4BA8D9FA /* DetailPageScaffold.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetailPageScaffold.swift; sourceTree = "<group>"; };
+		84FD3C7D54CAA844B65A9818 /* DiscoveryService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiscoveryService.swift; sourceTree = "<group>"; };
+		852F8846AFD98D45E0F8D54C /* DashboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardView.swift; sourceTree = "<group>"; };
+		85CB71C8253F9655757D1064 /* __Snapshots__.testHubMinimal.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = __Snapshots__.testHubMinimal.png; sourceTree = "<group>"; };
+		873DE4340037DBFE245C0CA1 /* Desktop.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Desktop.swift; sourceTree = "<group>"; };
+		874D08656FBB9BA0DFDBBF7F /* __Snapshots__.testStatsRowLight.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = __Snapshots__.testStatsRowLight.png; sourceTree = "<group>"; };
+		9298EF1DDDA5B03751F72DFB /* __Snapshots__.testSearchViewWithResults.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = __Snapshots__.testSearchViewWithResults.png; sourceTree = "<group>"; };
+		94296C9DF8F71C14735B0307 /* StatsRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatsRow.swift; sourceTree = "<group>"; };
+		983A0AEA33CAC2B47C268B18 /* DeepLinkRouter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeepLinkRouter.swift; sourceTree = "<group>"; };
+		9A9A3924B57ADAAD8CFB707C /* LibraryFilterSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryFilterSheet.swift; sourceTree = "<group>"; };
+		9BF5C5AB6043E93215391328 /* BrandColor+Extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "BrandColor+Extension.swift"; sourceTree = "<group>"; };
+		9EC19BE64A4CF0E80B0C4C75 /* MockWizardBridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockWizardBridge.swift; sourceTree = "<group>"; };
+		9F2CA64994D582980DA37835 /* cormorant_garamond.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = cormorant_garamond.ttf; sourceTree = "<group>"; };
+		A0A798D8F713031FA42158DB /* overdrive-libraries.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "overdrive-libraries.json"; sourceTree = "<group>"; };
+		A0FAD9B43FBA4138715C247F /* LibraryViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryViewModelTests.swift; sourceTree = "<group>"; };
+		A32123C79C6EF2CD910C6DE7 /* PairingDecision.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PairingDecision.swift; sourceTree = "<group>"; };
+		A35A956E5F16FAB7CB96E2E5 /* SyncManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncManager.swift; sourceTree = "<group>"; };
+		AA746E1AF9254D90DD3AFC9E /* LivtetUnitTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = LivtetUnitTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		AAC1A82E4B1D1873081E4733 /* TagsDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TagsDetailView.swift; sourceTree = "<group>"; };
+		AACA5F074D38AF35F06398EA /* LibraryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryView.swift; sourceTree = "<group>"; };
+		AAD41CA0C114B4AD69E23205 /* ProviderErrorCallout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProviderErrorCallout.swift; sourceTree = "<group>"; };
+		AB393B90AEAA6B643671A094 /* HubView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HubView.swift; sourceTree = "<group>"; };
+		B13A4DBC6C94A0B1ABD53E24 /* BrandFont+Extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "BrandFont+Extension.swift"; sourceTree = "<group>"; };
+		B43101FDA953C9942628B3F7 /* .gitkeep */ = {isa = PBXFileReference; path = .gitkeep; sourceTree = "<group>"; };
+		B443D32729F50D97083EFB6E /* GenresDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GenresDetailView.swift; sourceTree = "<group>"; };
+		B6847AF54660B63B67B44035 /* jetbrains_mono.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = jetbrains_mono.ttf; sourceTree = "<group>"; };
+		B91EB150DDDCCF5DE2ED5279 /* work_sans.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = work_sans.ttf; sourceTree = "<group>"; };
+		B92CAB33B28AA25B1348F831 /* __Snapshots__.testSearchViewEmpty.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = __Snapshots__.testSearchViewEmpty.png; sourceTree = "<group>"; };
+		B99FBF6F6B1850FA564B8A9B /* RecentSearchesRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecentSearchesRow.swift; sourceTree = "<group>"; };
+		BA9E91543BE9E2519B2FDE7A /* NetworkClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkClient.swift; sourceTree = "<group>"; };
+		BADCAF723FFE1C651B7C68BB /* URLParserLivtetSyncTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = URLParserLivtetSyncTests.swift; sourceTree = "<group>"; };
+		BB4ED0573CFD280EC0296AE6 /* SyncStatusView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncStatusView.swift; sourceTree = "<group>"; };
+		BF6098BB4E061C07D83586E0 /* SyncModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncModels.swift; sourceTree = "<group>"; };
+		C0BAD18C6F37B983893546EE /* Pods_LivtetUnitTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_LivtetUnitTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		C37B5BF6CEF645CF30B226D0 /* Pods-Livtet.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Livtet.debug.xcconfig"; path = "Target Support Files/Pods-Livtet/Pods-Livtet.debug.xcconfig"; sourceTree = "<group>"; };
+		C3E157CC031F2DBDB2839C12 /* SplashScreenViewTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SplashScreenViewTests.swift; sourceTree = "<group>"; };
+		C566BCC766AE30A1BA63A0CF /* PairStatus.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PairStatus.swift; sourceTree = "<group>"; };
+		C6786AADF81E6902756A134C /* StepTitleAndAuthorsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StepTitleAndAuthorsView.swift; sourceTree = "<group>"; };
+		CAF2A0F81A01473FB8D66650 /* StepSearchView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StepSearchView.swift; sourceTree = "<group>"; };
+		CF101E5388D58153067D6B4D /* KeychainService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainService.swift; sourceTree = "<group>"; };
+		D07C619DE9D7F6FE4CF420B1 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		D08A313FFAABD3CBB6160A3F /* DuplicateMergeConflictView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DuplicateMergeConflictView.swift; sourceTree = "<group>"; };
+		D32893005E4AB862BD42CF96 /* CoverImageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoverImageView.swift; sourceTree = "<group>"; };
+		DA63B20D548B7946ED58FC67 /* __Snapshots__.testQuickActionCardNoProgress.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = __Snapshots__.testQuickActionCardNoProgress.png; sourceTree = "<group>"; };
+		DAE1936FAFD77A40D027FC7D /* ChipInputRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChipInputRow.swift; sourceTree = "<group>"; };
+		DBB92E0B63E8A93EB6C538E0 /* LivtetCoreBridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LivtetCoreBridge.swift; sourceTree = "<group>"; };
+		DC19D5B52D77D50C7D9D5375 /* ManualPairingSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ManualPairingSheet.swift; sourceTree = "<group>"; };
+		DC273EBCB130D4717ECFE983 /* DashboardViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardViewModelTests.swift; sourceTree = "<group>"; };
+		DD8BB3D8233085D12E1795FC /* ContinueReadingCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContinueReadingCard.swift; sourceTree = "<group>"; };
+		DDCAEDE10609C906301A956C /* CoverDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoverDetailView.swift; sourceTree = "<group>"; };
+		DFA2CDDFFEF521B7DA41FB1C /* PiiScrubberTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PiiScrubberTests.swift; sourceTree = "<group>"; };
+		E1FD2BB3637256ED97A82D24 /* OverdriveLibraryPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OverdriveLibraryPicker.swift; sourceTree = "<group>"; };
+		E2443EDF1CBA9C49CE9BC49F /* GreetingCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GreetingCard.swift; sourceTree = "<group>"; };
+		E65EDABB8FAF5BAA5F7D7019 /* LivtetApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LivtetApp.swift; sourceTree = "<group>"; };
+		E6C9162F9AF02696DA7E149A /* PublisherDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PublisherDetailView.swift; sourceTree = "<group>"; };
+		E826EBC2A9BB308FF45BC0D7 /* LanguageDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LanguageDetailView.swift; sourceTree = "<group>"; };
+		E94A1B165D18B674CC5359CC /* EmptyStateQuoteView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmptyStateQuoteView.swift; sourceTree = "<group>"; };
+		E9D6DF567BE0A3ADDD91E731 /* DashboardViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardViewModel.swift; sourceTree = "<group>"; };
+		EAA7C87FDDBE5F62F03D6797 /* Livtet.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Livtet.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		ED186DE7D4E95B89A8A070BC /* __Snapshots__.testTitleAndAuthorsFilled.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = __Snapshots__.testTitleAndAuthorsFilled.png; sourceTree = "<group>"; };
+		EE46C783182A0E930A14A2D9 /* LivtetCoreBridge+Wizard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "LivtetCoreBridge+Wizard.swift"; sourceTree = "<group>"; };
+		F30E26B3EC98F9ABB906FD24 /* AddBookWizardViewTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddBookWizardViewTests.swift; sourceTree = "<group>"; };
+		F3DF5B4FFA869F732DC01CC4 /* PendingDeepLink.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PendingDeepLink.swift; sourceTree = "<group>"; };
+		F49E6B7252D4F49EAE5E664D /* AddBookWizardSnapshotTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddBookWizardSnapshotTests.swift; sourceTree = "<group>"; };
+		F5AE1DF4487EC45D613D3674 /* DashboardSnapshotTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardSnapshotTests.swift; sourceTree = "<group>"; };
+		F996DA4976F54F4BB0FA9C39 /* Pods_Livtet.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Livtet.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		FB5FBB0A90DA2D1447076B51 /* SplashScreenView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SplashScreenView.swift; sourceTree = "<group>"; };
+		FB803839C5FBEFE92D6E0A7B /* EditionPickerSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditionPickerSheet.swift; sourceTree = "<group>"; };
+		FBE33FF76F30826A7A370DA0 /* DescriptionDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DescriptionDetailView.swift; sourceTree = "<group>"; };
+		FFE94884B385271514FA3A94 /* URLParser+LivtetSync.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "URLParser+LivtetSync.swift"; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		CB8FD49928807930A1876037 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				1A86E872E9AB49D77CC374A1 /* LivtetKit in Frameworks */,
+				04417DEFE259AC243A352140 /* LivtetKitFFI in Frameworks */,
+				E921A1CE44666D9E47E1B567 /* Sentry in Frameworks */,
+				36960DDBC12BF90E93534F31 /* Inject in Frameworks */,
+				FD67B1AE197C2DFC4E6A0246 /* Pods_Livtet.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		EB422EC02F033F68EDDF60F4 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				DA1499D1C87A89438C200484 /* ViewInspector in Frameworks */,
+				07FB19919D7728BEABCB9607 /* SnapshotTesting in Frameworks */,
+				C412790734007B470FB65B6A /* RxBlocking in Frameworks */,
+				41C591F4852BB78FCA7BE54D /* Pods_LivtetUnitTests.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		05AF9A86CF6D65A86D6AC835 /* __Snapshots__ */ = {
+			isa = PBXGroup;
+			children = (
+				94949A19C90CAB1E52C7B466 /* AddBookWizardSnapshotTests */,
+				CDCDD5CDFCB658CD59B81F97 /* DashboardSnapshotTests */,
+			);
+			path = __Snapshots__;
+			sourceTree = "<group>";
+		};
+		0742F9067730BE107AEEED5E /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				EAA7C87FDDBE5F62F03D6797 /* Livtet.app */,
+				AA746E1AF9254D90DD3AFC9E /* LivtetUnitTests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		0E537098F2975277544FF7F0 /* Pods */ = {
+			isa = PBXGroup;
+			children = (
+				C37B5BF6CEF645CF30B226D0 /* Pods-Livtet.debug.xcconfig */,
+				1E42952677F67659B23C3B79 /* Pods-Livtet.release.xcconfig */,
+				35C02B36D845148119AAEF22 /* Pods-LivtetUnitTests.debug.xcconfig */,
+				057DF8AE8F2EAECBDCC414D9 /* Pods-LivtetUnitTests.release.xcconfig */,
+			);
+			name = Pods;
+			path = Pods;
+			sourceTree = "<group>";
+		};
+		17C0A750921BBF04A228E790 /* AddBook */ = {
+			isa = PBXGroup;
+			children = (
+				41C7D1E31633C05E396007D5 /* AddBookWizardView.swift */,
+				DAE1936FAFD77A40D027FC7D /* ChipInputRow.swift */,
+				DDCAEDE10609C906301A956C /* CoverDetailView.swift */,
+				D32893005E4AB862BD42CF96 /* CoverImageView.swift */,
+				FBE33FF76F30826A7A370DA0 /* DescriptionDetailView.swift */,
+				83EC1710735B7CBF4BA8D9FA /* DetailPageScaffold.swift */,
+				58C1B3943E65F0145D1B39C2 /* DuplicateWorkDialog.swift */,
+				FB803839C5FBEFE92D6E0A7B /* EditionPickerSheet.swift */,
+				6481F6D1C3790D2530F68CFF /* FormatDetailView.swift */,
+				B443D32729F50D97083EFB6E /* GenresDetailView.swift */,
+				AB393B90AEAA6B643671A094 /* HubView.swift */,
+				814A1D237B65913F9AA72960 /* IsbnDetailView.swift */,
+				E826EBC2A9BB308FF45BC0D7 /* LanguageDetailView.swift */,
+				AAD41CA0C114B4AD69E23205 /* ProviderErrorCallout.swift */,
+				1AA488B03C2167E4A67B81FA /* PublishedDateDetailView.swift */,
+				E6C9162F9AF02696DA7E149A /* PublisherDetailView.swift */,
+				CAF2A0F81A01473FB8D66650 /* StepSearchView.swift */,
+				C6786AADF81E6902756A134C /* StepTitleAndAuthorsView.swift */,
+				4186BBED190817860CFA6AC3 /* SubjectsDetailView.swift */,
+				AAC1A82E4B1D1873081E4733 /* TagsDetailView.swift */,
+			);
+			path = AddBook;
+			sourceTree = "<group>";
+		};
+		19A42967A6A301A7AC328733 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				852F8846AFD98D45E0F8D54C /* DashboardView.swift */,
+				097A38B5E9FF060FA974FA82 /* DuplicateDetailView.swift */,
+				6B6E5BA14C44D8923A72F23C /* DuplicateManagementView.swift */,
+				D08A313FFAABD3CBB6160A3F /* DuplicateMergeConflictView.swift */,
+				4FB6DB55C0059184FDFE7B37 /* RootTabView.swift */,
+				FB5FBB0A90DA2D1447076B51 /* SplashScreenView.swift */,
+				17C0A750921BBF04A228E790 /* AddBook */,
+				BC66EC20E87CC2AED5ECD565 /* Components */,
+				A4BF5E43A36C71411EBEFABA /* Edition */,
+				720821C510E5D448AD1B7942 /* Library */,
+				1F55FE46C3542C0A21E46A2F /* Reading */,
+				AB23555D34D7647E23A1BEC6 /* Settings */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		1F55FE46C3542C0A21E46A2F /* Reading */ = {
+			isa = PBXGroup;
+			children = (
+				2B0060B9C959B79E708ED72A /* ReadingProgressControl.swift */,
+			);
+			path = Reading;
+			sourceTree = "<group>";
+		};
+		295CA50186A4921408903D01 /* Pairing */ = {
+			isa = PBXGroup;
+			children = (
+				1EB4E9F3D81C6A2FCA0F7179 /* PairingSheet.swift */,
+				BB4ED0573CFD280EC0296AE6 /* SyncStatusView.swift */,
+			);
+			path = Pairing;
+			sourceTree = "<group>";
+		};
+		34527FDFDB22C3F82A0486BB /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				5D4A5F437618653376EBB27C /* CoverSearchResult.swift */,
+				873DE4340037DBFE245C0CA1 /* Desktop.swift */,
+				1ACA760FD0B7C3A3D11A1C92 /* GoogleBooksModels.swift */,
+				69EC5D718ED3E64651D7E2B1 /* OpenLibraryModels.swift */,
+				2669578E2E4B03F9D4F0B525 /* OverdriveLibrary.swift */,
+				531AEB3218036516E1442555 /* PairedDesktop.swift */,
+				A32123C79C6EF2CD910C6DE7 /* PairingDecision.swift */,
+				C566BCC766AE30A1BA63A0CF /* PairStatus.swift */,
+				F3DF5B4FFA869F732DC01CC4 /* PendingDeepLink.swift */,
+				046853E9595D81F0819F1707 /* SearchSource.swift */,
+				BF6098BB4E061C07D83586E0 /* SyncModels.swift */,
+				566077E453202FEB6B96D42C /* SyncPairToken.swift */,
+				512272EC7E99939EE6F1FADB /* WizardData.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		4028182A085CFD96326EDA4B /* Snapshots */ = {
+			isa = PBXGroup;
+			children = (
+				F49E6B7252D4F49EAE5E664D /* AddBookWizardSnapshotTests.swift */,
+				F5AE1DF4487EC45D613D3674 /* DashboardSnapshotTests.swift */,
+				05AF9A86CF6D65A86D6AC835 /* __Snapshots__ */,
+			);
+			path = Snapshots;
+			sourceTree = "<group>";
+		};
+		42ECA73EF17A84FA8CDE5793 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				F996DA4976F54F4BB0FA9C39 /* Pods_Livtet.framework */,
+				C0BAD18C6F37B983893546EE /* Pods_LivtetUnitTests.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		662B40397A0D83DCAD26CEE9 = {
+			isa = PBXGroup;
+			children = (
+				8BAF56CCD4E600B3812AD325 /* Livtet */,
+				E6373D6BB2A255FAB468A592 /* LivtetUnitTests */,
+				BD6A54AC9FA421AB92935684 /* Packages */,
+				0742F9067730BE107AEEED5E /* Products */,
+				0E537098F2975277544FF7F0 /* Pods */,
+				42ECA73EF17A84FA8CDE5793 /* Frameworks */,
+			);
+			sourceTree = "<group>";
+		};
+		720821C510E5D448AD1B7942 /* Library */ = {
+			isa = PBXGroup;
+			children = (
+				0D51C1753643A4AAE708D0E4 /* EditionRow.swift */,
+				E94A1B165D18B674CC5359CC /* EmptyStateQuoteView.swift */,
+				9A9A3924B57ADAAD8CFB707C /* LibraryFilterSheet.swift */,
+				AACA5F074D38AF35F06398EA /* LibraryView.swift */,
+			);
+			path = Library;
+			sourceTree = "<group>";
+		};
+		724C33EDEC6291D99C6C422A /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				229F2C478F137331D01EB9E0 /* AppError.swift */,
+				983A0AEA33CAC2B47C268B18 /* DeepLinkRouter.swift */,
+				1BE50EE6082C8980491F8597 /* DeviceIdentity.swift */,
+				73AFF883928CF962187B9548 /* DeviceIdentityService.swift */,
+				84FD3C7D54CAA844B65A9818 /* DiscoveryService.swift */,
+				36E985D211886D3C360087CC /* FFIErrorBridge.swift */,
+				16293541F7664AE56312253E /* GoogleBooksClient.swift */,
+				3706A85ACE8743E6B924F7CE /* ImageDownloader.swift */,
+				CF101E5388D58153067D6B4D /* KeychainService.swift */,
+				DBB92E0B63E8A93EB6C538E0 /* LivtetCoreBridge.swift */,
+				EE46C783182A0E930A14A2D9 /* LivtetCoreBridge+Wizard.swift */,
+				BA9E91543BE9E2519B2FDE7A /* NetworkClient.swift */,
+				3EFC8431CC0B59E7F3E5612B /* Notifications.swift */,
+				3E2FC9F80AEB51BE2399142F /* OpenLibraryClient.swift */,
+				51FB0554DCA84E7E13336949 /* PairingService.swift */,
+				A35A956E5F16FAB7CB96E2E5 /* SyncManager.swift */,
+				FFE94884B385271514FA3A94 /* URLParser+LivtetSync.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		8039DE07CCB4C097A6FF5847 /* ViewModels */ = {
+			isa = PBXGroup;
+			children = (
+				23CA95FE18F73BFA8E8838A7 /* AddBookWizardViewModel.swift */,
+				E9D6DF567BE0A3ADDD91E731 /* DashboardViewModel.swift */,
+				2D6B452AD036607318FBA11E /* DuplicateManagementViewModel.swift */,
+				15C198FC666120E22ABD5923 /* LibraryViewModel.swift */,
+				1D6B678EED50DD706E8BBBB0 /* SetCoverViewModel.swift */,
+			);
+			path = ViewModels;
+			sourceTree = "<group>";
+		};
+		819D04C59CCA2E82F3DA7920 /* Mocks */ = {
+			isa = PBXGroup;
+			children = (
+				64287863F3EA99371CDE5CAB /* MockLibraryBridge.swift */,
+				9EC19BE64A4CF0E80B0C4C75 /* MockWizardBridge.swift */,
+			);
+			path = Mocks;
+			sourceTree = "<group>";
+		};
+		8BAF56CCD4E600B3812AD325 /* Livtet */ = {
+			isa = PBXGroup;
+			children = (
+				E65EDABB8FAF5BAA5F7D7019 /* LivtetApp.swift */,
+				34527FDFDB22C3F82A0486BB /* Models */,
+				E62F250BD4D2D3493A679B46 /* Resources */,
+				724C33EDEC6291D99C6C422A /* Services */,
+				EEA1BBF1F9F61832E4E410CF /* Utilities */,
+				8039DE07CCB4C097A6FF5847 /* ViewModels */,
+				19A42967A6A301A7AC328733 /* Views */,
+			);
+			path = Livtet;
+			sourceTree = "<group>";
+		};
+		94949A19C90CAB1E52C7B466 /* AddBookWizardSnapshotTests */ = {
+			isa = PBXGroup;
+			children = (
+				6D35BC99EF16AC543D05E340 /* __Snapshots__.testDuplicateDialog.png */,
+				45DCCB34300332EF27023CDD /* __Snapshots__.testHubFullyPopulated.png */,
+				85CB71C8253F9655757D1064 /* __Snapshots__.testHubMinimal.png */,
+				0D8E05F1DEEC886C4530FEEC /* __Snapshots__.testHubSaving.png */,
+				B92CAB33B28AA25B1348F831 /* __Snapshots__.testSearchViewEmpty.png */,
+				21AEB4C6837F7F81E32E7FF3 /* __Snapshots__.testSearchViewProviderError.png */,
+				9298EF1DDDA5B03751F72DFB /* __Snapshots__.testSearchViewWithResults.png */,
+				3D85F2464E3364C9082FFB81 /* __Snapshots__.testTitleAndAuthorsEmpty.png */,
+				ED186DE7D4E95B89A8A070BC /* __Snapshots__.testTitleAndAuthorsFilled.png */,
+				7747D547E26ABF8B8C59DE13 /* __Snapshots__.testTitleAndAuthorsMultipleAuthors.png */,
+			);
+			path = AddBookWizardSnapshotTests;
+			sourceTree = "<group>";
+		};
+		A4BF5E43A36C71411EBEFABA /* Edition */ = {
+			isa = PBXGroup;
+			children = (
+				4DB967DDEB2D7D23AFC5ECFE /* SetCoverSheet.swift */,
+			);
+			path = Edition;
+			sourceTree = "<group>";
+		};
+		AB23555D34D7647E23A1BEC6 /* Settings */ = {
+			isa = PBXGroup;
+			children = (
+				DC19D5B52D77D50C7D9D5375 /* ManualPairingSheet.swift */,
+				E1FD2BB3637256ED97A82D24 /* OverdriveLibraryPicker.swift */,
+				3A878955923EE250EE78D7C6 /* QRScannerView.swift */,
+				D07C619DE9D7F6FE4CF420B1 /* SettingsView.swift */,
+			);
+			path = Settings;
+			sourceTree = "<group>";
+		};
+		B1F1AA3CCF143BC3FE97FE22 /* Fonts */ = {
+			isa = PBXGroup;
+			children = (
+				9F2CA64994D582980DA37835 /* cormorant_garamond.ttf */,
+				16B17938D8EB18217E886A77 /* geist.ttf */,
+				B6847AF54660B63B67B44035 /* jetbrains_mono.ttf */,
+				B91EB150DDDCCF5DE2ED5279 /* work_sans.ttf */,
+			);
+			path = Fonts;
+			sourceTree = "<group>";
+		};
+		BC66EC20E87CC2AED5ECD565 /* Components */ = {
+			isa = PBXGroup;
+			children = (
+				DD8BB3D8233085D12E1795FC /* ContinueReadingCard.swift */,
+				1B0C0C7B4837EEA917C38B3F /* ErrorBanner.swift */,
+				743CCEEA6542C1BACD3145BD /* FeedPlaceholderCard.swift */,
+				E2443EDF1CBA9C49CE9BC49F /* GreetingCard.swift */,
+				5E7333C99A6A29CC3B0754FF /* QuickActionCard.swift */,
+				B99FBF6F6B1850FA564B8A9B /* RecentSearchesRow.swift */,
+				94296C9DF8F71C14735B0307 /* StatsRow.swift */,
+				295CA50186A4921408903D01 /* Pairing */,
+			);
+			path = Components;
+			sourceTree = "<group>";
+		};
+		BD6A54AC9FA421AB92935684 /* Packages */ = {
+			isa = PBXGroup;
+			children = (
+				2D80694F270BB5B6C9AC6041 /* LivtetKit */,
+			);
+			name = Packages;
+			sourceTree = "<group>";
+		};
+		CDCDD5CDFCB658CD59B81F97 /* DashboardSnapshotTests */ = {
+			isa = PBXGroup;
+			children = (
+				154573B8FB38E839D5451801 /* __Snapshots__.testContinueReadingCardLight.png */,
+				7A98EEBEF1D25EF25558C97C /* __Snapshots__.testErrorBanner.png */,
+				7FAF8C60A01E2F830029EA8C /* __Snapshots__.testFeedPlaceholderCard.png */,
+				45C036573DD62D8C572E8EA1 /* __Snapshots__.testGreetingCardDark.png */,
+				6A5914FE6D4FC3887917C9F3 /* __Snapshots__.testGreetingCardLight.png */,
+				DA63B20D548B7946ED58FC67 /* __Snapshots__.testQuickActionCardNoProgress.png */,
+				5A634F8323EDCE88A9A11540 /* __Snapshots__.testQuickActionCardWithProgress.png */,
+				7B1A1C7D5AEC6DCA2AC322E8 /* __Snapshots__.testRecentSearchesRow.png */,
+				874D08656FBB9BA0DFDBBF7F /* __Snapshots__.testStatsRowLight.png */,
+			);
+			path = DashboardSnapshotTests;
+			sourceTree = "<group>";
+		};
+		E62F250BD4D2D3493A679B46 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				7EFE931D12E3CC03B9D9B9D6 /* Assets.xcassets */,
+				76F698080D228CEC97B11085 /* BuildConfig.generated.swift */,
+				304DB2D80210F71A39C3529C /* Info.plist */,
+				A0A798D8F713031FA42158DB /* overdrive-libraries.json */,
+				B1F1AA3CCF143BC3FE97FE22 /* Fonts */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+		E6373D6BB2A255FAB468A592 /* LivtetUnitTests */ = {
+			isa = PBXGroup;
+			children = (
+				B43101FDA953C9942628B3F7 /* .gitkeep */,
+				06FE914CEC50DDCFA59ADC4F /* AddBookWizardViewModelTests.swift */,
+				F30E26B3EC98F9ABB906FD24 /* AddBookWizardViewTests.swift */,
+				DC273EBCB130D4717ECFE983 /* DashboardViewModelTests.swift */,
+				2651DBBCBDBCB31F894A786A /* DeviceIdentityServiceTests.swift */,
+				16EDF64C66A556722AD8175B /* DiscoveryServiceTests.swift */,
+				245407222257604C17695D27 /* DuplicateManagementViewModelTests.swift */,
+				3B7F5B08CAD44170404CB4A4 /* KeychainServiceIntegrationTests.swift */,
+				739D6F4A975BC5293DBE7B3D /* KeychainServiceTests.swift */,
+				A0FAD9B43FBA4138715C247F /* LibraryViewModelTests.swift */,
+				0B0B187AB69ACD861FBE0531 /* PairingSheetSnapshotTests.swift */,
+				DFA2CDDFFEF521B7DA41FB1C /* PiiScrubberTests.swift */,
+				C3E157CC031F2DBDB2839C12 /* SplashScreenViewTests.swift */,
+				69234264BFE8C284F32C1143 /* SyncManagerTests.swift */,
+				BADCAF723FFE1C651B7C68BB /* URLParserLivtetSyncTests.swift */,
+				819D04C59CCA2E82F3DA7920 /* Mocks */,
+				4028182A085CFD96326EDA4B /* Snapshots */,
+			);
+			path = LivtetUnitTests;
+			sourceTree = "<group>";
+		};
+		EEA1BBF1F9F61832E4E410CF /* Utilities */ = {
+			isa = PBXGroup;
+			children = (
+				9BF5C5AB6043E93215391328 /* BrandColor+Extension.swift */,
+				B13A4DBC6C94A0B1ABD53E24 /* BrandFont+Extension.swift */,
+				1291C8B2333D15708C032E8A /* LivtetRadius.swift */,
+				6AA4028860E5D04953D8069B /* LucideIcons.swift */,
+			);
+			path = Utilities;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		96B6126EB479E2C01E826B07 /* LivtetUnitTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 54E47575BE14905F7B353AC9 /* Build configuration list for PBXNativeTarget "LivtetUnitTests" */;
+			buildPhases = (
+				CA70EDB9249F01AF2E33F294 /* [CP] Check Pods Manifest.lock */,
+				B82B84435CE48BF7CD710F6A /* Sources */,
+				F1FF892919117F667BE72975 /* Resources */,
+				EB422EC02F033F68EDDF60F4 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				35C52B0BA8DCFDF8212CCA6F /* PBXTargetDependency */,
+			);
+			name = LivtetUnitTests;
+			packageProductDependencies = (
+				1137547E3020F295039A2301 /* ViewInspector */,
+				93AC8861027FB4CCE8286EDE /* SnapshotTesting */,
+				45DD54FD6DD9F66709E01119 /* RxBlocking */,
+			);
+			productName = LivtetUnitTests;
+			productReference = AA746E1AF9254D90DD3AFC9E /* LivtetUnitTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		B2BA3F2815A2B5DD3C18C614 /* Livtet */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 6FB6F3B35820620CB1EB8009 /* Build configuration list for PBXNativeTarget "Livtet" */;
+			buildPhases = (
+				57E6529759FDAA7A55BDE5AC /* [CP] Check Pods Manifest.lock */,
+				47AC87537F500B3581CDF058 /* Sources */,
+				137FE262285F9B9E74D04C1A /* Resources */,
+				CB8FD49928807930A1876037 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = Livtet;
+			packageProductDependencies = (
+				1F124C5567F37D72E359A34E /* LivtetKit */,
+				400DA71DC73379FB62B439C7 /* LivtetKitFFI */,
+				8124DA17C01F28198D179620 /* Sentry */,
+				3A4FE4480D2F8D0CB897C6D7 /* Inject */,
+			);
+			productName = Livtet;
+			productReference = EAA7C87FDDBE5F62F03D6797 /* Livtet.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		2A8D6BE875FA1C69F18C0019 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1430;
+				TargetAttributes = {
+				};
+			};
+			buildConfigurationList = 6F137D00736A0C2C8E2193A2 /* Build configuration list for PBXProject "Livtet" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = 662B40397A0D83DCAD26CEE9;
+			packageReferences = (
+				4040EDDA16A5A32BB5DF2C12 /* XCRemoteSwiftPackageReference "swift-case-paths" */,
+				A9CC8A62CFBBE9C0305C1825 /* XCRemoteSwiftPackageReference "swift-custom-dump" */,
+				DFB6FE74ABCFAE57280E5FC6 /* XCRemoteSwiftPackageReference "Inject" */,
+				F8EC12C803FB76BFE6B9C79B /* XCRemoteSwiftPackageReference "RxSwift" */,
+				6716056527776FC22547BA39 /* XCRemoteSwiftPackageReference "sentry-cocoa" */,
+				1BB68911786F440C93C4DAC7 /* XCRemoteSwiftPackageReference "swift-snapshot-testing" */,
+				46F9EAEBBB9E3EE3146C17D7 /* XCRemoteSwiftPackageReference "ViewInspector" */,
+				03AEBE56C7CC40590C5E65D3 /* XCRemoteSwiftPackageReference "xctest-dynamic-overlay" */,
+				039AAE12154D2D4395EC5AFB /* XCLocalSwiftPackageReference "LivtetKit" */,
+			);
+			productRefGroup = 0742F9067730BE107AEEED5E /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				B2BA3F2815A2B5DD3C18C614 /* Livtet */,
+				96B6126EB479E2C01E826B07 /* LivtetUnitTests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		137FE262285F9B9E74D04C1A /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A349F21E1B287862698B0508 /* Assets.xcassets in Resources */,
+				52A6E484B25127639600E7A5 /* cormorant_garamond.ttf in Resources */,
+				A73AFD91967AC56157F89629 /* geist.ttf in Resources */,
+				0E37268666FB31B4C171D892 /* jetbrains_mono.ttf in Resources */,
+				C7D5D32F5C8E71A87FFE42C3 /* overdrive-libraries.json in Resources */,
+				A2F6694D9F55E077D69F9F0E /* work_sans.ttf in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F1FF892919117F667BE72975 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				59BDE74043B6688C141DA4C0 /* __Snapshots__.testContinueReadingCardLight.png in Resources */,
+				46A0AFD454AFB30709C5C58E /* __Snapshots__.testDuplicateDialog.png in Resources */,
+				B9A356700756A8EB3D2339D3 /* __Snapshots__.testErrorBanner.png in Resources */,
+				7A5775B1CF05DB412804635A /* __Snapshots__.testFeedPlaceholderCard.png in Resources */,
+				0417FBD2DEB7FB9C10A1EB10 /* __Snapshots__.testGreetingCardDark.png in Resources */,
+				59DB424C692FD6996CC5BA3F /* __Snapshots__.testGreetingCardLight.png in Resources */,
+				63A04270A90E4FA32C3E9656 /* __Snapshots__.testHubFullyPopulated.png in Resources */,
+				07D2A94E3D4CEBCC6C11B0DB /* __Snapshots__.testHubMinimal.png in Resources */,
+				ACDAC9F1D4FB50A786A5C274 /* __Snapshots__.testHubSaving.png in Resources */,
+				3026A9E4E2984F00AAB7C215 /* __Snapshots__.testQuickActionCardNoProgress.png in Resources */,
+				0D94B982820D4CFFEF4898A5 /* __Snapshots__.testQuickActionCardWithProgress.png in Resources */,
+				10BEABE8479CB64C78219ADC /* __Snapshots__.testRecentSearchesRow.png in Resources */,
+				FD3FDC5B7ED457C0AC4C7BDD /* __Snapshots__.testSearchViewEmpty.png in Resources */,
+				F6A1694ADFFCE66D22B737BF /* __Snapshots__.testSearchViewProviderError.png in Resources */,
+				071B289AA66369C624476825 /* __Snapshots__.testSearchViewWithResults.png in Resources */,
+				E9E19DB36D642F458A01F421 /* __Snapshots__.testStatsRowLight.png in Resources */,
+				136C62933A02D920EECA7094 /* __Snapshots__.testTitleAndAuthorsEmpty.png in Resources */,
+				3D264CA3612990F9109BE6A7 /* __Snapshots__.testTitleAndAuthorsFilled.png in Resources */,
+				61DED76F0C4F4F5474A6D932 /* __Snapshots__.testTitleAndAuthorsMultipleAuthors.png in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		57E6529759FDAA7A55BDE5AC /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-Livtet-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+		CA70EDB9249F01AF2E33F294 /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-LivtetUnitTests-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+/* End PBXShellScriptBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		47AC87537F500B3581CDF058 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				15A461FD5D9FBD15A2F7183E /* AddBookWizardView.swift in Sources */,
+				A86CF25A06D33D00D2BF2CA8 /* AddBookWizardViewModel.swift in Sources */,
+				93FCE2122D390619DE4A3039 /* AppError.swift in Sources */,
+				95473ED9348AE90C83807690 /* BrandColor+Extension.swift in Sources */,
+				7D8EA878A59D14AB1B74CDF5 /* BrandFont+Extension.swift in Sources */,
+				AD0E554BF60F590D905AF6AA /* BuildConfig.generated.swift in Sources */,
+				47AF91D26680A0916DB14069 /* ChipInputRow.swift in Sources */,
+				789BB9940D24F2F4DE521F52 /* ContinueReadingCard.swift in Sources */,
+				17664E3E2D6545E7813BC1A4 /* CoverDetailView.swift in Sources */,
+				6C7A123C246F5094D64DBF91 /* CoverImageView.swift in Sources */,
+				6BA58F2574495495620165CD /* CoverSearchResult.swift in Sources */,
+				4F591D8EF431369B064472FE /* DashboardView.swift in Sources */,
+				37B4A9358A23D664B7F0FCEA /* DashboardViewModel.swift in Sources */,
+				9A64ED83F6D28AC598F20483 /* DeepLinkRouter.swift in Sources */,
+				30A8F82F2D20FFA1A6B2EEE2 /* DescriptionDetailView.swift in Sources */,
+				DB3B678BA70585DAC0068143 /* Desktop.swift in Sources */,
+				4391A7B98B5CFAA7B7D6BAC3 /* DetailPageScaffold.swift in Sources */,
+				DF0C21980820DE2AACA94527 /* DeviceIdentity.swift in Sources */,
+				41EB6313BA4684D8D8A11D00 /* DeviceIdentityService.swift in Sources */,
+				2B945F445CBF97B6F00BAF86 /* DiscoveryService.swift in Sources */,
+				75EC32AB207298A1D150F036 /* DuplicateDetailView.swift in Sources */,
+				FDACDDF1BF02E95830CDE8D3 /* DuplicateManagementView.swift in Sources */,
+				45C0B24769A467D35DA74025 /* DuplicateManagementViewModel.swift in Sources */,
+				28C84EC1F2FB16ED6669BC20 /* DuplicateMergeConflictView.swift in Sources */,
+				C2D7993869EB7890AE620516 /* DuplicateWorkDialog.swift in Sources */,
+				0D8842C72D48787E319E6873 /* EditionPickerSheet.swift in Sources */,
+				A9B690C2AA87EC9169571CA3 /* EditionRow.swift in Sources */,
+				F0F5E94906A3AFD988418903 /* EmptyStateQuoteView.swift in Sources */,
+				6410727FFADBC98C3E3DBC1C /* ErrorBanner.swift in Sources */,
+				AC4B4EFEB0E2F100CE0C03CC /* FFIErrorBridge.swift in Sources */,
+				CDD690C461C6E42F4F02FB64 /* FeedPlaceholderCard.swift in Sources */,
+				608821BCB618A6A4543C7A78 /* FormatDetailView.swift in Sources */,
+				4AFE445AA80E841F9CC2236D /* GenresDetailView.swift in Sources */,
+				7DC5D83EEDA8DC0271198271 /* GoogleBooksClient.swift in Sources */,
+				C81E39500E969F14407E0FC6 /* GoogleBooksModels.swift in Sources */,
+				E4821C5DB52BFE94679B5F76 /* GreetingCard.swift in Sources */,
+				4DCDC7269B41C0C9B78FEB54 /* HubView.swift in Sources */,
+				DE528190DBF60A6670856F75 /* ImageDownloader.swift in Sources */,
+				03E4E9CD4BB8401C7B8AC113 /* IsbnDetailView.swift in Sources */,
+				4AF1551E15AC66137AEEC0B6 /* KeychainService.swift in Sources */,
+				0D3E10CDC296D0E84D88B499 /* LanguageDetailView.swift in Sources */,
+				4BB6CE0F54D64B1011D61332 /* LibraryFilterSheet.swift in Sources */,
+				363A7C4F4B7534697F6DD4D3 /* LibraryView.swift in Sources */,
+				4149FCE6C1683692FC244F51 /* LibraryViewModel.swift in Sources */,
+				A00785E049EC5BB7331C796B /* LivtetApp.swift in Sources */,
+				D492AFDF95EF0D613EF75B93 /* LivtetCoreBridge+Wizard.swift in Sources */,
+				4F34B1666046ED93546AC7C0 /* LivtetCoreBridge.swift in Sources */,
+				4F23BA81D89F184A995065DE /* LivtetRadius.swift in Sources */,
+				F8FE9FFBBDE094AA3A490DCB /* LucideIcons.swift in Sources */,
+				9FA9E0A9119BB9B44BB25053 /* ManualPairingSheet.swift in Sources */,
+				7B9365413BB09FCF54A57BB4 /* NetworkClient.swift in Sources */,
+				4579BD984FBC16917F1F09F1 /* Notifications.swift in Sources */,
+				583A97916280DBDC2AD0ADE8 /* OpenLibraryClient.swift in Sources */,
+				7B1E46FEF6C99D9ED1FF38B1 /* OpenLibraryModels.swift in Sources */,
+				7BA8F05CF9254B3908E132A0 /* OverdriveLibrary.swift in Sources */,
+				B3F7DAC3C409F5EED0209681 /* OverdriveLibraryPicker.swift in Sources */,
+				6D06D2328A5EDD7CE74CBECD /* PairStatus.swift in Sources */,
+				834206FB5CB21A3EC6CAD622 /* PairedDesktop.swift in Sources */,
+				A457CF2FFDCDBA60281B4900 /* PairingDecision.swift in Sources */,
+				49EEF0A4E5BC65B1E7122020 /* PairingService.swift in Sources */,
+				3BB19FE83406D147B69FA7B0 /* PairingSheet.swift in Sources */,
+				81501873546D1BB92F14B388 /* PendingDeepLink.swift in Sources */,
+				E4D4E5A734D75101AA16C106 /* ProviderErrorCallout.swift in Sources */,
+				570595B66479F20CAA46B02F /* PublishedDateDetailView.swift in Sources */,
+				EADDEC1F35AA32A0D0836686 /* PublisherDetailView.swift in Sources */,
+				23C4DD724A68FEA462A7D16A /* QRScannerView.swift in Sources */,
+				93FAED97FD3EBF1D2C071D9E /* QuickActionCard.swift in Sources */,
+				AFF8D485F3E2E0EE72E424E4 /* ReadingProgressControl.swift in Sources */,
+				CCA657B80FF9D720B3C12CD8 /* RecentSearchesRow.swift in Sources */,
+				39B522DB253441038D5F05A6 /* RootTabView.swift in Sources */,
+				D8B6FC10A1C5296C737A295D /* SearchSource.swift in Sources */,
+				AC4B2762E2DE0C6EF144A662 /* SetCoverSheet.swift in Sources */,
+				8B5E19D8CE7CD9AA4BAC69F9 /* SetCoverViewModel.swift in Sources */,
+				8AEBDD32590A12E1529669F0 /* SettingsView.swift in Sources */,
+				A90B399C0EED8A506C29DBFA /* SplashScreenView.swift in Sources */,
+				DAC2F37CC69DB9B17363FEF0 /* StatsRow.swift in Sources */,
+				46ED9E8B7FC9417EBC6AF25B /* StepSearchView.swift in Sources */,
+				4EC426F28739CBFB056FF2B3 /* StepTitleAndAuthorsView.swift in Sources */,
+				3ECCACBCA5108C01DF763839 /* SubjectsDetailView.swift in Sources */,
+				0F750AF992FB395A5077243C /* SyncManager.swift in Sources */,
+				3B28E9A3CF1C827FC5D493E6 /* SyncModels.swift in Sources */,
+				70BAC393C0B1396D12511701 /* SyncPairToken.swift in Sources */,
+				8CA4FF0B2DFABC78EA797340 /* SyncStatusView.swift in Sources */,
+				9F07D40F00EC22B87E65CA43 /* TagsDetailView.swift in Sources */,
+				1FB15D2D4FFA118F5C8BF373 /* URLParser+LivtetSync.swift in Sources */,
+				30EBE6202CAFDBB11D7A2584 /* WizardData.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		B82B84435CE48BF7CD710F6A /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				C1F581A4867A3919B11BFFA7 /* AddBookWizardSnapshotTests.swift in Sources */,
+				B1BB82BECCF67E2C303BEC2E /* AddBookWizardViewModelTests.swift in Sources */,
+				1B6325B424C8ABD4FE59CC28 /* AddBookWizardViewTests.swift in Sources */,
+				D3F0487D27729AD6EE1FAB2C /* BrandColor+Extension.swift in Sources */,
+				83C4A0DA087B4BE9AE05EC5A /* DashboardSnapshotTests.swift in Sources */,
+				CFAFF2506BB6C56059D78A8F /* DashboardViewModelTests.swift in Sources */,
+				CC8B0149F392FEC5631ED176 /* DeviceIdentityServiceTests.swift in Sources */,
+				7F17781E87DF6038D4A06D54 /* DiscoveryServiceTests.swift in Sources */,
+				2F17BD9310352FD24201A005 /* DuplicateManagementViewModelTests.swift in Sources */,
+				FEFE9202303042C50CDC4D6D /* KeychainServiceIntegrationTests.swift in Sources */,
+				2353436A1768150D323D9567 /* KeychainServiceTests.swift in Sources */,
+				10595F76ECAE46B06A49D989 /* LibraryViewModelTests.swift in Sources */,
+				6E8970D7C322B9816D6FEEB1 /* MockLibraryBridge.swift in Sources */,
+				4D7A65145C98B65AF869E317 /* MockWizardBridge.swift in Sources */,
+				6AC2447AA1968FF876CF8A28 /* PairingSheetSnapshotTests.swift in Sources */,
+				77F0F3B2214E16C78E30CBA3 /* PiiScrubberTests.swift in Sources */,
+				E7968B2F6E5108E3D642CF41 /* SplashScreenViewTests.swift in Sources */,
+				1571DDC3B7CC4A70CF38791D /* SyncManagerTests.swift in Sources */,
+				D701CC080D0DF83D06DE4A5C /* URLParserLivtetSyncTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		35C52B0BA8DCFDF8212CCA6F /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = B2BA3F2815A2B5DD3C18C614 /* Livtet */;
+			targetProxy = A3260AE30B013561AEAC4F8E /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		56E5705D1D7F4A2BB8C59893 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		5FF5075EA71F2F17421E8DE8 /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 057DF8AE8F2EAECBDCC414D9 /* Pods-LivtetUnitTests.release.xcconfig */;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"${PODS_CONFIGURATION_BUILD_DIR}/LivtetKit.xcframework",
+				);
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = net.olamaelcu.livtet.unittests;
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Livtet.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Livtet";
+			};
+			name = Release;
+		};
+		BE12F886165C1A5C7EF1EEA3 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = C37B5BF6CEF645CF30B226D0 /* Pods-Livtet.debug.xcconfig */;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				EMIT_FRONTEND_COMMAND_LINES = YES;
+				GOOGLE_BOOKS_IOS_API_KEY = "$(GOOGLE_BOOKS_IOS_API_KEY)";
+				INFOPLIST_FILE = Livtet/Resources/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-Xlinker",
+					"-interposable",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = net.olamaelcu.livtet;
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		C721CADFF266426F99ABA2BF /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		DDA69509E31303F32E5FF0EB /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 35C02B36D845148119AAEF22 /* Pods-LivtetUnitTests.debug.xcconfig */;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"${PODS_CONFIGURATION_BUILD_DIR}/LivtetKit.xcframework",
+				);
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = net.olamaelcu.livtet.unittests;
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Livtet.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Livtet";
+			};
+			name = Debug;
+		};
+		E7B93C9CDB40EFDCE03552D5 /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 1E42952677F67659B23C3B79 /* Pods-Livtet.release.xcconfig */;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				GOOGLE_BOOKS_IOS_API_KEY = "$(GOOGLE_BOOKS_IOS_API_KEY)";
+				INFOPLIST_FILE = Livtet/Resources/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = net.olamaelcu.livtet;
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		54E47575BE14905F7B353AC9 /* Build configuration list for PBXNativeTarget "LivtetUnitTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				DDA69509E31303F32E5FF0EB /* Debug */,
+				5FF5075EA71F2F17421E8DE8 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		6F137D00736A0C2C8E2193A2 /* Build configuration list for PBXProject "Livtet" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				56E5705D1D7F4A2BB8C59893 /* Debug */,
+				C721CADFF266426F99ABA2BF /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		6FB6F3B35820620CB1EB8009 /* Build configuration list for PBXNativeTarget "Livtet" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				BE12F886165C1A5C7EF1EEA3 /* Debug */,
+				E7B93C9CDB40EFDCE03552D5 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		039AAE12154D2D4395EC5AFB /* XCLocalSwiftPackageReference "LivtetKit" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = ./LivtetKit;
+		};
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		03AEBE56C7CC40590C5E65D3 /* XCRemoteSwiftPackageReference "xctest-dynamic-overlay" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/pointfreeco/xctest-dynamic-overlay";
+			requirement = {
+				kind = revision;
+				revision = 357ca1e5dd31f613a1d43320870ebc219386a495;
+			};
+		};
+		1BB68911786F440C93C4DAC7 /* XCRemoteSwiftPackageReference "swift-snapshot-testing" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/pointfreeco/swift-snapshot-testing";
+			requirement = {
+				kind = revision;
+				revision = f5bfff796ee8e3bc9a685b7ffba1bf20663eb370;
+			};
+		};
+		4040EDDA16A5A32BB5DF2C12 /* XCRemoteSwiftPackageReference "swift-case-paths" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/pointfreeco/swift-case-paths";
+			requirement = {
+				kind = revision;
+				revision = a9c1e05518b6d95cf5844d823020376f2b6ff842;
+			};
+		};
+		46F9EAEBBB9E3EE3146C17D7 /* XCRemoteSwiftPackageReference "ViewInspector" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/nalexn/ViewInspector";
+			requirement = {
+				kind = revision;
+				revision = e9a06346499a3a889165647e3f23f8a7b2609a1c;
+			};
+		};
+		6716056527776FC22547BA39 /* XCRemoteSwiftPackageReference "sentry-cocoa" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/getsentry/sentry-cocoa";
+			requirement = {
+				kind = revision;
+				revision = 67310f115f3fc1e5e1f2e262f9009c64bb387e3f;
+			};
+		};
+		A9CC8A62CFBBE9C0305C1825 /* XCRemoteSwiftPackageReference "swift-custom-dump" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/pointfreeco/swift-custom-dump";
+			requirement = {
+				kind = revision;
+				revision = 82645ec760917961cfa08c9c0c7104a57a0fa4b1;
+			};
+		};
+		DFB6FE74ABCFAE57280E5FC6 /* XCRemoteSwiftPackageReference "Inject" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/krzysztofzablocki/Inject.git";
+			requirement = {
+				kind = revision;
+				revision = 1.2.4;
+			};
+		};
+		F8EC12C803FB76BFE6B9C79B /* XCRemoteSwiftPackageReference "RxSwift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/ReactiveX/RxSwift";
+			requirement = {
+				kind = revision;
+				revision = 5949cbd3d4f3f97968bb40b6cd232f8315c6341c;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		1137547E3020F295039A2301 /* ViewInspector */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 46F9EAEBBB9E3EE3146C17D7 /* XCRemoteSwiftPackageReference "ViewInspector" */;
+			productName = ViewInspector;
+		};
+		1F124C5567F37D72E359A34E /* LivtetKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = LivtetKit;
+		};
+		3A4FE4480D2F8D0CB897C6D7 /* Inject */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = DFB6FE74ABCFAE57280E5FC6 /* XCRemoteSwiftPackageReference "Inject" */;
+			productName = Inject;
+		};
+		400DA71DC73379FB62B439C7 /* LivtetKitFFI */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = LivtetKitFFI;
+		};
+		45DD54FD6DD9F66709E01119 /* RxBlocking */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = F8EC12C803FB76BFE6B9C79B /* XCRemoteSwiftPackageReference "RxSwift" */;
+			productName = RxBlocking;
+		};
+		8124DA17C01F28198D179620 /* Sentry */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 6716056527776FC22547BA39 /* XCRemoteSwiftPackageReference "sentry-cocoa" */;
+			productName = Sentry;
+		};
+		93AC8861027FB4CCE8286EDE /* SnapshotTesting */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 1BB68911786F440C93C4DAC7 /* XCRemoteSwiftPackageReference "swift-snapshot-testing" */;
+			productName = SnapshotTesting;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = 2A8D6BE875FA1C69F18C0019 /* Project object */;
+}

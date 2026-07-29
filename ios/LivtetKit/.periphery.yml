@@ -1,0 +1,43 @@
+# Periphery configuration for the LivtetKit SwiftPM package.
+#
+# Periphery detects unused public symbols, parameters, enum cases, imports,
+# and redundant `public` accessibility. The settings chosen here reflect that
+# LivtetKit is *published* as an xcframework and consumed by:
+#   - the iOS Livtet app target
+#   - the iOS LivtetUnitTests target
+#
+# That means most declarations that look unused to Periphery are actually
+# reachable via Objective-C runtime (the kit exposes @objc types to SwiftUI)
+# or via the xcframework's bundle metadata. We disable the two
+# retain-by-default flags that would otherwise let Periphery over-report.
+#
+# Reference: https://github.com/peripheryapp/periphery/blob/master/docs/usage.md
+#
+# Generate the baseline with:
+#   periphery scan --retain-public --format json > swift-livtetkit-periphery.json
+
+# Preserve `public` declarations even if no Swift consumer is found.
+# LivtetKit is published as an xcframework; consumers may not have been
+# built yet when this scan runs.
+retain_public: true
+
+# Preserve declarations reachable via Objective-C runtime introspection.
+# Periphery needs `--retain-objc-accessible` to avoid false positives on
+# `class Foo: NSObject` types and `@objc` members.
+retain_objc_accessible: true
+
+# Preserve declarations annotated with @objc even if the explicit
+# Objective-C bridge is not visible in the Swift source graph.
+retain_objc_annotated: true
+
+# Tests are out of scope: they're allowed to import obsolete modules
+# and reference symbols that exist solely to feed test scenarios.
+include_test_targets: false
+
+# SwiftPM package — no .xcodeproj, no .xcworkspace. Periphery auto-detects.
+project: ~
+workspace: ~
+scheme: ~
+
+# Output JSON for tool-friendly post-processing.
+output_format: json

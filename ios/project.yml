@@ -1,0 +1,106 @@
+name: Livtet
+options:
+  deploymentTarget:
+    iOS: "17.0"
+  bundleIdPrefix: net.olamaelcu.livtet
+  disableCocoaPodsIntegration: true
+
+packages:
+  LivtetKit:
+    path: ./LivtetKit
+  CasePaths:
+    url: https://github.com/pointfreeco/swift-case-paths
+    revision: "a9c1e05518b6d95cf5844d823020376f2b6ff842"
+  ViewInspector:
+    url: https://github.com/nalexn/ViewInspector
+    revision: "e9a06346499a3a889165647e3f23f8a7b2609a1c"
+  SnapshotTesting:
+    url: https://github.com/pointfreeco/swift-snapshot-testing
+    revision: "f5bfff796ee8e3bc9a685b7ffba1bf20663eb370"  # 1.18.0
+  CustomDump:
+    url: https://github.com/pointfreeco/swift-custom-dump
+    revision: "82645ec760917961cfa08c9c0c7104a57a0fa4b1"  # 1.3.3
+  XCTestDynamicOverlay:
+    url: https://github.com/pointfreeco/xctest-dynamic-overlay
+    revision: "357ca1e5dd31f613a1d43320870ebc219386a495"  # 1.3.0
+  RxSwift:
+    url: https://github.com/ReactiveX/RxSwift
+    revision: "5949cbd3d4f3f97968bb40b6cd232f8315c6341c"  # 6.7.0
+  Sentry:
+    url: https://github.com/getsentry/sentry-cocoa
+    revision: "67310f115f3fc1e5e1f2e262f9009c64bb387e3f"  # 9.22.0
+  Inject:
+    url: https://github.com/krzysztofzablocki/Inject.git
+    revision: "1.2.4"  # latest stable
+
+targets:
+  Livtet:
+    type: application
+    platform: iOS
+    deploymentTarget: "17.0"
+    sources:
+      - path: Livtet
+    resources:
+      - path: Livtet/Resources/Fonts
+        type: folder
+    dependencies:
+      - package: LivtetKit
+        product: LivtetKit
+      - package: LivtetKit
+        product: LivtetKitFFI
+      - package: Sentry
+        product: Sentry
+      - package: Inject
+        product: Inject
+    settings:
+      base:
+        TARGETED_DEVICE_FAMILY: "1,2"
+        IPHONEOS_DEPLOYMENT_TARGET: "17.0"
+        SWIFT_VERSION: "5.0"
+        INFOPLIST_FILE: Livtet/Resources/Info.plist
+        PRODUCT_BUNDLE_IDENTIFIER: net.olamaelcu.livtet
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+      configs:
+        Debug:
+          GOOGLE_BOOKS_IOS_API_KEY: "$(GOOGLE_BOOKS_IOS_API_KEY)"
+          OTHER_LDFLAGS: "$(inherited) -Xlinker -interposable"
+          EMIT_FRONTEND_COMMAND_LINES: "YES"
+        Release:
+          GOOGLE_BOOKS_IOS_API_KEY: "$(GOOGLE_BOOKS_IOS_API_KEY)"
+
+  LivtetUnitTests:
+    type: bundle.unit-test
+    platform: iOS
+    deploymentTarget: "17.0"
+    sources:
+      - path: LivtetUnitTests
+      - path: Livtet/Utilities/BrandColor+Extension.swift
+    dependencies:
+      - target: Livtet
+      - package: ViewInspector
+      - package: SnapshotTesting
+      - package: RxSwift
+        product: RxBlocking
+    settings:
+      TEST_HOST: "$(BUILT_PRODUCTS_DIR)/Livtet.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Livtet"
+      BUNDLE_LOADER: "$(TEST_HOST)"
+      PRODUCT_BUNDLE_IDENTIFIER: net.olamaelcu.livtet.unittests
+      GENERATE_INFOPLIST_FILE: YES
+      FRAMEWORK_SEARCH_PATHS: "$(inherited) ${PODS_CONFIGURATION_BUILD_DIR}/LivtetKit.xcframework"
+      SWIFT_VERSION: "5.0"
+
+schemes:
+  Livtet:
+    build:
+      targets:
+        Livtet: all
+        LivtetUnitTests: [test]
+    run:
+      config: Debug
+    test:
+      config: Debug
+      gatherCoverageData: true
+      coverageTargets:
+        - Livtet
+      targets:
+        - LivtetUnitTests

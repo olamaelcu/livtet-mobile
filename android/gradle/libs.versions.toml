@@ -1,0 +1,443 @@
+[versions]
+# Plugins
+agp = "8.13.2"
+# Kotlin — single source of truth for the entire Android build (Gradle
+# plugin and compiler). All other Kotlin plugin ids in this file
+# reference this version via `version.ref = "kotlin"` below. The
+# convention plugin build-logic and the root settings.gradle.kts read
+# from the same entry, so a single bump here propagates everywhere.
+kotlin = "2.4.0"
+ksp = "2.3.9"
+detekt = "1.23.8"
+ktlint = "12.1.0"
+# ktfmt-gradle — wraps facebook/ktfmt as a Gradle plugin. Provides
+# `ktfmtCheck` and `ktfmtFormat` tasks (and per-source-set variants for
+# Android modules). Pinned to 0.26.0 (latest as of 2026-03-18). Used by
+# the `livtet.android.application.lint` / `livtet.android.library.lint`
+# convention plugins in `mobile/android/build-logic/`.
+ktfmt = "0.26.0"
+rustAndroid = "0.9.6"
+dependencyGuard = "0.5.0"
+# dependency-analysis — bytecode-driven audit of declared vs used
+# dependencies (com.autonomousapps.dependency-analysis). 3.16.0 is
+# the current major as of 2026-06-25; the originally specified
+# 3.4.1 ships kotlin-metadata-jvm with a hard 2.3.0 ceiling which
+# is incompatible with the Kotlin 2.4.0 compiler the project's
+# build-logic classpath uses (the `explodeJar*` tasks fail with
+# "Provided Metadata instance has version 2.4.0, while maximum
+# supported version is 2.3.0"). `fixDependencies` rewrites module
+# build files in place and is what `mise run audit-android-deps-fix`
+# invokes.
+dependencyAnalysis = "3.16.0"
+# gradle-versions-plugin — reports outdated versions per coordinate
+# (com.github.ben-manes.versions). 0.54.0 added compatibility with
+# the Gradle 8.13+ build-cache APIs; earlier 0.5x releases pull
+# transitive `org.eclipse.jgit` 6.x which conflicts with
+# AGP 8.13's bundled JGit. Read-only — no `fix` task.
+versionsplugin = "0.54.0"
+
+# Hilt — DI runtime + annotation processor.
+# 2.58 is the last release that supports AGP 8.x; 2.59+ requires AGP 9.0.
+hilt = "2.58"
+# AndroidX Hilt extensions (work, navigation-compose, hilt-compiler).
+hiltAndroidx = "1.3.0"
+
+# Kotlinx
+kotlinxCoroutines = "1.11.0"
+kotlinxSerialization = "1.7.3"
+
+# Networking
+ktor = "3.0.3"
+
+# Observability / error reporting
+sentry = "8.43.0"
+sentryGradle = "6.12.0"
+
+# ePub / Readium
+readium = "3.1.2"
+
+# Coil — Kotlin-first image loader for Compose. We only need
+# the Compose integration since AsyncImage is the entry point.
+coil = "3.0.4"
+
+# kotlinx-datetime — JVM-friendly date/time types. Replaces
+# `java.util.Date` and ad-hoc `Long` epoch milliseconds in sync
+# models and pair payloads.
+kotlinxDatetime = "0.6.1"
+
+# Insetter — window insets ergonomics for Compose. Successor to
+# the original accompanist-insets; works without accompanist.
+insetter = "0.6.1"
+
+# Accompanist Permissions — Compose-native permission state
+# holders (`rememberPermissionState`). The last release
+# supporting Compose 1.x is 0.36.0; later releases require
+# Compose Material3 1.4+.
+accompanist = "0.36.0"
+
+# Timber — thin logging facade. Plant a `DebugTree` in debug
+# builds; ship a no-op tree (or omit) in release. Drop-in
+# replacement for `android.util.Log` with auto-tag inference
+# from the calling class.
+timber = "5.0.1"
+
+# LeakCanary — memory leak detection for debug builds. Auto-
+# initializes via its content provider; no code change required.
+leakcanary = "2.14"
+
+# Chucker — on-device HTTP inspector for debug builds. Adds
+# a system-notification tray that captures every request/response
+# the Ktor client makes. Add the interceptor to the OkHttp engine
+# in AppModule.kt (gated on BuildConfig.DEBUG).
+chucker = "4.1.0"
+
+# Camera / ML
+camerax = "1.6.1"
+mlkit = "17.3.0"
+
+# AndroidX
+work = "2.10.2"
+composeBom = "2026.03.00"
+navigation = "2.9.8"
+lifecycle = "2.9.4"
+fragment = "1.8.5"
+# DataStore Preferences — async, Flow-based key/value store. Successor
+# to SharedPreferences for new code. The typed-Preferences API exposes
+# `Preferences` keys and yields `Flow<Preferences>` for observation.
+datastore = "1.1.7"
+
+# Native bridges
+jna = "5.14.0"
+
+# Java desugaring
+coreLibraryDesugaring = "2.1.5"
+
+# Room — SQLite ORM with KSP code generation. 2.8.x is the line
+# that targets compileSdk 35/36; 2.7.x tops out at compileSdk 34.
+# Schemas export under app/schemas/ via ksp { arg("room.schemaLocation", …) }
+# in app/build.gradle.kts.
+room = "2.8.4"
+
+# Test
+junit = "4.13.2"
+robolectric = "4.16.1"
+mockk = "1.14.11"
+espresso = "3.7.0"
+mockwebserver = "5.4.0"
+# Turbine — Flow testing helpers from Cash App. Provides `flow.test { }`
+# so coroutine `Flow` / `StateFlow` / `SharedFlow` emissions can be asserted
+# in order with timeout + cancellation built in.
+turbine = "1.2.1"
+# Roborazzi — JVM-based Compose screenshot tests via Robolectric Native
+# Graphics. The `roborazzi` library captures PNGs of a Composable
+# rendered through Robolectric; the gradle plugin adds `recordRoborazziDebug`
+# / `verifyRoborazziDebug` tasks for committing + verifying baselines.
+roborazzi = "1.60.0"
+# Roborazzi's Compose preview-scanner support. Lets the plugin discover
+# `@Preview` annotations in addition to `@Test` methods.
+roborazziCompose = "1.60.0"
+# Composable preview scanner — pre-scans `@Preview` annotated composables
+# so the Roborazzi gradle plugin can register them as screenshot targets
+# without modifying source. The artifact is published by Sergio Sastre as
+# `io.github.sergio-sastre.ComposablePreviewScanner:android` (the
+# `com.github.sgrishchenko.kirill.gradle:composable-preview-scanner` plugin
+# referenced in older docs is a different project that was never published
+# to Maven Central; this is the one Roborazzi 1.60+ consumes transitively).
+composablePreviewScanner = "0.9.0"
+# Kover — Kotlin-first code coverage (successor to jacoco). Built on top
+# of the IntelliJ coverage runtime; works with KSP and Kotlin 2.4.
+kover = "0.9.8"
+
+# kotlin-result — Michael Bull's Result<V, E> monad. Replaces
+# `runCatching { }.getOrNull()` chains with typed error channels
+# and gives the shared `runCatchingUnlessCancelled` helper a
+# CancellationException-safe foundation (kotlin.runCatching
+# swallows coroutine cancellation; see :core:data ResultUtils).
+kotlinResult = "2.0.1"
+
+# Misc
+ulid = "1.6.0"
+
+# detekt-formatting bridges KtLint rules into Detekt's report so we
+# have a single report for both static analysis and formatting.
+detektFormatting = "1.23.8"
+
+# AndroidX test artifacts. Note: androidx.test.ext:junit tops out at 1.3.0
+# (separate versioning from androidx.test:runner and androidx.test:rules
+# which are at 1.7.0).
+androidxTestExtJunit = "1.3.0"
+androidxTest = "1.7.0"
+composeUiTest = "1.10.0"
+
+# AndroidX Benchmark — macrobenchmark + microbenchmark. The macro
+# library (junit4) drives the `:benchmarks` module's startup +
+# baseline-profile generation tests; it only runs against a real
+# device or emulator. 1.3.x is the line compatible with AGP 8.x and
+# the Compose BOM we're already on.
+androidxBenchmark = "1.3.4"
+# Profile Installer — runtime API for fetching + applying baseline
+# profiles delivered via the Play Store's asset bundling. Pinned to
+# 1.4.x to match the Compose BOM era; the profileinstaller jar is on
+# the release-build classpath so the AOT-pgo pathway is wired even
+# when no baseline profile is committed yet.
+profileinstaller = "1.4.1"
+
+# Android SDK coordinates — referenced by `:benchmarks` via the
+# version catalog instead of hard-coded literals. `:app` still uses
+# inline values to avoid touching the Phase 6.7 build config; once
+# every module reads these from the catalog, the inline literals can
+# go away.
+compileSdk = "36"
+minSdk = "24"
+targetSdk = "36"
+ndkVersion = "27.1.12297006"
+
+
+[libraries]
+# Core library desugaring — required by Readium 3.1.2's AAR.
+desugar-jdk-libs = { group = "com.android.tools", name = "desugar_jdk_libs", version.ref = "coreLibraryDesugaring" }
+
+# UniFFI Kotlin bindings load the native library via JNA.
+jna = { group = "net.java.dev.jna", name = "jna", version.ref = "jna" }
+
+# Sentry
+sentry-android = { group = "io.sentry", name = "sentry-android", version.ref = "sentry" }
+
+# Kotlinx coroutines
+kotlinx-coroutines-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "kotlinxCoroutines" }
+kotlinx-coroutines-android = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "kotlinxCoroutines" }
+kotlinx-coroutines-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-test", version.ref = "kotlinxCoroutines" }
+
+# Kotlinx serialization
+kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinxSerialization" }
+
+# kotlin-result — typed Result<V, E> with CancellationException-aware
+# helpers layered on top in :core:data (ResultUtils.kt). Note: the
+# Maven Central group is `com.michael-bull.kotlin-result`; the
+# `com.github.michaelbull` form is the JitPack coordinate and is
+# not published to Central. The Kotlin package remains
+# `com.github.michaelbull.result`.
+kotlin-result = { group = "com.michael-bull.kotlin-result", name = "kotlin-result", version.ref = "kotlinResult" }
+
+# ULID
+ulid-kotlin = { group = "com.aallam.ulid", name = "ulid-kotlin", version.ref = "ulid" }
+
+# Ktor client
+ktor-client-core = { group = "io.ktor", name = "ktor-client-core", version.ref = "ktor" }
+ktor-client-content-negotiation = { group = "io.ktor", name = "ktor-client-content-negotiation", version.ref = "ktor" }
+ktor-serialization-kotlinx-json = { group = "io.ktor", name = "ktor-serialization-kotlinx-json", version.ref = "ktor" }
+ktor-client-logging = { group = "io.ktor", name = "ktor-client-logging", version.ref = "ktor" }
+ktor-client-okhttp = { group = "io.ktor", name = "ktor-client-okhttp", version.ref = "ktor" }
+ktor-client-mock = { group = "io.ktor", name = "ktor-client-mock", version.ref = "ktor" }
+
+# Compose BOM
+androidx-compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "composeBom" }
+
+# Compose
+androidx-compose-ui = { group = "androidx.compose.ui", name = "ui" }
+androidx-compose-ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling" }
+androidx-compose-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-manifest" }
+androidx-compose-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit4", version.ref = "composeUiTest" }
+androidx-compose-material3 = { group = "androidx.compose.material3", name = "material3" }
+androidx-compose-material-icons-extended = { group = "androidx.compose.material", name = "material-icons-extended" }
+androidx-compose-runtime = { group = "androidx.compose.runtime", name = "runtime" }
+androidx-activity-compose = { group = "androidx.activity", name = "activity-compose" }
+
+# Lifecycle
+androidx-lifecycle-runtime-compose = { group = "androidx.lifecycle", name = "lifecycle-runtime-compose", version.ref = "lifecycle" }
+
+# CameraX
+androidx-camera-core = { group = "androidx.camera", name = "camera-core", version.ref = "camerax" }
+androidx-camera-camera2 = { group = "androidx.camera", name = "camera-camera2", version.ref = "camerax" }
+androidx-camera-lifecycle = { group = "androidx.camera", name = "camera-lifecycle", version.ref = "camerax" }
+androidx-camera-view = { group = "androidx.camera", name = "camera-view", version.ref = "camerax" }
+
+# ML Kit Barcode Scanning
+mlkit-barcode-scanning = { group = "com.google.mlkit", name = "barcode-scanning", version.ref = "mlkit" }
+
+# Navigation
+androidx-navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "navigation" }
+
+# Readium
+readium-shared = { group = "org.readium.kotlin-toolkit", name = "readium-shared", version.ref = "readium" }
+readium-streamer = { group = "org.readium.kotlin-toolkit", name = "readium-streamer", version.ref = "readium" }
+readium-navigator = { group = "org.readium.kotlin-toolkit", name = "readium-navigator", version.ref = "readium" }
+
+# Fragment
+androidx-fragment-ktx = { group = "androidx.fragment", name = "fragment-ktx", version.ref = "fragment" }
+
+# DataStore Preferences — `androidx.datastore:datastore-preferences`
+# provides the typed Preferences API (key/value with Flow observation).
+androidx-datastore-preferences = { group = "androidx.datastore", name = "datastore-preferences", version.ref = "datastore" }
+
+# Room — runtime + KSP compiler + Paging 3 integration + JVM testing
+# helpers. The compiler is KSP, not kapt. The runtime + ktx jars
+# expose `RoomDatabase`, `@Dao`, `@Entity`, and the `Flow<…>` extensions
+# that read queries can return.
+androidx-room-runtime = { group = "androidx.room", name = "room-runtime", version.ref = "room" }
+androidx-room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "room" }
+androidx-room-paging = { group = "androidx.room", name = "room-paging", version.ref = "room" }
+androidx-room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "room" }
+androidx-room-testing = { group = "androidx.room", name = "room-testing", version.ref = "room" }
+
+# Coil 3 — Compose image loading (`AsyncImage(model, …)`).
+coil-compose = { group = "io.coil-kt.coil3", name = "coil-compose", version.ref = "coil" }
+
+# WorkManager
+androidx-work-runtime-ktx = { group = "androidx.work", name = "work-runtime-ktx", version.ref = "work" }
+
+# Hilt — runtime + compiler. The compiler runs via KSP, not kapt.
+# (Hilt block preserved across the catalog.)
+
+# Logging
+timber = { group = "com.jakewharton.timber", name = "timber", version.ref = "timber" }
+
+# Memory debugging
+leakcanary-android = { group = "com.squareup.leakcanary", name = "leakcanary-android", version.ref = "leakcanary" }
+
+# HTTP debugging
+chucker-library = { group = "com.github.chuckerteam.chucker", name = "library", version.ref = "chucker" }
+
+# Date/time
+kotlinx-datetime = { group = "org.jetbrains.kotlinx", name = "kotlinx-datetime", version.ref = "kotlinxDatetime" }
+
+# Insetter (Compose insets ergonomics). Note: the group is
+# `dev.chrisbanes.insetter`, not `com.chrisbanes.insetter` —
+# the artifact was republished under the new group in 2021.
+insetter-compose = { group = "dev.chrisbanes.insetter", name = "insetter", version.ref = "insetter" }
+
+# Accompanist Permissions
+accompanist-permissions = { group = "com.google.accompanist", name = "accompanist-permissions", version.ref = "accompanist" }
+
+# Hilt — runtime + compiler. The compiler runs via KSP, not kapt.
+hilt-android = { group = "com.google.dagger", name = "hilt-android", version.ref = "hilt" }
+hilt-compiler = { group = "com.google.dagger", name = "hilt-android-compiler", version.ref = "hilt" }
+hilt-android-testing = { group = "com.google.dagger", name = "hilt-android-testing", version.ref = "hilt" }
+# AndroidX Hilt: WorkManager + Compose helpers + their compilers.
+hilt-work = { group = "androidx.hilt", name = "hilt-work", version.ref = "hiltAndroidx" }
+hilt-work-compiler = { group = "androidx.hilt", name = "hilt-compiler", version.ref = "hiltAndroidx" }
+hilt-navigation-compose = { group = "androidx.hilt", name = "hilt-navigation-compose", version.ref = "hiltAndroidx" }
+
+# Unit tests
+junit = { group = "junit", name = "junit", version.ref = "junit" }
+kotlin-test = { group = "org.jetbrains.kotlin", name = "kotlin-test", version.ref = "kotlin" }
+kotlin-test-junit = { group = "org.jetbrains.kotlin", name = "kotlin-test-junit", version.ref = "kotlin" }
+robolectric = { group = "org.robolectric", name = "robolectric", version.ref = "robolectric" }
+mockk = { group = "io.mockk", name = "mockk", version.ref = "mockk" }
+# Turbine — Flow test helpers (`flow.test { awaitItem(); awaitComplete() }`).
+turbine = { group = "app.cash.turbine", name = "turbine", version.ref = "turbine" }
+# Roborazzi — Compose screenshot tests on the JVM. Pulls in the Robolectric
+# extension that drives Canvas + Compose rendering without a device.
+roborazzi = { group = "io.github.takahirom.roborazzi", name = "roborazzi", version.ref = "roborazzi" }
+# Roborazzi's Compose helpers (captureRoboImage + Compose-rule glue).
+roborazzi-compose = { group = "io.github.takahirom.roborazzi", name = "roborazzi-compose", version.ref = "roborazziCompose" }
+# Roborazzi JUnit rule — registers the @Rule that drives the
+# capture / verify path. Without this, @GraphicsMode + captureRoboImage
+# have no test runner wiring.
+roborazzi-junit-rule = { group = "io.github.takahirom.roborazzi", name = "roborazzi-junit-rule", version.ref = "roborazzi" }
+# Roborazzi preview-scanner — discovers @Preview composables alongside @Test
+# methods so the gradle plugin can include previews in the screenshot suite.
+roborazzi-preview-scanner = { group = "io.github.takahirom.roborazzi", name = "roborazzi-compose-preview-scanner-support", version.ref = "roborazzi" }
+# Composable preview scanner — the upstream library that Roborazzi hooks
+# into for `@Preview` discovery. Published under the `sergio-sastre` org
+# on Maven Central. Only the `android` artifact is needed for AGP-based
+# projects; the JVM `common` artifact exists for non-AGP use cases.
+composable-preview-scanner = { group = "io.github.sergio-sastre.ComposablePreviewScanner", name = "android", version.ref = "composablePreviewScanner" }
+
+# Instrumented tests
+androidx-test-ext-junit = { group = "androidx.test.ext", name = "junit", version.ref = "androidxTestExtJunit" }
+androidx-test-runner = { group = "androidx.test", name = "runner", version.ref = "androidxTest" }
+androidx-test-rules = { group = "androidx.test", name = "rules", version.ref = "androidxTest" }
+androidx-test-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espresso" }
+mockwebserver = { group = "com.squareup.okhttp3", name = "mockwebserver", version.ref = "mockwebserver" }
+
+# Benchmark — macrobenchmark (drives app under test on a device) +
+# junit4 (in-process microbenchmark harness). Both used only by the
+# `:benchmarks` module; they are NOT added to `:app` because they
+# would inflate the shipping APK's compile classpath without ever
+# being referenced at runtime.
+androidx-benchmark-macro-junit4 = { group = "androidx.benchmark", name = "benchmark-macro-junit4", version.ref = "androidxBenchmark" }
+androidx-benchmark-junit4 = { group = "androidx.benchmark", name = "benchmark-junit4", version.ref = "androidxBenchmark" }
+# Profile Installer — runtime AOT profile application. Added to `:app`
+# so the Play Store can deliver baseline profiles via asset bundling
+# and have them applied on first launch.
+androidx-profileinstaller = { group = "androidx.profileinstaller", name = "profileinstaller", version.ref = "profileinstaller" }
+
+# detekt-formatting plugin (bridges KtLint rules into detekt's report).
+detekt-formatting = { group = "io.gitlab.arturbosch.detekt", name = "detekt-formatting", version.ref = "detektFormatting" }
+
+
+[bundles]
+ktor-client = [
+  "ktor-client-core",
+  "ktor-client-content-negotiation",
+  "ktor-serialization-kotlinx-json",
+  "ktor-client-logging",
+  "ktor-client-okhttp",
+  "ktor-client-mock",
+]
+readium = ["readium-shared", "readium-streamer", "readium-navigator"]
+coroutines = [
+  "kotlinx-coroutines-core",
+  "kotlinx-coroutines-android",
+  "kotlinx-coroutines-test",
+]
+camerax = [
+  "androidx-camera-core",
+  "androidx-camera-camera2",
+  "androidx-camera-lifecycle",
+  "androidx-camera-view",
+]
+lifecycle-compose = ["androidx-lifecycle-runtime-compose"]
+androidx-test = [
+  "androidx-test-ext-junit",
+  "androidx-test-runner",
+  "androidx-test-rules",
+  "androidx-test-espresso-core",
+]
+
+
+[plugins]
+android-application = { id = "com.android.application", version.ref = "agp" }
+android-library = { id = "com.android.library", version.ref = "agp" }
+kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
+kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
+# ktfmt — Facebook's deterministic Kotlin formatter. Applied via the
+# convention plugins in build-logic/; not used directly in module build
+# scripts. Pairs with ktlint (which covers rule-based linting) and
+# detekt (static analysis). See
+# docs/superpowers/specs/2026-07-11-ktfmt-android-lint-design.md.
+ktfmt = { id = "com.ncorti.ktfmt.gradle", version.ref = "ktfmt" }
+# KSP — annotation processor for Hilt (and any future KSP processors).
+ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
+# Hilt's gradle plugin — wires the compiler and aggregates modules.
+hilt = { id = "com.google.dagger.hilt.android", version.ref = "hilt" }
+detekt = { id = "io.gitlab.arturbosch.detekt", version.ref = "detekt" }
+ktlint = { id = "org.jlleitschuh.gradle.ktlint", version.ref = "ktlint" }
+rust-android = { id = "org.mozilla.rust-android-gradle.rust-android", version.ref = "rustAndroid" }
+dependency-guard = { id = "com.dropbox.dependency-guard", version.ref = "dependencyGuard" }
+sentry-android = { id = "io.sentry.android.gradle", version.ref = "sentryGradle" }
+# Kover — Kotlin-first coverage. Provides `:app:koverHtmlReport`,
+# `:app:koverVerify` etc. Warning-only at the 80% floor (see app/build.gradle.kts).
+kover = { id = "org.jetbrains.kotlinx.kover", version.ref = "kover" }
+# Roborazzi gradle plugin — wires `recordRoborazziDebug` /
+# `verifyRoborazziDebug` tasks. A single plugin id covers Android
+# and JVM use; the AGP-aware variant wiring is built in.
+roborazzi = { id = "io.github.takahirom.roborazzi", version.ref = "roborazzi" }
+# Baseline Profile gradle plugin — adds
+# `generate<Variant>BaselineProfile` tasks (drives the macrobenchmark
+# under a BaselineProfileRule and writes the resulting
+# `baseline-prof.txt` into `:app`). Applied only to the `:benchmarks`
+# module, not `:app` itself.
+androidx-baselineprofile = { id = "androidx.baselineprofile", version.ref = "androidxBenchmark" }
+# dependency-analysis — bytecode-driven audit of declared vs used
+# dependencies. Applied at the root project via
+# `livtet.dependency.analysis`; the plugin then walks every
+# subproject to compute `buildHealth` and (on demand) `fixDependencies`.
+dependency-analysis = { id = "com.autonomousapps.dependency-analysis", version.ref = "dependencyAnalysis" }
+# gradle-versions-plugin — outdated-version report. Applied at the
+# root project via `livtet.dependency.versions`; the `dependencyUpdates`
+# task reads every coordinate declared in this catalog and produces
+# `build/dependencyUpdates/report.{txt,json}`.
+versions = { id = "com.github.ben-manes.versions", version.ref = "versionsplugin" }

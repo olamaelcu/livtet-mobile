@@ -1,0 +1,351 @@
+# detekt — shared static-analysis baseline.
+#
+# Loaded by `AndroidApplicationLintConventionPlugin` and
+# `AndroidLibraryLintConventionPlugin` via
+# `DetektExtension.config.setFrom(...)` with
+# `buildUponDefaultConfig = true`, so this file is *additive* on top of
+# detekt's defaults — every rule we don't mention here keeps its
+# default severity.
+#
+# Conventions:
+#  - Rules prefixed with `detekt-` come from detekt itself.
+#  - Rules under `style>` come from `detekt-formatting` (a separate
+#    artifact that bridges ktlint's formatting rules into detekt's
+#    report so a single `./gradlew detekt` run covers both static
+#    analysis and formatting drift).
+#  - Severities follow detekt's enum: `error` (fails the build),
+#    `warning` (prints but doesn't fail), `info`.
+#
+# Tighten or relax rules here as the codebase stabilises. The first
+# commit of this file intentionally stays close to defaults — the goal
+# is to get a green pipeline, not to chase zero-warnings from day one.
+
+build:
+  # Don't fail the build on warnings; only errors block. CI can flip
+  # this via `-Pdetekt.failOnWarning=true` when we want strict mode.
+  maxIssues: 10
+  excludeCorrectable: false
+
+config:
+  validation: true
+  warningsAsErrors: false
+
+processors:
+  active: true
+
+console-reports:
+  active: true
+
+output-reports:
+  active: true
+
+comments:
+  active: true
+  AbsentOrWrongFileLicense:
+    active: false
+  CommentOverPrivateFunction:
+    active: false
+  CommentOverPrivateProperty:
+    active: false
+  DeprecatedBlockTag:
+    active: false
+  EndOfSentenceFormat:
+    active: false
+  KDocReferencesNonPublicProperty:
+    active: false
+  OutdatedDocumentation:
+    active: false
+
+complexity:
+  active: true
+  ComplexCondition:
+    threshold: 6
+  CyclomaticComplexMethod:
+    threshold: 20
+  LargeClass:
+    threshold: 600
+  LongMethod:
+    threshold: 80
+  LongParameterList:
+    functionThreshold: 8
+    constructorThreshold: 8
+  MethodOverloading:
+    max: 8
+  NestedBlockDepth:
+    threshold: 5
+  TooManyFunctions:
+    threshold: 15
+
+empty-blocks:
+  active: true
+  EmptyCatchBlock:
+    allowedExceptionNameRegex: '_|(ignore|expected).*'
+
+exceptions:
+  active: true
+  ExceptionRaisedInUnexpectedLocation:
+    methodNames:
+      - 'equals'
+      - 'finalize'
+      - 'hashCode'
+      - 'toString'
+  InstanceOfCheckForException:
+    active: false
+  NotImplementedDeclaration:
+    active: false
+  PrintStackTrace:
+    active: false
+  SwallowedException:
+    ignoredExceptionTypes:
+      - InterruptedException
+      - NumberFormatException
+      - ParseException
+      - MalformedURLException
+  ThrowingExceptionFromFinally:
+    active: false
+  ThrowingExceptionInMain:
+    active: false
+  ThrowingExceptionsWithoutMessageOrCause:
+    active: false
+
+naming:
+  active: true
+  ClassNaming:
+    excludes: ['**/build/**', '**/generated/**']
+  ConstructorParameterNaming:
+    active: false
+  EnumNaming:
+    active: false
+  FunctionMaxLength:
+    maximumFunctionNameLength: 40
+  FunctionMinLength:
+    active: false
+  FunctionParameterNaming:
+    active: false
+  InvalidPackageDeclaration:
+    active: false
+  MatchingDeclarationName:
+    active: false
+  MemberNameEqualsClassName:
+    active: false
+  NoNameShadowing:
+    active: false
+  NonBooleanPropertyPrefixedWithIs:
+    active: false
+  ObjectPropertyNaming:
+    active: false
+  PackageNaming:
+    active: false
+  TopLevelPropertyNaming:
+    active: false
+  VariableMaxLength:
+    active: false
+
+performance:
+  active: true
+  ArrayPrimitive:
+    active: false
+  ForEachOnRange:
+    active: false
+  SpreadOperator:
+    active: false
+
+potential-bugs:
+  active: true
+  AvoidReferentialEquality:
+    active: false
+  CastToNullableType:
+    active: false
+  Deprecation:
+    active: false
+  DontDowncastCollectionTypes:
+    active: false
+  DoubleMutabilityForCollection:
+    active: false
+  ElseCaseInsteadOfExhaustiveWhen:
+    active: false
+  EqualsAlwaysReturnsTrueOrFalse:
+    active: false
+  EqualsWithHashCodeExist:
+    active: false
+  ExitOutsideMain:
+    active: false
+  ExplicitGarbageCollectionCall:
+    active: false
+  HasPlatformType:
+    active: false
+  IgnoredReturnValue:
+    active: false
+  ImplicitDefaultLocale:
+    active: false
+  ImplicitUnitReturnType:
+    active: false
+  InvalidRange:
+    active: false
+  IteratorHasNextCallsNextMethod:
+    active: false
+  IteratorNotThrowingNoSuchElementException:
+    active: false
+  LateinitUsage:
+    excludes: ['**/test/**', '**/androidTest/**']
+  MapGetWithNotNullAssertionOperator:
+    active: false
+  MissingPackageDeclaration:
+    active: false
+  NullCheckOnMutableProperty:
+    active: false
+  NullableToStringCall:
+    active: false
+  UnconditionalJumpStatementInLoop:
+    active: false
+  UnnecessaryNotNullCheck:
+    active: false
+  UnnecessaryNotNullOperator:
+    active: false
+  UnnecessarySafeCall:
+    active: false
+  UnreachableCatchBlock:
+    active: false
+  UnreachableCode:
+    active: false
+  UnsafeCallOnNullableType:
+    active: false
+  UnsafeCast:
+    active: false
+  UnusedUnaryOperator:
+    active: false
+  UselessPostfixExpression:
+    active: false
+  WrongEqualsTypeParameter:
+    active: false
+
+style:
+  active: true
+  ClassOrdering:
+    active: false
+  CollapsibleIfStatements:
+    active: false
+  DataClassContainsFunctions:
+    active: false
+  DataClassShouldBeImmutable:
+    active: false
+  DestructuringDeclarationWithTooManyEntries:
+    maxDestructuringEntries: 4
+  EqualsNullCall:
+    active: false
+  EqualsOnSignatureLine:
+    active: false
+  ExplicitCollectionElementAccessMethod:
+    active: false
+  ExplicitItLambdaParameter:
+    active: false
+  ExpressionBodySyntax:
+    active: false
+  ForbiddenComment:
+    comments:
+      - reason: 'Forbidden TODO comment, use a tracking issue instead.'
+        value: 'TODO:'
+      - reason: 'Forbidden FIXME comment.'
+        value: 'FIXME:'
+  ForbiddenImport:
+    active: false
+  ForbiddenMethodCall:
+    active: false
+  ForbiddenVoid:
+    active: false
+  FunctionOnlyReturningConstant:
+    active: false
+  LoopWithTooManyJumpStatements:
+    maxJumpCount: 3
+  MagicNumber:
+    active: false
+  MandatoryBracesLoops:
+    active: false
+  MaxLineLength:
+    active: false   # enforced by ktfmt / ktlint, not duplicated here
+  ModifierOrder:
+    active: true
+  NewLineAtEndOfFile:
+    active: true
+  NoTabs:
+    active: false
+  OptionalAbstractKeyword:
+    active: false
+  OptionalUnit:
+    active: false
+  OptionalWhenBraces:
+    active: false
+  PreferToOverPairSyntax:
+    active: false
+  ProtectedMemberInFinalClass:
+    active: false
+  RedundantExplicitType:
+    active: false
+  RedundantHigherOrderMapUsage:
+    active: false
+  RedundantVisibilityModifierRule:
+    active: false
+  ReturnCount:
+    active: false
+  SafeCast:
+    active: false
+  SerialVersionUIDInSerializableClass:
+    active: false
+  SpacingBetweenPackageAndImports:
+    active: false
+  ThrowsCount:
+    max: 2
+  TrailingWhitespace:
+    active: false   # enforced by ktfmt / ktlint
+  UnderscoresInNumericLiterals:
+    active: false
+  UnnecessaryAbstractClass:
+    active: false
+  UnnecessaryAnnotationUseSiteTarget:
+    active: false
+  UnnecessaryApply:
+    active: false
+  UnnecessaryFilter:
+    active: false
+  UnnecessaryInheritance:
+    active: false
+  UnnecessaryLet:
+    active: false
+  UnnecessaryParentheses:
+    active: false
+  UntilInsteadOfRangeTo:
+    active: false
+  UnusedImports:
+    active: false   # enforced by ktfmt
+  UnusedPrivateClass:
+    active: false
+  UnusedPrivateMember:
+    active: false
+  UseArrayLiteralsInAnnotations:
+    active: false
+  UseCheckNotNull:
+    active: false
+  UseDataClass:
+    active: false
+  UseEmptyCounterpart:
+    active: false
+  UseIfEmptyOrIfBlank:
+    active: false
+  UseIfInsteadOfWhen:
+    active: false
+  UseIsNullOrEmpty:
+    active: false
+  UseOrEmpty:
+    active: false
+  UseRequire:
+    active: false
+  UseRequireNotNull:
+    active: false
+  UselessCallOnNotNull:
+    active: false
+  UtilityClassWithPublicConstructor:
+    active: false
+  VarCouldBeVal:
+    active: false
+  WildcardImport:
+    active: false

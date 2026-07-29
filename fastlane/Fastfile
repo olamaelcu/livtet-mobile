@@ -1,0 +1,69 @@
+# vim: set ft=ruby:
+# Fastfile — Android deployment automation for Livtet.
+#
+# Lanes:
+#   - playstore_internal   Build playstoreRelease + upload to
+#                          Play Console internal testing track.
+#   - playstore_beta       Upload to beta track.
+#   - playstore_production Upload to production track.
+#   - fdroid_metadata      Validate fastlane/metadata/en-US/ and
+#                          tar up for the F-Droid metadata repo.
+#
+# Required env vars:
+#   GOOGLE_PLAY_JSON_KEY_PATH — path to the Play Console service
+#                                account JSON key file.
+
+default_platform(:android)
+
+platform :android do
+  before_all do
+    # Ensure the Android SDK env vars are set (mise does this).
+    sh "mise trust" if File.exist?("mise.toml")
+    ENV["ANDROID_HOME"] ||= `mise ls android-sdk --json | jq -r '.[0].install_path'`.strip
+  end
+
+  desc "Build + upload to Play Console internal testing track"
+  lane :playstore_internal do
+    gradle(
+      task: "bundle",
+      build_type: "Release",
+      flavor: "Playstore",
+      project_dir: "mobile/android",
+    )
+    upload_to_play_store(
+      track: "internal",
+      release_status: "draft",
+      aab: "mobile/android/app/build/outputs/bundle/playstoreRelease/app-playstore-release.aab",
+      json_key: ENV["GOOGLE_PLAY_JSON_KEY_PATH"],
+    )
+  end
+
+  desc "Upload to Play Console beta track (assumes playstore_internal already ran)"
+  lane :playstore_beta do
+    upload_to_play_store(
+      track: "internal",
+      track_promote_to: "beta",
+      json_key: ENV["GOOGLE_PLAY_JSON_KEY_PATH"],
+    )
+  end
+
+  desc "Upload to Play Console production (assumes playstore_beta already ran)"
+  lane :playstore_production do
+    upload_to_play_store(
+      track: "beta",
+      track_promote_to: "production",
+      rollout: "0.1",
+      json_key: ENV["GOOGLE_PLAY_JSON_KEY_PATH"],
+    )
+  end
+
+  desc "Validate F-Droid metadata and tar up for the metadata repo"
+  lane :fdroid_metadata do
+    metadata_dir = "fastlane/metadata/en-US"
+    sh "test -d #{metadata_dir} || (echo 'F-Droid metadata directory missing' && exit 1)"
+    sh "tar czf /tmp/livtet-fdroid-metadata.tgz #{metadata_dir}"
+    UI.success("Metadata tarball: /tmp/livtet-fdroid-metadata.tgz")
+  end
+end
+
+# TODO: Add iOS platform

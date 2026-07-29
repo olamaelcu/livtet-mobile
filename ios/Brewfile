@@ -1,0 +1,16 @@
+# Brewfile for the iOS / macOS development environment.
+#
+# Installed by `mise run ios-dev-init` via `brew bundle install`. Tracks the
+# macOS-only tools that the iOS build pipeline (Tauri desktop, Xcode, Rust
+# FFI cross-compile, Swift, plugins) calls out to and that mise itself cannot
+# provide across both arm64 and x86_64 hosts:
+#
+# * minisign — x86_64 / arm64-universal binary. The Rust crate on crates.io
+#   is library-only, and the GitHub release tarballs ship arm64-only Mach-O
+#   binaries that fail with "Bad CPU type in executable" on x86_64 macOS
+#   (e.g. the MacBookPro15,2 used as the CI Intel runner). Homebrew's bottles
+#   are universal. Required at build time by
+#   crates/livtet-lua-plugins/build.rs (signature verification) and at
+#   rotation time by .mise/tasks/plugin-key-rotate.
+
+brew "minisign"

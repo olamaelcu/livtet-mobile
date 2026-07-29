@@ -1,0 +1,12 @@
+coverage_service: cobertura_xml
+xcodeproj: Livtet.xcodeproj
+workspace: Livtet.xcworkspace
+scheme: Livtet
+source_directory: Livtet
+output_directory: coverage-report
+ignore:
+  - Pods/*
+  - LivtetKit.xcframework/**
+  - "**/*.xcframework/**"
+  - "**/Generated/**"
+build_directory: .derivedData

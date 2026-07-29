@@ -1,0 +1,23 @@
+excluded:
+  - Pods
+  - Generated
+  - .derivedData
+  - "*.xcframework"
+  - "**/*.xcframework"
+
+line_length: 120
+type_body_length: 300
+
+opt_in_rules:
+  - array_init
+  - closure_end_indentation
+  - conditional_returns
+  - empty_count
+  - explicit_init
+  - first_where
+  - flatmap_over_map_reduce
+  - sorted_imports
+  - toggle_bool
+
+disabled_rules:
+  - todo

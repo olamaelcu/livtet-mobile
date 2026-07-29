@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Livtet</string>
+    <!-- Provider error callouts (StepSearch.kt) -->
+    <string name="provider_error_needs_auth">Search needs authentication. Add an API key in Settings to use Google Books.</string>
+    <string name="provider_error_rate_limited_with_retry">Rate limited — try again in %1$d seconds, or add an API key in Settings.</string>
+    <string name="provider_error_rate_limited_generic">Rate limited — try again shortly, or add an API key in Settings.</string>
+    <string name="provider_error_timeout">Search timed out. Try again.</string>
+    <string name="provider_error_not_found">No results found.</string>
+    <string name="provider_error_provider_down">Search is having problems. Try again later.</string>
+    <string name="provider_error_dismiss">Dismiss</string>
+    <!-- Duplicate work dialog -->
+    <string name="duplicate_dialog_title">Already in your library</string>
+    <string name="duplicate_dialog_message_work">\"%1$s\" is already saved with %2$d edition(s) and %3$d identifier(s).</string>
+    <string name="duplicate_dialog_action_replace">Replace (merge)</string>
+    <string name="duplicate_dialog_action_new_edition">Add as new edition</string>
+    <string name="duplicate_dialog_action_link_isbn">Link ISBN to existing</string>
+    <string name="duplicate_dialog_action_cancel">Cancel</string>
+    <!-- Edition picker sub-dialog -->
+    <string name="edition_picker_title">Choose an edition</string>
+    <string name="edition_picker_no_editions">No editions found.</string>
+    <string name="edition_edition_label">Edition</string>
+    <string name="edition_no_isbn">No ISBN</string>
+    <!-- Save recovery (catch-secondary) -->
+    <string name="save_rolled_back_title">Save failed</string>
+    <string name="save_rolled_back_message">The book could not be saved: %1$s</string>
+    <!-- Duplicate management (DuplicateManagementScreen.kt) -->
+    <string name="duplicates_screen_title">Manage Duplicates</string>
+    <string name="duplicates_tab_works">Works</string>
+    <string name="duplicates_tab_editions_in_work">Editions (in work)</string>
+    <string name="duplicates_tab_cross_work_editions">Cross-Work Editions</string>
+    <string name="duplicates_action_rescan">Rescan</string>
+    <string name="duplicates_action_back">Back</string>
+    <string name="duplicates_empty_works">No duplicate works found.</string>
+    <string name="duplicates_empty_editions_in_work">No duplicate editions found within a single work.</string>
+    <string name="duplicates_empty_cross_work">No cross-work edition duplicates found.</string>
+    <string name="duplicates_row_primary">Primary: %1$s</string>
+    <string name="duplicates_row_duplicate">Duplicate: %1$s</string>
+    <string name="duplicates_row_match">%1$s · %2$d%% confidence</string>
+    <string name="duplicates_row_editions_in_work">Editions in same work</string>
+    <string name="duplicates_row_cross_work">Cross-work edition duplicate</string>
+    <string name="duplicates_move_button">Move edition to primary work</string>
+    <string name="duplicates_match_isbn">Exact ISBN</string>
+    <string name="duplicates_match_title_author">Title + author (≥ %1$d%%)</string>
+    <string name="duplicates_match_multi_identifier">Multi-identifier (≥ %1$d)</string>
+    <string name="duplicates_match_publisher_title_year">Publisher + title + year</string>
+    <string name="duplicates_match_composite">Composite rule</string>
+    <string name="duplicates_shared_isbns">Shared ISBNs: %1$s</string>
+    <string name="duplicates_shared_identifiers">Shared identifiers: %1$s</string>
+    <string name="duplicates_merge_works_title">Merge works</string>
+    <string name="duplicates_merge_editions_title">Merge editions</string>
+    <string name="duplicates_move_edition_title">Move edition</string>
+    <string name="duplicates_move_edition_explainer">This will move the duplicate edition under the primary work, combining both records into one.</string>
+    <string name="duplicates_primary_label">Primary: \"%1$s\"</string>
+    <string name="duplicates_duplicate_label">Duplicate: \"%1$s\"</string>
+    <string name="duplicates_action_keep_primary_all">Keep primary (all)</string>
+    <string name="duplicates_action_keep_both_all">Keep both (all)</string>
+    <string name="duplicates_field_description">Description</string>
+    <string name="duplicates_field_tags">Tags</string>
+    <string name="duplicates_field_genres">Genres</string>
+    <string name="duplicates_field_subjects">Subjects</string>
+    <string name="duplicates_field_publishers">Publishers</string>
+    <string name="duplicates_field_series_type">Series type</string>
+    <string name="duplicates_field_language">Language</string>
+    <string name="duplicates_field_sort_title">Sort title</string>
+    <string name="duplicates_field_title">Title</string>
+    <string name="duplicates_field_published_date">Published date</string>
+    <string name="duplicates_field_format">Format</string>
+    <string name="duplicates_field_notes">Notes</string>
+    <string name="duplicates_resolve_primary">Primary</string>
+    <string name="duplicates_resolve_duplicate">Duplicate</string>
+    <string name="duplicates_resolve_both">Both</string>
+    <string name="duplicates_action_merge">Merge</string>
+    <string name="duplicates_action_move_edition">Move edition</string>
+    <string name="duplicates_action_cancel">Cancel</string>
+    <string name="duplicates_merge_result">Merged: %1$s</string>
+    <string name="duplicates_merge_result_empty">Merge complete</string>
+    <string name="duplicates_merge_part_editions">%1$d editions</string>
+    <string name="duplicates_merge_part_identifiers">%1$d identifiers</string>
+    <string name="duplicates_merge_part_inventory">%1$d inventory</string>
+    <string name="duplicates_merge_part_progress">%1$d progress</string>
+    <string name="duplicates_merge_part_work_deleted">work deleted</string>
+    <string name="duplicates_merge_part_edition_deleted">edition deleted</string>
+    <string name="duplicates_move_result">Moved edition to primary work</string>
+    <string name="duplicates_open">Manage duplicates</string>
+    <!-- Labs feature flags (settings/SettingsScreen.kt, settings/Labs.kt) -->
+    <string name="labs_section_title">Labs</string>
+    <string name="labs_section_description">Experimental features. Off by default; some may be locked by your build.</string>
+    <string name="labs_reset_to_defaults">Reset to defaults</string>
+    <string name="labs_locked_by_build">Locked by this build</string>
+    <string name="labs_flag_show_experimental_duplicates_badge_title">Experimental duplicates badge</string>
+    <string name="labs_flag_show_experimental_duplicates_badge_description">Adds a non-final UI badge to surfaces that may show duplicate works while detection is being tuned.</string>
+    <string name="labs_flag_instant_local_file_import_title">Instant local-file import</string>
+    <string name="labs_flag_instant_local_file_import_description">Skip the dedup confirmation step when adding a book from a local file. Off by default; the confirmation stays until the flow is hardened.</string>
+</resources>

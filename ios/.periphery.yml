@@ -1,0 +1,47 @@
+# Periphery configuration for the iOS Livtet Xcode project.
+#
+# Periphery detects unused public symbols, parameters, enum cases, imports,
+# and redundant `public` accessibility inside an Xcode project / workspace.
+#
+# Livtet is shipped as a single iOS application + a single LivtetUnitTests
+# bundle. There is no separate unit-test scheme; the `Livtet` scheme builds
+# and tests both targets in one pass. The setting below runs Periphery
+# against this combined graph.
+#
+# Reference: https://github.com/peripheryapp/periphery/blob/master/docs/usage.md
+#
+# Generate the baseline with:
+#   cd mobile/ios \
+#     && periphery scan \
+#        --project Livtet.xcodeproj \
+#        --schemes Livtet \
+#        --retain-objc-accessible \
+#        --retain-objc-annotated \
+#        --include-test-targets \
+#        --format json \
+#        > ios-app-periphery.json
+
+# Strict on retain-objc: the Livtet iOS app uses @objc in several places
+# (notably SwiftUI / UIKit bridges via @objc dynamic, plus KeychainAccess
+# interop). Periphery needs to know to keep those declarations reachable.
+retain_objc_accessible: true
+retain_objc_annotated: true
+
+# The app's public surface is internal-only (no third-party SwiftPM
+# consumer publishes against Livtet), but `--retain-public` is still
+# safer — it avoids reporting internal `public` decls as unused when
+# they are referenced via Objective-C runtime selectors.
+retain_public: true
+
+# Run against the unit-test target too. Periphery's test-target scanning
+# pulls in the test sources so any helper class referenced only by tests
+# is correctly classified as "used".
+include_test_targets: true
+
+# Project paths (XcodeGen-scaffolded; do not check the .xcodeproj in
+# by hand if it's missing — re-run `mise run ios-bootstrap` instead).
+project: Livtet.xcodeproj
+workspace: Livtet.xcworkspace
+scheme: Livtet
+
+output_format: json

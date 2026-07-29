@@ -1,0 +1,65 @@
+<?xml version='1.0' encoding='utf-8'?>
+<plist version="1.0">
+	<dict>
+		<key>CFBundleDisplayName</key>
+		<string>Livtet</string>
+		<key>CFBundleExecutable</key>
+		<string>$(EXECUTABLE_NAME)</string>
+		<key>CFBundleIdentifier</key>
+		<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+		<key>CFBundleName</key>
+		<string>$(PRODUCT_NAME)</string>
+		<key>CFBundlePackageType</key>
+		<string>APPL</string>
+		<key>CFBundleShortVersionString</key>
+		<string>0.1.1</string>
+		<key>CFBundleVersion</key>
+		<string>2</string>
+		<key>GoogleBooksApiKey</key>
+		<string>$(GOOGLE_BOOKS_IOS_API_KEY)</string>
+		<key>LSRequiresIPhoneOS</key>
+		<true />
+		<key>UILaunchScreen</key>
+		<dict>
+			<key>UIImageName</key>
+			<string>Logo</string>
+		</dict>
+		<key>UISupportedInterfaceOrientations</key>
+		<array>
+			<string>UIInterfaceOrientationPortrait</string>
+			<string>UIInterfaceOrientationPortraitUpsideDown</string>
+			<string>UIInterfaceOrientationLandscapeLeft</string>
+			<string>UIInterfaceOrientationLandscapeRight</string>
+		</array>
+		<key>UISupportedInterfaceOrientations~ipad</key>
+		<array>
+			<string>UIInterfaceOrientationPortrait</string>
+			<string>UIInterfaceOrientationPortraitUpsideDown</string>
+			<string>UIInterfaceOrientationLandscapeLeft</string>
+			<string>UIInterfaceOrientationLandscapeRight</string>
+		</array>
+		<key>NSUserTrackingUsageDescription</key>
+		<string>Livtet does not track you across apps. This setting is unused.</string>
+		<key>NSCameraUsageDescription</key>
+		<string>Livtet scans QR codes to pair with your desktop server. The camera is only used when scanning a code.</string>
+		<key>NSLocalNetworkUsageDescription</key>
+		<string>Livtet discovers your desktop Livtet server on the local network for sync.</string>
+		<key>NSBonjourServices</key>
+		<array>
+			<string>_livtet-sync._tcp</string>
+		</array>
+		<key>NSAppTransportSecurity</key>
+		<dict>
+			<key>NSAllowsLocalNetworking</key>
+			<true />
+		</dict>
+	<key>UIAppFonts</key>
+	<array>
+		<string>work_sans.ttf</string>
+		<string>geist.ttf</string>
+		<string>jetbrains_mono.ttf</string>
+	</array>
+		<key>UIDesignRequiresCompatibility</key>
+		<true />
+	</dict>
+</plist>

@@ -1,0 +1,4742 @@
+[
+  {
+    "code": "1stsfgroup",
+    "name": "1SFG (A)"
+  },
+  {
+    "code": "abashiri-library",
+    "name": "Abashiri City Library"
+  },
+  {
+    "code": "aberdeenshirelibraries",
+    "name": "Aberdeenshire Library and Information Service"
+  },
+  {
+    "code": "abilenetx",
+    "name": "Abilene Public Library"
+  },
+  {
+    "code": "coloradodc",
+    "name": "Across Colorado Digital Consortium"
+  },
+  {
+    "code": "ageo-city-library",
+    "name": "Ageo City Library"
+  },
+  {
+    "code": "ajax",
+    "name": "Ajax Public Library"
+  },
+  {
+    "code": "akkeshi-town",
+    "name": "Akkeshi Information Library"
+  },
+  {
+    "code": "akronlibrary",
+    "name": "Akron-Summit County Public Library"
+  },
+  {
+    "code": "aclib",
+    "name": "Alachua County Library District"
+  },
+  {
+    "code": "alamancelibraries",
+    "name": "Alamance County Public Libraries"
+  },
+  {
+    "code": "aclibrary",
+    "name": "Alameda County Library"
+  },
+  {
+    "code": "adl",
+    "name": "Alaska Digital Library"
+  },
+  {
+    "code": "cabq",
+    "name": "Albuquerque Bernalillo County Library System"
+  },
+  {
+    "code": "alexandria",
+    "name": "Alexandria Library"
+  },
+  {
+    "code": "alhambralibrary",
+    "name": "Alhambra Civic Center Library"
+  },
+  {
+    "code": "alingsas",
+    "name": "Alingsås Library"
+  },
+  {
+    "code": "acpl",
+    "name": "Allen County Public Library"
+  },
+  {
+    "code": "alliance",
+    "name": "Alliance Digital Media Library"
+  },
+  {
+    "code": "anan",
+    "name": "Anan City Library"
+  },
+  {
+    "code": "andersonlibrary",
+    "name": "Anderson County Library"
+  },
+  {
+    "code": "aneurinuk",
+    "name": "Aneurin Leisure Trust"
+  },
+  {
+    "code": "angusalive",
+    "name": "Angus Alive"
+  },
+  {
+    "code": "apl",
+    "name": "Anseong-si Public Library"
+  },
+  {
+    "code": "acld",
+    "name": "Apache County Library District"
+  },
+  {
+    "code": "arl",
+    "name": "Appalachian Regional Library"
+  },
+  {
+    "code": "arapahoe",
+    "name": "Arapahoe Library District"
+  },
+  {
+    "code": "ak",
+    "name": "Arbeiterkammer"
+  },
+  {
+    "code": "azlibrary",
+    "name": "Arizona State Library, Archives And Public Records"
+  },
+  {
+    "code": "adlc",
+    "name": "Arkansas Digital Library Consortium"
+  },
+  {
+    "code": "lib2go",
+    "name": "ArkansasLibrary2Go"
+  },
+  {
+    "code": "ahmlil",
+    "name": "Arlington Heights Memorial Library"
+  },
+  {
+    "code": "arlington",
+    "name": "Arlington Public Library"
+  },
+  {
+    "code": "arlingtontx",
+    "name": "Arlington Public Library"
+  },
+  {
+    "code": "arrowhead",
+    "name": "Arrowhead Library System"
+  },
+  {
+    "code": "myapl",
+    "name": "Ascension Parish Library"
+  },
+  {
+    "code": "aubora",
+    "name": "Aubora OverDrive"
+  },
+  {
+    "code": "auckland",
+    "name": "Auckland Libraries"
+  },
+  {
+    "code": "aurauk",
+    "name": "Aura Leisure and Libraries - Flintshire"
+  },
+  {
+    "code": "aurora",
+    "name": "Aurora Public Library"
+  },
+  {
+    "code": "aurorapubliclibrary",
+    "name": "Aurora Public Library District"
+  },
+  {
+    "code": "austinlibrary",
+    "name": "Austin Public Library"
+  },
+  {
+    "code": "avalonfreelibrary",
+    "name": "Avalon Free Public Library"
+  },
+  {
+    "code": "avondalelibrary",
+    "name": "Avondale Public Library"
+  },
+  {
+    "code": "awenculturaluk",
+    "name": "Awen Cultural Trust"
+  },
+  {
+    "code": "ayabe-library",
+    "name": "Ayabe City Library"
+  },
+  {
+    "code": "ayase",
+    "name": "Ayase Municipal Library"
+  },
+  {
+    "code": "baileylibrary",
+    "name": "Bailey Public Library"
+  },
+  {
+    "code": "bcplinfo",
+    "name": "Baltimore County Public Library"
+  },
+  {
+    "code": "bangorpl",
+    "name": "Bangor Public Library"
+  },
+  {
+    "code": "barnsley",
+    "name": "Barnsley Libraries"
+  },
+  {
+    "code": "barrielibrary",
+    "name": "Barrie Public Library"
+  },
+  {
+    "code": "balibrary",
+    "name": "Barrington Area Library"
+  },
+  {
+    "code": "barringtonri",
+    "name": "Barrington Public Library"
+  },
+  {
+    "code": "virtualbpld",
+    "name": "Bartlett Public Library"
+  },
+  {
+    "code": "bartowlibrary",
+    "name": "Bartow County Library System"
+  },
+  {
+    "code": "bathnesuk",
+    "name": "Bath & North East Somerset Libraries"
+  },
+  {
+    "code": "baycountylibrary",
+    "name": "Bay County Library System"
+  },
+  {
+    "code": "badico",
+    "name": "Bayern Digital Consortium"
+  },
+  {
+    "code": "bayouland",
+    "name": "Bayouland E-Library Co-Op"
+  },
+  {
+    "code": "baysidensw",
+    "name": "Bayside Library NSW"
+  },
+  {
+    "code": "baysidelibrary",
+    "name": "Bayside Library Service"
+  },
+  {
+    "code": "bld",
+    "name": "Beaumont Library District"
+  },
+  {
+    "code": "bpls",
+    "name": "Beaumont Public Library System"
+  },
+  {
+    "code": "beaverco",
+    "name": "Beaver County Library System"
+  },
+  {
+    "code": "bedfordshireuk",
+    "name": "Bedford Borough and Central Bedfordshire"
+  },
+  {
+    "code": "beehive",
+    "name": "Beehive Library Consortium"
+  },
+  {
+    "code": "tztsg",
+    "name": "Beijing Tongzhou District Library (北京市通州区图书馆)"
+  },
+  {
+    "code": "xs",
+    "name": "Beijing Xicheng Children's Library (北京市西城区青少年儿童图书馆)"
+  },
+  {
+    "code": "ebccls",
+    "name": "Bergen County Cooperative Library System"
+  },
+  {
+    "code": "berkeleypubliclibrary",
+    "name": "Berkeley Public Library"
+  },
+  {
+    "code": "voebb",
+    "name": "Berlin, Verbund Öffentlicher Bibliotheken (VÖBB)"
+  },
+  {
+    "code": "bnl",
+    "name": "Bermuda National Library"
+  },
+  {
+    "code": "glllibraries",
+    "name": "Better Libraries Digital Consortium"
+  },
+  {
+    "code": "bhpl",
+    "name": "Beverly Hills Public Library"
+  },
+  {
+    "code": "bibliomation",
+    "name": "Bibliomation, Inc."
+  },
+  {
+    "code": "banrepcultural",
+    "name": "Biblioteca Luis Ángel Arango"
+  },
+  {
+    "code": "colecciondigital",
+    "name": "Biblioteca Pública Piloto de Medellín para América Latina"
+  },
+  {
+    "code": "mellansjo",
+    "name": "Bibliotek Mellansjö"
+  },
+  {
+    "code": "vastraskaraborg",
+    "name": "Bibliotek Västra Skaraborg"
+  },
+  {
+    "code": "gotlib",
+    "name": "Biblioteken i Göteborg"
+  },
+  {
+    "code": "harryda",
+    "name": "Biblioteken i Härryda kommun"
+  },
+  {
+    "code": "bibliobrossard",
+    "name": "Bibliotheque de Brossard"
+  },
+  {
+    "code": "bibliomontmagny",
+    "name": "Bibliotheque de Montmagny"
+  },
+  {
+    "code": "v3r",
+    "name": "Bibliotheques de Trois-Rivieres"
+  },
+  {
+    "code": "vaudreuildorion",
+    "name": "Bibliothèque de Vaudreuil-Dorion"
+  },
+  {
+    "code": "banq",
+    "name": "Bibliothèque et Archives nationales du Québec"
+  },
+  {
+    "code": "bibliomontreal",
+    "name": "Bibliothèques Montréal"
+  },
+  {
+    "code": "elnb-bnnb",
+    "name": "Bibliothèques publiques du N.-B. / New Brunswick Public Libraries"
+  },
+  {
+    "code": "bigcountry",
+    "name": "Big Country Library System"
+  },
+  {
+    "code": "birmingham-uk",
+    "name": "Birmingham Libraries"
+  },
+  {
+    "code": "blackgold",
+    "name": "Black Gold Cooperative Library System"
+  },
+  {
+    "code": "blackhills",
+    "name": "Black Hills Library Digital Consortium"
+  },
+  {
+    "code": "blackburnuk",
+    "name": "Blackburn with Darwen Library & Information Services"
+  },
+  {
+    "code": "blackfoot",
+    "name": "Blackfoot Public Library"
+  },
+  {
+    "code": "blackpool",
+    "name": "Blackpool Libraries"
+  },
+  {
+    "code": "blacktown",
+    "name": "Blacktown City Libraries"
+  },
+  {
+    "code": "bluehill",
+    "name": "Blue Hill Public Library"
+  },
+  {
+    "code": "bmccnsw",
+    "name": "Blue Mountains City Library Services"
+  },
+  {
+    "code": "brdc",
+    "name": "Blue Ridge Download Consortium"
+  },
+  {
+    "code": "brrl",
+    "name": "Blue Ridge Regional Library"
+  },
+  {
+    "code": "bocalibrary",
+    "name": "Boca Raton Public Library"
+  },
+  {
+    "code": "boise",
+    "name": "Boise Public Library"
+  },
+  {
+    "code": "boltonuk",
+    "name": "Bolton Libraries"
+  },
+  {
+    "code": "crsbpl",
+    "name": "Books (Réseau BIBLIO)"
+  },
+  {
+    "code": "boroondara",
+    "name": "Boroondara Library Service"
+  },
+  {
+    "code": "bpl",
+    "name": "Boston Public Library"
+  },
+  {
+    "code": "bcpcounciluk",
+    "name": "Bournemouth, Christchurch and Poole Council (BCP)"
+  },
+  {
+    "code": "brantford",
+    "name": "Brantford Public Library"
+  },
+  {
+    "code": "brevard",
+    "name": "Brevard County Library"
+  },
+  {
+    "code": "bportlibrary",
+    "name": "Bridgeport Public Library"
+  },
+  {
+    "code": "bridges",
+    "name": "Bridges"
+  },
+  {
+    "code": "brightonhovegb",
+    "name": "Brighton & Hove City Libraries"
+  },
+  {
+    "code": "brimbanklibraries",
+    "name": "Brimbank Libraries"
+  },
+  {
+    "code": "brisbane",
+    "name": "Brisbane City Council Library Services"
+  },
+  {
+    "code": "bristollibraries",
+    "name": "Bristol Libraries"
+  },
+  {
+    "code": "bcpl",
+    "name": "British Columbia Libraries"
+  },
+  {
+    "code": "brooklyn",
+    "name": "Brooklyn Public Library"
+  },
+  {
+    "code": "broward",
+    "name": "Broward County Library"
+  },
+  {
+    "code": "brunswickcounty",
+    "name": "Brunswick County Library"
+  },
+  {
+    "code": "bcsdmc",
+    "name": "Bryan and College Station Public Library System"
+  },
+  {
+    "code": "buckinghamshire",
+    "name": "Buckinghamshire Council"
+  },
+  {
+    "code": "buenapark",
+    "name": "Buena Park Library District"
+  },
+  {
+    "code": "buffalo",
+    "name": "Buffalo & Erie County Public Library"
+  },
+  {
+    "code": "bundabergqld",
+    "name": "Bundaberg Regional Library"
+  },
+  {
+    "code": "burbank",
+    "name": "Burbank Public Library"
+  },
+  {
+    "code": "burlington",
+    "name": "Burlington County Library System"
+  },
+  {
+    "code": "burlingtonpl",
+    "name": "Burlington Public Library"
+  },
+  {
+    "code": "burnaby",
+    "name": "Burnaby Public Library"
+  },
+  {
+    "code": "burycounciluk",
+    "name": "Bury Council Libraries"
+  },
+  {
+    "code": "digibel",
+    "name": "Busan English Library"
+  },
+  {
+    "code": "elibrarybw",
+    "name": "Büchereien Wien"
+  },
+  {
+    "code": "elibraryhh",
+    "name": "Bücherhallen Hamburg"
+  },
+  {
+    "code": "cabconc",
+    "name": "Cabarrus County Public Library"
+  },
+  {
+    "code": "cachecounty",
+    "name": "Cache County Library"
+  },
+  {
+    "code": "caerphillyuk",
+    "name": "Caerphilly Library Service"
+  },
+  {
+    "code": "cairnsqld",
+    "name": "Cairns Libraries"
+  },
+  {
+    "code": "calderdaleuk",
+    "name": "Calderdale Council"
+  },
+  {
+    "code": "calgary",
+    "name": "Calgary Public Library"
+  },
+  {
+    "code": "camdigital",
+    "name": "Camarillo Public Library"
+  },
+  {
+    "code": "cambridgeshirelibraries",
+    "name": "Cambridgeshire County Council"
+  },
+  {
+    "code": "camdennsw",
+    "name": "Camden Council Library Service"
+  },
+  {
+    "code": "camellia",
+    "name": "Camellia Net Digital Catalog"
+  },
+  {
+    "code": "canterburybankstownnsw",
+    "name": "Canterbury-Bankstown Council"
+  },
+  {
+    "code": "capitalarealibrary",
+    "name": "Capital Area Library District"
+  },
+  {
+    "code": "clcn",
+    "name": "Capital Library"
+  },
+  {
+    "code": "cldl",
+    "name": "Carbon Lehigh Downloadable Library"
+  },
+  {
+    "code": "cardiffuk",
+    "name": "Cardiff Libraries"
+  },
+  {
+    "code": "carlowcounty",
+    "name": "Carlow County Library"
+  },
+  {
+    "code": "carmarthenshire",
+    "name": "Carmarthenshire County Council"
+  },
+  {
+    "code": "carmel",
+    "name": "Carmel Clay Public Library"
+  },
+  {
+    "code": "acla",
+    "name": "Carnegie Library of Pittsburgh"
+  },
+  {
+    "code": "dubuque",
+    "name": "Carnegie-Stout Public Library"
+  },
+  {
+    "code": "cavancounty",
+    "name": "Cavan County Libraries"
+  },
+  {
+    "code": "cfwpl",
+    "name": "Cedar Falls and Waterloo Public Libraries"
+  },
+  {
+    "code": "cals",
+    "name": "Central Arkansas Library System"
+  },
+  {
+    "code": "centralcoast",
+    "name": "Central Coast Library Service"
+  },
+  {
+    "code": "chrclib",
+    "name": "Central Highlands Regional Council Library Services"
+  },
+  {
+    "code": "chl",
+    "name": "Central Highlands Regional Library"
+  },
+  {
+    "code": "cnlnsw",
+    "name": "Central Northern Regional Library"
+  },
+  {
+    "code": "centralpalibraries",
+    "name": "Central PA Libraries"
+  },
+  {
+    "code": "librarypoint",
+    "name": "Central Rappahannock Regional Library"
+  },
+  {
+    "code": "ctdl",
+    "name": "Central Texas Digital Consortium"
+  },
+  {
+    "code": "centralwestzone",
+    "name": "Central West Zone"
+  },
+  {
+    "code": "ceredigionuk",
+    "name": "Ceredigion County Libraries"
+  },
+  {
+    "code": "cs",
+    "name": "Changsha Library (长沙图书馆)"
+  },
+  {
+    "code": "charlestoncounty",
+    "name": "Charleston County Public Library System"
+  },
+  {
+    "code": "plcmc",
+    "name": "Charlotte Mecklenburg Library"
+  },
+  {
+    "code": "cvl",
+    "name": "Chattahoochee Valley Libraries"
+  },
+  {
+    "code": "chcbl",
+    "name": "Chattanooga Public Library"
+  },
+  {
+    "code": "ccls",
+    "name": "Chautauqua-Cattaraugus Library System"
+  },
+  {
+    "code": "chelsea",
+    "name": "Chelsea Library"
+  },
+  {
+    "code": "cdclib",
+    "name": "Chengdu Library (成都图书馆)"
+  },
+  {
+    "code": "chesapeake",
+    "name": "Chesapeake Public Library System"
+  },
+  {
+    "code": "cheshire",
+    "name": "Cheshire Libraries"
+  },
+  {
+    "code": "chester",
+    "name": "Chester County Library System"
+  },
+  {
+    "code": "chesterfield",
+    "name": "Chesterfield County Public Library"
+  },
+  {
+    "code": "chipublib",
+    "name": "Chicago Public Library"
+  },
+  {
+    "code": "chinookarch",
+    "name": "Chinook Arch Regional Library System"
+  },
+  {
+    "code": "chiryucity",
+    "name": "Chiryu City Library"
+  },
+  {
+    "code": "christchurch",
+    "name": "Christchurch City Libraries"
+  },
+  {
+    "code": "christiecommunitylibrary",
+    "name": "Christie Community Library"
+  },
+  {
+    "code": "cnelib",
+    "name": "Chungcheongnam-do Library"
+  },
+  {
+    "code": "cincinnatilibrary",
+    "name": "Cincinnati & Hamilton County Public Library"
+  },
+  {
+    "code": "citrus",
+    "name": "Citrus County Library System"
+  },
+  {
+    "code": "altamonte",
+    "name": "City of Altamonte Springs Library"
+  },
+  {
+    "code": "commerceca",
+    "name": "City of Commerce Public Library"
+  },
+  {
+    "code": "cityofdarwin",
+    "name": "City of Darwin"
+  },
+  {
+    "code": "cojlibrary",
+    "name": "City of Johannesburg Library Services"
+  },
+  {
+    "code": "kawarthalakes",
+    "name": "City of Kawartha Lakes Public Library"
+  },
+  {
+    "code": "cityoflondonuk",
+    "name": "City of London Libraries"
+  },
+  {
+    "code": "melbournelib",
+    "name": "City of Melbourne Libraries"
+  },
+  {
+    "code": "parralibrary",
+    "name": "City of Parramatta Library"
+  },
+  {
+    "code": "ryde",
+    "name": "City of Ryde Library"
+  },
+  {
+    "code": "santaclarita",
+    "name": "City of Santa Clarita Public Library"
+  },
+  {
+    "code": "cityofsydney",
+    "name": "City of Sydney Library Network"
+  },
+  {
+    "code": "clamsnet",
+    "name": "CLAMS"
+  },
+  {
+    "code": "clarecounty",
+    "name": "Clare County Library"
+  },
+  {
+    "code": "crlnsw",
+    "name": "Clarence Valley/Richmond Valley Libraries"
+  },
+  {
+    "code": "claycofl",
+    "name": "Clay County Public Library System"
+  },
+  {
+    "code": "clevnet",
+    "name": "CLEVNET"
+  },
+  {
+    "code": "cefls",
+    "name": "Clinton Essex Franklin Library System"
+  },
+  {
+    "code": "cmpl",
+    "name": "Clinton-Macomb Public Library"
+  },
+  {
+    "code": "cobbcounty",
+    "name": "Cobb County Public Library System"
+  },
+  {
+    "code": "ccld",
+    "name": "Cochise County Library District"
+  },
+  {
+    "code": "coffsharbour",
+    "name": "Coffs Harbour Libraries"
+  },
+  {
+    "code": "colbertdigitaldownloads",
+    "name": "Colbert Digital Downloads"
+  },
+  {
+    "code": "collier",
+    "name": "Collier County Public Library"
+  },
+  {
+    "code": "bibliotecacolsubsidio",
+    "name": "Colsubsidio"
+  },
+  {
+    "code": "comfama",
+    "name": "Comfama"
+  },
+  {
+    "code": "bibliotecascomfamiliar",
+    "name": "Comfamiliar Risaralda"
+  },
+  {
+    "code": "bibliotecacomfandi",
+    "name": "Comfandi"
+  },
+  {
+    "code": "ccri",
+    "name": "Community College of Rhode Island"
+  },
+  {
+    "code": "bibliotecadigitalcompensar",
+    "name": "Compensar"
+  },
+  {
+    "code": "cclcvic",
+    "name": "Connected Libraries"
+  },
+  {
+    "code": "ccc",
+    "name": "Contra Costa County Library"
+  },
+  {
+    "code": "conwyuk",
+    "name": "Conwy Library & Information Service"
+  },
+  {
+    "code": "conyersrockdale",
+    "name": "Conyers-Rockdale Library System"
+  },
+  {
+    "code": "cookmemorial",
+    "name": "Cook Memorial Public Library"
+  },
+  {
+    "code": "cin",
+    "name": "Cooperative Information Network"
+  },
+  {
+    "code": "coqlibrary",
+    "name": "Coquitlam Public Library"
+  },
+  {
+    "code": "corangamite",
+    "name": "Corangamite Moyne Library Service"
+  },
+  {
+    "code": "corkcityie",
+    "name": "Cork City Library"
+  },
+  {
+    "code": "corkcountyie",
+    "name": "Cork County Library"
+  },
+  {
+    "code": "cornell",
+    "name": "Cornell University Library"
+  },
+  {
+    "code": "brant",
+    "name": "County of Brant Public Library"
+  },
+  {
+    "code": "slolibrary",
+    "name": "County of San Luis Obispo Public Libraries"
+  },
+  {
+    "code": "coventrycityuk",
+    "name": "Coventry City Library"
+  },
+  {
+    "code": "coventry",
+    "name": "Coventry Public Library"
+  },
+  {
+    "code": "cpls",
+    "name": "Coweta Public Library System"
+  },
+  {
+    "code": "cpcregional",
+    "name": "Craven-Pamlico Regional Library"
+  },
+  {
+    "code": "ccfls",
+    "name": "Crawford County Federated Library System"
+  },
+  {
+    "code": "perthandkinross",
+    "name": "Culture Perth & Kinross Limited"
+  },
+  {
+    "code": "cumbriauk",
+    "name": "Cumberland and Westmorland and Furness Libraries"
+  },
+  {
+    "code": "cumberland",
+    "name": "Cumberland Council Libraries"
+  },
+  {
+    "code": "cumberlandri",
+    "name": "Cumberland Public Library"
+  },
+  {
+    "code": "ccpl",
+    "name": "Cuyahoga County Public Library"
+  },
+  {
+    "code": "cwmars",
+    "name": "CW MARS"
+  },
+  {
+    "code": "dallaslibrary",
+    "name": "Dallas Public Library"
+  },
+  {
+    "code": "danburylibrary",
+    "name": "Danbury Public Library"
+  },
+  {
+    "code": "dbrl",
+    "name": "Daniel Boone Regional Library"
+  },
+  {
+    "code": "darecounty",
+    "name": "Dare County Library"
+  },
+  {
+    "code": "darebinlib",
+    "name": "Darebin Libraries"
+  },
+  {
+    "code": "darien",
+    "name": "Darien Library"
+  },
+  {
+    "code": "darlingtonuk",
+    "name": "Darlington Libraries"
+  },
+  {
+    "code": "dayton",
+    "name": "Dayton Metro Library"
+  },
+  {
+    "code": "dekalb",
+    "name": "DeKalb County Public Library"
+  },
+  {
+    "code": "delco",
+    "name": "Delaware County Library System"
+  },
+  {
+    "code": "delaware",
+    "name": "Delaware Libraries"
+  },
+  {
+    "code": "denbighshireuk",
+    "name": "Denbighshire Libraries"
+  },
+  {
+    "code": "denver",
+    "name": "Denver Public Library"
+  },
+  {
+    "code": "derbycitygb",
+    "name": "Derby City Council"
+  },
+  {
+    "code": "derbyshireuk",
+    "name": "Derbyshire County Council"
+  },
+  {
+    "code": "dmpl",
+    "name": "Des Moines Public Library"
+  },
+  {
+    "code": "dpls",
+    "name": "Deschutes Public Library"
+  },
+  {
+    "code": "detroitpubliclibrary",
+    "name": "Detroit Public Library"
+  },
+  {
+    "code": "shinshu-kyodo-library",
+    "name": "Digi Tosho Shinshu"
+  },
+  {
+    "code": "clc",
+    "name": "Digital Downloads Collaboration"
+  },
+  {
+    "code": "icpl",
+    "name": "Digital Johnson County"
+  },
+  {
+    "code": "dlil",
+    "name": "Digital Library of Illinois"
+  },
+  {
+    "code": "dclibrary",
+    "name": "District of Columbia Public Library"
+  },
+  {
+    "code": "dogoklib",
+    "name": "Dogok Library"
+  },
+  {
+    "code": "donegalcountyie",
+    "name": "Donegal County Library"
+  },
+  {
+    "code": "dorchesterlibrarysc",
+    "name": "Dorchester County Library System"
+  },
+  {
+    "code": "dorsetuk",
+    "name": "Dorset Libraries"
+  },
+  {
+    "code": "dorval",
+    "name": "Dorval Library"
+  },
+  {
+    "code": "douglasbcuk",
+    "name": "Douglas Borough Council"
+  },
+  {
+    "code": "dcl",
+    "name": "Douglas County Libraries"
+  },
+  {
+    "code": "douglascpl",
+    "name": "Douglas County Public Library"
+  },
+  {
+    "code": "tln",
+    "name": "Download Destination"
+  },
+  {
+    "code": "downloadlibrary",
+    "name": "downloadLibrary"
+  },
+  {
+    "code": "disneytech",
+    "name": "DPEP Tech & Digital Knowledge Center"
+  },
+  {
+    "code": "dscl",
+    "name": "Dripping Springs Community Library"
+  },
+  {
+    "code": "dublincityie",
+    "name": "Dublin City Libraries"
+  },
+  {
+    "code": "dumgaluk",
+    "name": "Dumfries & Galloway Libraries"
+  },
+  {
+    "code": "dlrcoco",
+    "name": "Dun Laoghaire-Rathdown County Council Public Library Service"
+  },
+  {
+    "code": "durango",
+    "name": "Durango Public Library"
+  },
+  {
+    "code": "durhamcountyuk",
+    "name": "Durham County Council"
+  },
+  {
+    "code": "durhamcounty",
+    "name": "Durham County Library"
+  },
+  {
+    "code": "e-inc",
+    "name": "E-iNC Library"
+  },
+  {
+    "code": "ecoop",
+    "name": "E-Library Co-Op of Southeast Louisiana"
+  },
+  {
+    "code": "e-thek",
+    "name": "e-Thek"
+  },
+  {
+    "code": "eastayrshireuk",
+    "name": "East Ayrshire Libraries"
+  },
+  {
+    "code": "ebr",
+    "name": "East Baton Rouge Parish Library"
+  },
+  {
+    "code": "ebonnerlibrary",
+    "name": "East Bonner County Library District"
+  },
+  {
+    "code": "ecrl",
+    "name": "East Central Regional Library"
+  },
+  {
+    "code": "ecpl",
+    "name": "East Chicago Public Library"
+  },
+  {
+    "code": "edlcuk",
+    "name": "East Dunbartonshire Libraries"
+  },
+  {
+    "code": "eastgippsland",
+    "name": "East Gippsland Shire Library"
+  },
+  {
+    "code": "egfmn",
+    "name": "East Grand Forks-Campbell Library"
+  },
+  {
+    "code": "eprovidenceri",
+    "name": "East Providence Public Library"
+  },
+  {
+    "code": "eastridinguk",
+    "name": "East Riding Libraries"
+  },
+  {
+    "code": "eastsussexlibrary",
+    "name": "East Sussex County Council"
+  },
+  {
+    "code": "easterncape",
+    "name": "Eastern Cape Provincial Library Service"
+  },
+  {
+    "code": "eodls",
+    "name": "Eastern Oklahoma Library System"
+  },
+  {
+    "code": "erl",
+    "name": "Eastern Regional Libraries"
+  },
+  {
+    "code": "eastonpl",
+    "name": "Easton Library District"
+  },
+  {
+    "code": "ebooksforyou",
+    "name": "eBooks for You"
+  },
+  {
+    "code": "swiss",
+    "name": "EBOOKS SWITZERLAND"
+  },
+  {
+    "code": "ebranch2go",
+    "name": "eBranch2Go"
+  },
+  {
+    "code": "edinburgh",
+    "name": "Edinburgh Libraries"
+  },
+  {
+    "code": "epl",
+    "name": "Edmonton Public Library"
+  },
+  {
+    "code": "edogawa-library-e-book-service",
+    "name": "Edogawa City Library"
+  },
+  {
+    "code": "elpaso",
+    "name": "El Paso Public Library"
+  },
+  {
+    "code": "elm",
+    "name": "eLibraries Manitoba"
+  },
+  {
+    "code": "elibrary247",
+    "name": "eLibrary 24/7"
+  },
+  {
+    "code": "elibrarynj",
+    "name": "eLibrary NJ"
+  },
+  {
+    "code": "emedialibrary",
+    "name": "eMediaLibrary"
+  },
+  {
+    "code": "e-medien-franken",
+    "name": "eMedien Franken"
+  },
+  {
+    "code": "emu",
+    "name": "eMedien Unterfranken"
+  },
+  {
+    "code": "ereolenglobal",
+    "name": "eReolen Global"
+  },
+  {
+    "code": "erielibrary",
+    "name": "Erie County Public Library"
+  },
+  {
+    "code": "essexca",
+    "name": "Essex County Library"
+  },
+  {
+    "code": "essexcountyuk",
+    "name": "Essex County Library"
+  },
+  {
+    "code": "elin",
+    "name": "Estacado Library Information Network"
+  },
+  {
+    "code": "evpl",
+    "name": "Evansville Vanderburgh Public Library"
+  },
+  {
+    "code": "everett",
+    "name": "Everett Public Library"
+  },
+  {
+    "code": "fairfax",
+    "name": "Fairfax County Public Library"
+  },
+  {
+    "code": "fairfieldnsw",
+    "name": "Fairfield City Open Libraries"
+  },
+  {
+    "code": "fairfield",
+    "name": "Fairfield Public Library"
+  },
+  {
+    "code": "falkirkuk",
+    "name": "Falkirk Libraries"
+  },
+  {
+    "code": "falklandcommunitylibrary",
+    "name": "Falkland Community Library"
+  },
+  {
+    "code": "infoway",
+    "name": "Farmington Public Library"
+  },
+  {
+    "code": "fifeuk",
+    "name": "Fife Libraries"
+  },
+  {
+    "code": "fingalcountyie",
+    "name": "Fingal County Library"
+  },
+  {
+    "code": "flls",
+    "name": "Finger Lakes Library System"
+  },
+  {
+    "code": "first",
+    "name": "First Regional Library"
+  },
+  {
+    "code": "cocolib",
+    "name": "Flagstaff City-Coconino County Public Library"
+  },
+  {
+    "code": "flint",
+    "name": "Flint Public Library"
+  },
+  {
+    "code": "forsyth",
+    "name": "Forsyth County Public Library"
+  },
+  {
+    "code": "fortbend",
+    "name": "Fort Bend County Libraries"
+  },
+  {
+    "code": "fmb",
+    "name": "Fort Myers Beach Public Library"
+  },
+  {
+    "code": "fortvancouver",
+    "name": "Fort Vancouver Regional Library District"
+  },
+  {
+    "code": "fwpl",
+    "name": "Fort Worth Public Library"
+  },
+  {
+    "code": "fourcounty",
+    "name": "Four County Library System"
+  },
+  {
+    "code": "fclspa",
+    "name": "Franklin County Library System"
+  },
+  {
+    "code": "frankston",
+    "name": "Frankston City Libraries"
+  },
+  {
+    "code": "frasercoast",
+    "name": "Fraser Coast Regional Libraries"
+  },
+  {
+    "code": "fvrl",
+    "name": "Fraser Valley Regional Library"
+  },
+  {
+    "code": "fselibrary",
+    "name": "Free State Public Library System"
+  },
+  {
+    "code": "fremont",
+    "name": "Fremont Public Library"
+  },
+  {
+    "code": "fresno",
+    "name": "Fresno County Public Library"
+  },
+  {
+    "code": "friendmemorial",
+    "name": "Friend Memorial Library"
+  },
+  {
+    "code": "frisco",
+    "name": "Frisco Public Library"
+  },
+  {
+    "code": "frontrange",
+    "name": "Front Range Downloadable Library"
+  },
+  {
+    "code": "fjclib",
+    "name": "Fujian Juvenile & Children's Library"
+  },
+  {
+    "code": "fukuyama-library",
+    "name": "Fukuyama City Library"
+  },
+  {
+    "code": "fullerton",
+    "name": "Fullerton Public Library"
+  },
+  {
+    "code": "fulcolibrary",
+    "name": "Fulton County Library System"
+  },
+  {
+    "code": "fundacionepm",
+    "name": "Fundación EPM-Biblioteca EPM"
+  },
+  {
+    "code": "galwayie",
+    "name": "Galway Public Library"
+  },
+  {
+    "code": "gplebooks",
+    "name": "Gary Public Library"
+  },
+  {
+    "code": "gatineauca",
+    "name": "Gatineau Public Library"
+  },
+  {
+    "code": "gauteng",
+    "name": "Gauteng Provincial Library Service"
+  },
+  {
+    "code": "geelongvic",
+    "name": "Geelong Regional Library"
+  },
+  {
+    "code": "geh-online",
+    "name": "GEH-online"
+  },
+  {
+    "code": "thegdl",
+    "name": "Genesee District Library"
+  },
+  {
+    "code": "georgesriver",
+    "name": "Georges River Council Library"
+  },
+  {
+    "code": "gadd",
+    "name": "Georgia Download Destination"
+  },
+  {
+    "code": "gifucity-d-library",
+    "name": "Gifu City Library"
+  },
+  {
+    "code": "gcldaz",
+    "name": "Gila County Library District"
+  },
+  {
+    "code": "gladstonelib",
+    "name": "Gladstone Regional Libraires"
+  },
+  {
+    "code": "glasgow",
+    "name": "Glasgow Libraries"
+  },
+  {
+    "code": "gleneira",
+    "name": "Glen Eira Libraries"
+  },
+  {
+    "code": "glosuk",
+    "name": "Gloucestershire Libraries"
+  },
+  {
+    "code": "goldcoast",
+    "name": "Gold Coast Libraries"
+  },
+  {
+    "code": "ncgrl",
+    "name": "Goldfields Libraries"
+  },
+  {
+    "code": "gvrlc",
+    "name": "Goulburn Valley Regional Library Corporation"
+  },
+  {
+    "code": "midland-mi",
+    "name": "Grace A. Dow Memorial Library"
+  },
+  {
+    "code": "gptx",
+    "name": "Grand Prairie Public Library System"
+  },
+  {
+    "code": "grpl",
+    "name": "Grand Rapids Public Library"
+  },
+  {
+    "code": "gldl",
+    "name": "Great Lakes Digital Libraries"
+  },
+  {
+    "code": "griver",
+    "name": "Great River Regional Library"
+  },
+  {
+    "code": "greaterdandenong",
+    "name": "Greater Dandenong Libraries"
+  },
+  {
+    "code": "phoenix",
+    "name": "Greater Phoenix Digital Library"
+  },
+  {
+    "code": "gvpl",
+    "name": "Greater Victoria Public Library"
+  },
+  {
+    "code": "greengoldlibraries",
+    "name": "Green Gold Consortium"
+  },
+  {
+    "code": "gmlc",
+    "name": "Green Mountain Library Consortium"
+  },
+  {
+    "code": "greenvillesc",
+    "name": "Greenville County Library System"
+  },
+  {
+    "code": "greenwich",
+    "name": "Greenwich Library"
+  },
+  {
+    "code": "greenwoodsc",
+    "name": "Greenwood County Library System"
+  },
+  {
+    "code": "guernseypublic",
+    "name": "Guernsey Public Library"
+  },
+  {
+    "code": "gwangjinlib",
+    "name": "Gwangjin District Public Library"
+  },
+  {
+    "code": "gwinnett",
+    "name": "Gwinnett County Public Library"
+  },
+  {
+    "code": "gwynedduk",
+    "name": "Gwynedd Libraries"
+  },
+  {
+    "code": "cyberlibrary",
+    "name": "Gyeonggi-do Cyber Library"
+  },
+  {
+    "code": "gympie",
+    "name": "Gympie Regional Libraries"
+  },
+  {
+    "code": "hilib",
+    "name": "Hainan Library (海南省图书馆)"
+  },
+  {
+    "code": "halifax",
+    "name": "Halifax Public Libraries"
+  },
+  {
+    "code": "hamiltonnz",
+    "name": "Hamilton City Libraries"
+  },
+  {
+    "code": "hamiltondigitallibrary",
+    "name": "Hamilton Digital Library"
+  },
+  {
+    "code": "hepl",
+    "name": "Hamilton East Public Library"
+  },
+  {
+    "code": "hpl",
+    "name": "Hamilton Public Library"
+  },
+  {
+    "code": "hampshireuk",
+    "name": "Hampshire Libraries"
+  },
+  {
+    "code": "hancock",
+    "name": "Hancock County Library System"
+  },
+  {
+    "code": "hcplibrary",
+    "name": "Hancock County Public Library"
+  },
+  {
+    "code": "hzlib",
+    "name": "Hangzhou Public Library (杭州图书馆)"
+  },
+  {
+    "code": "hannan-city-lib",
+    "name": "Hannan City Library"
+  },
+  {
+    "code": "hansonsd",
+    "name": "Hanson Community Library"
+  },
+  {
+    "code": "harnosand",
+    "name": "Harnosands Bibliotek"
+  },
+  {
+    "code": "hcpl",
+    "name": "Harris County Public Library"
+  },
+  {
+    "code": "harrisonco",
+    "name": "Harrison County Library System"
+  },
+  {
+    "code": "hplct",
+    "name": "Hartford Public Library"
+  },
+  {
+    "code": "clarendoncountylibrary",
+    "name": "Harvin Clarendon County Library"
+  },
+  {
+    "code": "hawaii",
+    "name": "Hawaii State Public Library System"
+  },
+  {
+    "code": "hawkesbury",
+    "name": "Hawkesbury Library Service"
+  },
+  {
+    "code": "helmet",
+    "name": "Helsinki City Library"
+  },
+  {
+    "code": "hempcolib",
+    "name": "Hempstead County Library"
+  },
+  {
+    "code": "hendersonlibraries",
+    "name": "Henderson Libraries"
+  },
+  {
+    "code": "henrico",
+    "name": "Henrico County Public Library"
+  },
+  {
+    "code": "herricklibrary",
+    "name": "Herrick Community Health Care Library"
+  },
+  {
+    "code": "hertfordshireuk",
+    "name": "Hertfordshire Libraries"
+  },
+  {
+    "code": "hcln",
+    "name": "High Country Library Network"
+  },
+  {
+    "code": "highplains",
+    "name": "High Plains Library District"
+  },
+  {
+    "code": "highlanduk",
+    "name": "Highland Libraries"
+  },
+  {
+    "code": "highlandparktexas",
+    "name": "Highland Park Library"
+  },
+  {
+    "code": "hcplc",
+    "name": "Hillsborough County Public Library Cooperative"
+  },
+  {
+    "code": "hindmarsh",
+    "name": "Hindmarsh Shire Libraries"
+  },
+  {
+    "code": "hiraizumi-town",
+    "name": "Hiraizumi Town Library"
+  },
+  {
+    "code": "hobsonsbayvic",
+    "name": "Hobsons Bay Libraries"
+  },
+  {
+    "code": "claytonnc",
+    "name": "Hocutt Ellington Memorial Library"
+  },
+  {
+    "code": "hkpl",
+    "name": "Hong Kong Public Libraries (HKPL)"
+  },
+  {
+    "code": "hoodcounty",
+    "name": "Hood County Public Library"
+  },
+  {
+    "code": "hoperi",
+    "name": "Hope Library"
+  },
+  {
+    "code": "hornsby",
+    "name": "Hornsby Shire Library & Information Service"
+  },
+  {
+    "code": "hadc",
+    "name": "Houston Area Digital Media Catalog"
+  },
+  {
+    "code": "houstonlibrary",
+    "name": "Houston Public Library"
+  },
+  {
+    "code": "hubei",
+    "name": "Hubei Provincial Library (湖北省图书馆)"
+  },
+  {
+    "code": "hulllibrariesuk",
+    "name": "Hull Libraries"
+  },
+  {
+    "code": "humecity",
+    "name": "Hume Libraries"
+  },
+  {
+    "code": "hunterlibrariesgroup",
+    "name": "Hunter Libraries Group"
+  },
+  {
+    "code": "ichikawaekinan",
+    "name": "Ichikawa City Ichikawa Station South Gate Library (Viax)"
+  },
+  {
+    "code": "idahodigital",
+    "name": "Idaho Digital Consortium"
+  },
+  {
+    "code": "ifpl",
+    "name": "Idaho Falls Public Library"
+  },
+  {
+    "code": "idea",
+    "name": "IDEA by ICfL"
+  },
+  {
+    "code": "irclibrary",
+    "name": "Indian River County Library"
+  },
+  {
+    "code": "idl",
+    "name": "Indiana Digital Library"
+  },
+  {
+    "code": "indypl",
+    "name": "Indianapolis Public Library"
+  },
+  {
+    "code": "inglewoodpl",
+    "name": "Inglewood Public Library"
+  },
+  {
+    "code": "ipswichqld",
+    "name": "Ipswich Libraries"
+  },
+  {
+    "code": "iredell",
+    "name": "Iredell County Library"
+  },
+  {
+    "code": "irvinglibrary",
+    "name": "Irving Public Library"
+  },
+  {
+    "code": "jccgv",
+    "name": "Isaac Waldman Jewish Public Library"
+  },
+  {
+    "code": "angleseyuk",
+    "name": "Isle of Anglesey County Council - Llangefni Library"
+  },
+  {
+    "code": "isleofwightuk",
+    "name": "Isle of Wight Library"
+  },
+  {
+    "code": "islingtonuk",
+    "name": "Islington Libraries"
+  },
+  {
+    "code": "itako-public",
+    "name": "Itako Public Library"
+  },
+  {
+    "code": "myjdl",
+    "name": "Jackson District Library"
+  },
+  {
+    "code": "jgrls",
+    "name": "Jackson-George Regional Library System"
+  },
+  {
+    "code": "jhlibrary",
+    "name": "Jackson/Hinds Library System"
+  },
+  {
+    "code": "jpl",
+    "name": "Jacksonville Public Library"
+  },
+  {
+    "code": "jamestownri",
+    "name": "Jamestown Philomenian Library"
+  },
+  {
+    "code": "jclc",
+    "name": "Jefferson County Library Cooperative"
+  },
+  {
+    "code": "jefferson",
+    "name": "Jefferson County Public Library"
+  },
+  {
+    "code": "jeff",
+    "name": "Jefferson Parish Library"
+  },
+  {
+    "code": "jericholibrary",
+    "name": "Jericho Public Library"
+  },
+  {
+    "code": "jclibrary",
+    "name": "Jersey City Free Public Library"
+  },
+  {
+    "code": "jessiehallett",
+    "name": "Jessie F. Hallett Memorial Library"
+  },
+  {
+    "code": "jplmontreal",
+    "name": "Jewish Public Library"
+  },
+  {
+    "code": "jscl",
+    "name": "Jiangsu Children's Digital Library (江苏省少儿数字图书馆)"
+  },
+  {
+    "code": "jxlib",
+    "name": "Jiaxing Library (嘉兴市图书馆)"
+  },
+  {
+    "code": "jaqtsg",
+    "name": "Jing'an District Library (上海市静安区图书馆)"
+  },
+  {
+    "code": "jocolibrary",
+    "name": "Johnson County Library and Olathe Public Library"
+  },
+  {
+    "code": "johnston",
+    "name": "Johnston County Affiliated Libraries"
+  },
+  {
+    "code": "kagacitydigitallibrary",
+    "name": "Kaga City Library"
+  },
+  {
+    "code": "kamikawa-town",
+    "name": "Kamikawa Town Library"
+  },
+  {
+    "code": "kanda-library",
+    "name": "Kanda Town Library"
+  },
+  {
+    "code": "rarakanra-library",
+    "name": "Kanra Town Library"
+  },
+  {
+    "code": "kclibrary",
+    "name": "Kansas City Public Library"
+  },
+  {
+    "code": "sgch",
+    "name": "Kantonsbibliothek St.Gallen"
+  },
+  {
+    "code": "kashiwara-city-library",
+    "name": "Kashiwara Public Library"
+  },
+  {
+    "code": "katrineholmsbibliotek",
+    "name": "Katrineholms Bibliotek"
+  },
+  {
+    "code": "kennebunklibrary",
+    "name": "Kennebunk Free Library"
+  },
+  {
+    "code": "biboroughuk",
+    "name": "Kensington & Chelsea and Westminster Libraries"
+  },
+  {
+    "code": "kent",
+    "name": "Kent County Council"
+  },
+  {
+    "code": "kdl",
+    "name": "Kent District Library"
+  },
+  {
+    "code": "kenton",
+    "name": "Kenton County Public Library"
+  },
+  {
+    "code": "kyunbound",
+    "name": "Kentucky Libraries Unbound"
+  },
+  {
+    "code": "kern",
+    "name": "Kern County Library"
+  },
+  {
+    "code": "kerryie",
+    "name": "Kerry Library"
+  },
+  {
+    "code": "kplonline",
+    "name": "Kigali Public Library"
+  },
+  {
+    "code": "kildareie",
+    "name": "Kildare County Council Library and Arts Service"
+  },
+  {
+    "code": "kilkennyie",
+    "name": "Kilkenny County Library"
+  },
+  {
+    "code": "kcls",
+    "name": "King County Library System"
+  },
+  {
+    "code": "kings",
+    "name": "Kings County Library"
+  },
+  {
+    "code": "kfpl",
+    "name": "Kingston Frontenac Public Library"
+  },
+  {
+    "code": "kingstonvic",
+    "name": "Kingston Libraries"
+  },
+  {
+    "code": "kirklees",
+    "name": "Kirklees Libraries"
+  },
+  {
+    "code": "kishiwada-city",
+    "name": "Kishiwada City Library"
+  },
+  {
+    "code": "krl",
+    "name": "Kitsap Regional Library"
+  },
+  {
+    "code": "library-kiyose",
+    "name": "Kiyose City Library"
+  },
+  {
+    "code": "knoxcounty",
+    "name": "Knox County Public Library"
+  },
+  {
+    "code": "kcpl",
+    "name": "Knox County Public Library"
+  },
+  {
+    "code": "kokubunji-city-lib",
+    "name": "Kokubunji City Library"
+  },
+  {
+    "code": "krgnsw",
+    "name": "Ku-ring-gai Library"
+  },
+  {
+    "code": "kumagayacity",
+    "name": "Kumagaya City Library"
+  },
+  {
+    "code": "kumatori-library",
+    "name": "Kumatori Town Library"
+  },
+  {
+    "code": "kuna",
+    "name": "Kuna District Library"
+  },
+  {
+    "code": "kmclib",
+    "name": "Kunming Children's Library (昆明少年儿童图书馆)"
+  },
+  {
+    "code": "kuriyama-town",
+    "name": "Kuriyama Town Library"
+  },
+  {
+    "code": "kurthmemorial",
+    "name": "Kurth Memorial Library"
+  },
+  {
+    "code": "kznpls",
+    "name": "Kwa-Zulu Natal Provincial Library Services"
+  },
+  {
+    "code": "lacountylibrary",
+    "name": "LA County Library"
+  },
+  {
+    "code": "lavergnelibrary",
+    "name": "La Vergne Public Library"
+  },
+  {
+    "code": "larl",
+    "name": "Lake Agassiz Regional Library"
+  },
+  {
+    "code": "lakeareatech",
+    "name": "Lake Area Technical College"
+  },
+  {
+    "code": "mylakelibrary",
+    "name": "Lake County Library System"
+  },
+  {
+    "code": "lakecounty",
+    "name": "Lake County Public Library"
+  },
+  {
+    "code": "lakemac",
+    "name": "Lake Macquarie City Library"
+  },
+  {
+    "code": "lakeland",
+    "name": "Lakeland Digital Library"
+  },
+  {
+    "code": "lambethuk",
+    "name": "Lambeth Libraries"
+  },
+  {
+    "code": "edownload",
+    "name": "Lambton County Library"
+  },
+  {
+    "code": "lancashireuk",
+    "name": "Lancashire County Library and Information Service"
+  },
+  {
+    "code": "laoiscountyie",
+    "name": "Laois County Library"
+  },
+  {
+    "code": "lplelibrary",
+    "name": "Laredo Public Library"
+  },
+  {
+    "code": "lasvegas",
+    "name": "Las Vegas-Clark County Library District"
+  },
+  {
+    "code": "lasalle",
+    "name": "Lasalle Parish Library"
+  },
+  {
+    "code": "latrobevic",
+    "name": "Latrobe City Library"
+  },
+  {
+    "code": "lawrencepl",
+    "name": "Lawrence Public Library"
+  },
+  {
+    "code": "lclibs",
+    "name": "Lebanon County Libraries"
+  },
+  {
+    "code": "lcls",
+    "name": "Lee County Library System"
+  },
+  {
+    "code": "leedslibraryuk",
+    "name": "Leeds Libraries"
+  },
+  {
+    "code": "leicesteruk",
+    "name": "Leicester Libraries"
+  },
+  {
+    "code": "leicestershire",
+    "name": "Leicestershire Library Services"
+  },
+  {
+    "code": "stadtbibliothek-leipzig",
+    "name": "Leipziger Stadtbibliothek"
+  },
+  {
+    "code": "dundeecity",
+    "name": "Leisure and Culture Dundee"
+  },
+  {
+    "code": "leitrimcountyie",
+    "name": "Leitrim County Library"
+  },
+  {
+    "code": "lerum",
+    "name": "Lerums Bibliotek"
+  },
+  {
+    "code": "bibliothequesdesherbrooke",
+    "name": "Les Bibliothèques de Sherbrooke"
+  },
+  {
+    "code": "lex",
+    "name": "Lexington County Public Library System"
+  },
+  {
+    "code": "lexpublib",
+    "name": "Lexington Public Library"
+  },
+  {
+    "code": "act",
+    "name": "Libraries ACT"
+  },
+  {
+    "code": "librariesniuk",
+    "name": "Libraries NI"
+  },
+  {
+    "code": "thelosc",
+    "name": "Libraries of Stevens County"
+  },
+  {
+    "code": "lsw",
+    "name": "Libraries Southwest Consortium"
+  },
+  {
+    "code": "librariestasmania",
+    "name": "Libraries Tasmania"
+  },
+  {
+    "code": "librariesunlimited",
+    "name": "Libraries Unlimited"
+  },
+  {
+    "code": "librarieswestuk",
+    "name": "Libraries West"
+  },
+  {
+    "code": "libraryconnection",
+    "name": "Library Connection, Inc."
+  },
+  {
+    "code": "sjstsg",
+    "name": "Library of Shijingshan District (石景山区图书馆)"
+  },
+  {
+    "code": "lancasterlibraries",
+    "name": "Library System of Lancaster County"
+  },
+  {
+    "code": "libriid",
+    "name": "LIBRI System, Inc."
+  },
+  {
+    "code": "limerickie",
+    "name": "Limerick City & County Library"
+  },
+  {
+    "code": "lincoln",
+    "name": "Lincoln City Libraries"
+  },
+  {
+    "code": "lincolnpublicri",
+    "name": "Lincoln Public Library"
+  },
+  {
+    "code": "lincolnshirelibraries",
+    "name": "Lincolnshire Libraries"
+  },
+  {
+    "code": "lincsinspireuk",
+    "name": "Lincs Inspire Libraries"
+  },
+  {
+    "code": "lion",
+    "name": "LION: Libraries Online"
+  },
+  {
+    "code": "listeneasternwv",
+    "name": "Listen Eastern West Virginia"
+  },
+  {
+    "code": "listening-books",
+    "name": "Listening Books"
+  },
+  {
+    "code": "lit",
+    "name": "LIT Library"
+  },
+  {
+    "code": "lti",
+    "name": "Literature Translation Institute of Korea"
+  },
+  {
+    "code": "lltc",
+    "name": "Little Libraries That Could"
+  },
+  {
+    "code": "livebrary",
+    "name": "Livebrary.com"
+  },
+  {
+    "code": "livermore",
+    "name": "Livermore Public Library"
+  },
+  {
+    "code": "liverpool",
+    "name": "Liverpool Libraries and Information Service"
+  },
+  {
+    "code": "livingstla",
+    "name": "Livingston Parish Library"
+  },
+  {
+    "code": "livingstone",
+    "name": "Livingstone Shire Library Service"
+  },
+  {
+    "code": "logan",
+    "name": "Logan City Council"
+  },
+  {
+    "code": "lccpl",
+    "name": "Logansport-Cass County Public Library"
+  },
+  {
+    "code": "barnet",
+    "name": "London Borough of Barnet"
+  },
+  {
+    "code": "bexley",
+    "name": "London Borough of Bexley"
+  },
+  {
+    "code": "camdenlibrary",
+    "name": "London Borough of Camden"
+  },
+  {
+    "code": "hillingdonuk",
+    "name": "London Borough of Hillingdon Libraries"
+  },
+  {
+    "code": "lbrut",
+    "name": "London Borough of Richmond upon Thames"
+  },
+  {
+    "code": "lpl",
+    "name": "London Public Library"
+  },
+  {
+    "code": "lonestardigitalibrary",
+    "name": "Lone Star Digital Library"
+  },
+  {
+    "code": "elprlibrary",
+    "name": "Lonesome Pine Regional Library"
+  },
+  {
+    "code": "lbpl",
+    "name": "Long Beach Public Library"
+  },
+  {
+    "code": "longfordcounty",
+    "name": "Longford County Library"
+  },
+  {
+    "code": "longleaf",
+    "name": "Longleaf Library Consortium"
+  },
+  {
+    "code": "downbeach",
+    "name": "Longport Public Library"
+  },
+  {
+    "code": "lacnm",
+    "name": "Los Alamos County Library System"
+  },
+  {
+    "code": "lapl",
+    "name": "Los Angeles Public Library"
+  },
+  {
+    "code": "lcpl",
+    "name": "Loudoun County Public Library"
+  },
+  {
+    "code": "lfpl",
+    "name": "Louisville Free Public Library"
+  },
+  {
+    "code": "louthcounty",
+    "name": "Louth County Library"
+  },
+  {
+    "code": "epukapuka",
+    "name": "Lower North Island"
+  },
+  {
+    "code": "lubbock",
+    "name": "Lubbock Public Library"
+  },
+  {
+    "code": "id8",
+    "name": "LYNX Library Consortium"
+  },
+  {
+    "code": "machida-library",
+    "name": "Machida City Library"
+  },
+  {
+    "code": "mackayqld",
+    "name": "Mackay Libraries"
+  },
+  {
+    "code": "maderalibrary",
+    "name": "Madera County Library"
+  },
+  {
+    "code": "mcls",
+    "name": "Madison County Library System"
+  },
+  {
+    "code": "library-maebashi",
+    "name": "Maebashi City Library"
+  },
+  {
+    "code": "biblioquebec",
+    "name": "Magazines (Réseau BIBLIO)"
+  },
+  {
+    "code": "emagnolia",
+    "name": "Magnolia eLibrary"
+  },
+  {
+    "code": "mahwahlibrary",
+    "name": "Mahwah Public Library"
+  },
+  {
+    "code": "mainlib",
+    "name": "Main Library Alliance"
+  },
+  {
+    "code": "maltalibraries",
+    "name": "Malta Libraries"
+  },
+  {
+    "code": "manassasva",
+    "name": "Manassas Park City Library"
+  },
+  {
+    "code": "mymanatee",
+    "name": "Manatee County Public Library System"
+  },
+  {
+    "code": "manchestergb",
+    "name": "Manchester Public Library"
+  },
+  {
+    "code": "manno",
+    "name": "Manno Town Library"
+  },
+  {
+    "code": "maribyrnong",
+    "name": "Maribyrnong Library Services"
+  },
+  {
+    "code": "marinet",
+    "name": "MARINet"
+  },
+  {
+    "code": "markham",
+    "name": "Markham Public Library"
+  },
+  {
+    "code": "marmot",
+    "name": "Marmot Library Network"
+  },
+  {
+    "code": "martin",
+    "name": "Martin County Public Library"
+  },
+  {
+    "code": "mrspl",
+    "name": "Mary Riley Styles Public Library"
+  },
+  {
+    "code": "marylanddcdl",
+    "name": "Maryland Deaf Culture Digital Library"
+  },
+  {
+    "code": "maryland",
+    "name": "Maryland's Digital Library"
+  },
+  {
+    "code": "mrl",
+    "name": "Massanutten Regional Library"
+  },
+  {
+    "code": "mayocountyie",
+    "name": "Mayo County Library"
+  },
+  {
+    "code": "mbkohio",
+    "name": "MBK Ohio"
+  },
+  {
+    "code": "mcallen",
+    "name": "McAllen Public Library"
+  },
+  {
+    "code": "meathcountyie",
+    "name": "Meath County Library"
+  },
+  {
+    "code": "mediaondemand",
+    "name": "Media On Demand"
+  },
+  {
+    "code": "mediothek",
+    "name": "Mediothek Krefeld"
+  },
+  {
+    "code": "medway",
+    "name": "Medway Council"
+  },
+  {
+    "code": "melsa",
+    "name": "MELSA: Twin Cities Metro eLibrary"
+  },
+  {
+    "code": "meltonvic",
+    "name": "Melton Library & Learning Hub"
+  },
+  {
+    "code": "memphis",
+    "name": "Memphis Public Libraries"
+  },
+  {
+    "code": "mercedcountylibrary",
+    "name": "Merced County Library"
+  },
+  {
+    "code": "meridian",
+    "name": "Meridian Library District"
+  },
+  {
+    "code": "meridianlauderdale",
+    "name": "Meridian-Lauderdale County Public Library"
+  },
+  {
+    "code": "virtualmerri-bek",
+    "name": "Merri-bek Libraries"
+  },
+  {
+    "code": "mvlc",
+    "name": "Merrimack Valley Library Consortium"
+  },
+  {
+    "code": "merthyruk",
+    "name": "Merthyr Libraries"
+  },
+  {
+    "code": "mln",
+    "name": "Metro Library Network"
+  },
+  {
+    "code": "metronet",
+    "name": "Metro Net Library Consortium"
+  },
+  {
+    "code": "metrolibrary",
+    "name": "Metropolitan Library System"
+  },
+  {
+    "code": "mdpls",
+    "name": "Miami-Dade Public Library System"
+  },
+  {
+    "code": "msl",
+    "name": "Microsoft Library"
+  },
+  {
+    "code": "midnorthcoast",
+    "name": "Mid North Coast Library Service"
+  },
+  {
+    "code": "midcolumbialibraries",
+    "name": "Mid-Columbia Libraries"
+  },
+  {
+    "code": "mcpl",
+    "name": "Mid-Continent Public Library"
+  },
+  {
+    "code": "mhls",
+    "name": "Mid-Hudson Library System"
+  },
+  {
+    "code": "midyork",
+    "name": "Mid-York Library System"
+  },
+  {
+    "code": "midcoastnsw",
+    "name": "MidCoast Libraries"
+  },
+  {
+    "code": "middleburypubliclibrary",
+    "name": "Middlebury Public Library"
+  },
+  {
+    "code": "middletown",
+    "name": "Middletown Public Library"
+  },
+  {
+    "code": "mmlc",
+    "name": "Mideastern Michigan Library Cooperative"
+  },
+  {
+    "code": "midlothianlibuk",
+    "name": "Midlothian Council Library Service"
+  },
+  {
+    "code": "mlc",
+    "name": "Midwest Collaborative for Library Services"
+  },
+  {
+    "code": "miltonkeynesuk",
+    "name": "Milton Keynes Libraries"
+  },
+  {
+    "code": "milton",
+    "name": "Milton Public Library"
+  },
+  {
+    "code": "minuteman",
+    "name": "Minuteman Library Network"
+  },
+  {
+    "code": "mississauga",
+    "name": "Mississauga Library"
+  },
+  {
+    "code": "mlpebooks",
+    "name": "Mississippi eBook Library Partnership"
+  },
+  {
+    "code": "molib2go",
+    "name": "Missouri Libraries 2Go"
+  },
+  {
+    "code": "mslsau",
+    "name": "Mitchell Shire Library Service"
+  },
+  {
+    "code": "miyoshi-city",
+    "name": "Miyoshi City Library"
+  },
+  {
+    "code": "mohave",
+    "name": "Mohave County Library District"
+  },
+  {
+    "code": "mvls",
+    "name": "Mohawk Valley Library System"
+  },
+  {
+    "code": "monaghanie",
+    "name": "Monaghan County Libraries"
+  },
+  {
+    "code": "monlibvic",
+    "name": "Monash Public Library Service"
+  },
+  {
+    "code": "monmouth",
+    "name": "Monmouth County Library"
+  },
+  {
+    "code": "monmouthshire",
+    "name": "Monmouthshire Libraries"
+  },
+  {
+    "code": "libraryweb",
+    "name": "Monroe County Library System"
+  },
+  {
+    "code": "keyslibraries",
+    "name": "Monroe County Public Library"
+  },
+  {
+    "code": "montana",
+    "name": "MontanaLibrary2Go"
+  },
+  {
+    "code": "emcfl",
+    "name": "Monterey County Free Libraries"
+  },
+  {
+    "code": "montcolibs",
+    "name": "Montgomery County Library District Consortium"
+  },
+  {
+    "code": "mcplmd",
+    "name": "Montgomery County Public Libraries"
+  },
+  {
+    "code": "montrealwest",
+    "name": "Montreal West Public Library"
+  },
+  {
+    "code": "mooneevalley",
+    "name": "Moonee Valley Libraries"
+  },
+  {
+    "code": "mmpl",
+    "name": "Moore Memorial Public Library"
+  },
+  {
+    "code": "mpkdigital",
+    "name": "Moorpark City Library"
+  },
+  {
+    "code": "morayuk",
+    "name": "Moray Libraries"
+  },
+  {
+    "code": "moretonbay",
+    "name": "Moreton Bay Libraries"
+  },
+  {
+    "code": "morgancitylibrary",
+    "name": "Morgan City Public Library"
+  },
+  {
+    "code": "mornpen",
+    "name": "Mornington Peninsula Libraries"
+  },
+  {
+    "code": "morrin",
+    "name": "Morrin Centre Library"
+  },
+  {
+    "code": "dcsre-mplis",
+    "name": "Mpumalanga Library and Information Service"
+  },
+  {
+    "code": "mfo",
+    "name": "Multinational Force and Observers"
+  },
+  {
+    "code": "multcolib",
+    "name": "Multnomah County Library"
+  },
+  {
+    "code": "mlcstl",
+    "name": "Municipal Library Consortium of St. Louis County"
+  },
+  {
+    "code": "murraylibrary",
+    "name": "Murray Library"
+  },
+  {
+    "code": "muskingum",
+    "name": "Muskingum County Library System"
+  },
+  {
+    "code": "muenchen",
+    "name": "Münchner Stadtbibliothek"
+  },
+  {
+    "code": "nachikatsuuratown",
+    "name": "Nachikatsuura Town Board of Education"
+  },
+  {
+    "code": "npl",
+    "name": "Nacogdoches Public Library"
+  },
+  {
+    "code": "nambucca",
+    "name": "Nambucca Valley Council Libraries"
+  },
+  {
+    "code": "nyjlib",
+    "name": "Namyangju-si Library"
+  },
+  {
+    "code": "ntclib",
+    "name": "Nantong Library"
+  },
+  {
+    "code": "naperville",
+    "name": "Naperville Public Library"
+  },
+  {
+    "code": "narita-public-library",
+    "name": "Narita Public Library"
+  },
+  {
+    "code": "narlib",
+    "name": "Narragansett Public Library (Maury Loontjens)"
+  },
+  {
+    "code": "nashville",
+    "name": "Nashville Public Library"
+  },
+  {
+    "code": "nassau",
+    "name": "Nassau Digital Doorway"
+  },
+  {
+    "code": "ncbi",
+    "name": "National Council for the Blind of Ireland"
+  },
+  {
+    "code": "enalis",
+    "name": "National Library and Information System Authority"
+  },
+  {
+    "code": "nlb",
+    "name": "National Library Board Singapore"
+  },
+  {
+    "code": "sejong",
+    "name": "National Library of Korea - Sejong"
+  },
+  {
+    "code": "bnllux",
+    "name": "National Library of Luxembourg"
+  },
+  {
+    "code": "pnm",
+    "name": "National Library of Malaysia"
+  },
+  {
+    "code": "navajoco",
+    "name": "Navajo County Library District"
+  },
+  {
+    "code": "nckids",
+    "name": "NC Kids Digital Library"
+  },
+  {
+    "code": "ncwlibraries",
+    "name": "NCW Libraries"
+  },
+  {
+    "code": "nptuk",
+    "name": "Neath Port Talbot Libraries"
+  },
+  {
+    "code": "nebraska",
+    "name": "Nebraska OverDrive Libraries"
+  },
+  {
+    "code": "neflin",
+    "name": "NEFLIN"
+  },
+  {
+    "code": "nmbm",
+    "name": "Nelson Mandela Bay Municipality"
+  },
+  {
+    "code": "silverstarcoop",
+    "name": "Nevada Library Cooperative"
+  },
+  {
+    "code": "newcanaanlibrary",
+    "name": "New Canaan Library"
+  },
+  {
+    "code": "lamb",
+    "name": "New Castle District Library Center"
+  },
+  {
+    "code": "nh",
+    "name": "New Hampshire State Library"
+  },
+  {
+    "code": "nhfpl",
+    "name": "New Haven Free Public Library"
+  },
+  {
+    "code": "nm",
+    "name": "New Mexico Library To Go"
+  },
+  {
+    "code": "nmruralbookmobiles",
+    "name": "New Mexico State Library Rural Services"
+  },
+  {
+    "code": "neworleans",
+    "name": "New Orleans Public Library"
+  },
+  {
+    "code": "nypl",
+    "name": "New York Public Library"
+  },
+  {
+    "code": "newcastlelibsuk",
+    "name": "Newcastle Libraries"
+  },
+  {
+    "code": "newcastleau",
+    "name": "Newcastle Region Library"
+  },
+  {
+    "code": "elibrary",
+    "name": "Newfoundland & Labrador Public Libraries"
+  },
+  {
+    "code": "newportuk",
+    "name": "Newport City Council"
+  },
+  {
+    "code": "nnpls",
+    "name": "Newport News Public Library System"
+  },
+  {
+    "code": "notlpubliclibrary",
+    "name": "Niagara-on-the-Lake Public Library"
+  },
+  {
+    "code": "nmls",
+    "name": "Nicholson Memorial Library System"
+  },
+  {
+    "code": "niederrhein",
+    "name": "Niederrhein"
+  },
+  {
+    "code": "nblib",
+    "name": "Ningbo Library (宁波图书馆)"
+  },
+  {
+    "code": "nioga",
+    "name": "Nioga Library System"
+  },
+  {
+    "code": "noble",
+    "name": "NOBLE: North of Boston Library Exchange"
+  },
+  {
+    "code": "noosaqld",
+    "name": "Noosa Library Service"
+  },
+  {
+    "code": "nordleihe",
+    "name": "Nordleihe"
+  },
+  {
+    "code": "norfolk",
+    "name": "Norfolk County Council"
+  },
+  {
+    "code": "norfolk-va",
+    "name": "Norfolk Public Library"
+  },
+  {
+    "code": "ncdigital",
+    "name": "North Carolina Digital Library"
+  },
+  {
+    "code": "northcountrylibraries",
+    "name": "North Country Library System"
+  },
+  {
+    "code": "ndlibrary2go",
+    "name": "North Dakota Digital Consortium"
+  },
+  {
+    "code": "northlanarkshire",
+    "name": "North Lanarkshire Libraries"
+  },
+  {
+    "code": "northmankato",
+    "name": "North Mankato Taylor Library"
+  },
+  {
+    "code": "northsmithfield",
+    "name": "North Smithfield Public Library"
+  },
+  {
+    "code": "northsomersetuk",
+    "name": "North Somerset"
+  },
+  {
+    "code": "nsdc",
+    "name": "North Suburban Digital Consortium"
+  },
+  {
+    "code": "indietexas",
+    "name": "North Texas Independent Digital Consortium"
+  },
+  {
+    "code": "ntrls",
+    "name": "North Texas Libraries on the Go"
+  },
+  {
+    "code": "northyorks",
+    "name": "North Yorkshire Libraries"
+  },
+  {
+    "code": "northamptonpa",
+    "name": "Northampton Area Public Library"
+  },
+  {
+    "code": "northamptonshire",
+    "name": "Northamptonshire Libraries and Information Services"
+  },
+  {
+    "code": "nacc",
+    "name": "Northeast Alabama Community College"
+  },
+  {
+    "code": "nepadl",
+    "name": "Northeast Pennsylvania Digital Library"
+  },
+  {
+    "code": "netldc",
+    "name": "Northeast Texas Digital Consortium"
+  },
+  {
+    "code": "northernbeacheslibraries",
+    "name": "Northern Beaches Libraries"
+  },
+  {
+    "code": "ncdl",
+    "name": "Northern California Digital Library"
+  },
+  {
+    "code": "nnyoverdrive",
+    "name": "Northern New York Library Network"
+  },
+  {
+    "code": "northnet",
+    "name": "NorthNet Library System"
+  },
+  {
+    "code": "ngrls",
+    "name": "Northwest Georgia Regional Library System"
+  },
+  {
+    "code": "nwrlib",
+    "name": "Northwest Regional Library System"
+  },
+  {
+    "code": "nwt",
+    "name": "Northwest Territories Public Libraries"
+  },
+  {
+    "code": "nu",
+    "name": "Northwest University"
+  },
+  {
+    "code": "nwrl",
+    "name": "Northwestern Regional Library"
+  },
+  {
+    "code": "norwalk",
+    "name": "Norwalk Public Library"
+  },
+  {
+    "code": "nottinghamcity",
+    "name": "Nottingham City Libraries"
+  },
+  {
+    "code": "nottinghamshire",
+    "name": "Nottinghamshire Libraries"
+  },
+  {
+    "code": "obrienmemoriallibrary",
+    "name": "O'Brien Memorial Library"
+  },
+  {
+    "code": "orpl",
+    "name": "Oak Ridge Public Library"
+  },
+  {
+    "code": "oakland",
+    "name": "Oakland Public Library"
+  },
+  {
+    "code": "obihirocity",
+    "name": "Obihiro City Library"
+  },
+  {
+    "code": "ocpl",
+    "name": "OC Public Libraries"
+  },
+  {
+    "code": "oceancity",
+    "name": "Ocean City Free Public Library"
+  },
+  {
+    "code": "ocl",
+    "name": "Ocean County Library"
+  },
+  {
+    "code": "riezone",
+    "name": "Ocean State Libraries eZone"
+  },
+  {
+    "code": "offalycountyie",
+    "name": "Offaly County Library"
+  },
+  {
+    "code": "oilcreek",
+    "name": "Oil Creek Library District"
+  },
+  {
+    "code": "okvirtuallibrary",
+    "name": "OK Virtual Library"
+  },
+  {
+    "code": "orl",
+    "name": "Okanagan Regional Library"
+  },
+  {
+    "code": "odl",
+    "name": "Oklahoma Department of Libraries"
+  },
+  {
+    "code": "ocln",
+    "name": "Old Colony Library Network"
+  },
+  {
+    "code": "oldtownpub",
+    "name": "Old Town Public Library"
+  },
+  {
+    "code": "oldhamgb",
+    "name": "Oldham Libraries"
+  },
+  {
+    "code": "omaha",
+    "name": "Omaha Public Library"
+  },
+  {
+    "code": "onchan",
+    "name": "Onchan Public Library"
+  },
+  {
+    "code": "omnilibraries",
+    "name": "Online Media of Northern Illinois Libraries"
+  },
+  {
+    "code": "onomichi-city",
+    "name": "Onomichi City Library"
+  },
+  {
+    "code": "onlib",
+    "name": "Onondaga County Public Library"
+  },
+  {
+    "code": "odmc",
+    "name": "Ontario Library Service Consortium"
+  },
+  {
+    "code": "ocls",
+    "name": "Orange County Library System"
+  },
+  {
+    "code": "ocnc",
+    "name": "Orange County Public Library"
+  },
+  {
+    "code": "library2go",
+    "name": "Oregon Digital Library Consortium"
+  },
+  {
+    "code": "orlandparklibrary",
+    "name": "Orland Park Public Library"
+  },
+  {
+    "code": "oronome",
+    "name": "Orono Public Library"
+  },
+  {
+    "code": "deichman",
+    "name": "Oslo Public Library"
+  },
+  {
+    "code": "ottawa",
+    "name": "Ottawa Public Library"
+  },
+  {
+    "code": "bw",
+    "name": "Overdrive Baden-Württemberg"
+  },
+  {
+    "code": "rlp",
+    "name": "OverDrive Rheinland-Pfalz"
+  },
+  {
+    "code": "s-h",
+    "name": "OverDrive Schleswig-Holstein"
+  },
+  {
+    "code": "franken",
+    "name": "OverDrive Verbund Franken"
+  },
+  {
+    "code": "owwl",
+    "name": "OWWL Library System"
+  },
+  {
+    "code": "oxfordshire",
+    "name": "Oxfordshire County Council"
+  },
+  {
+    "code": "pajulib",
+    "name": "Paju Hanbit Library"
+  },
+  {
+    "code": "palmspringslibrary",
+    "name": "Palm Springs Public Library"
+  },
+  {
+    "code": "palmetto",
+    "name": "Palmetto Library Consortium"
+  },
+  {
+    "code": "pvld",
+    "name": "Palos Verdes Library District"
+  },
+  {
+    "code": "palsplus",
+    "name": "PALS Plus NJ OverDrive Library"
+  },
+  {
+    "code": "prl",
+    "name": "Pamunkey Regional Library"
+  },
+  {
+    "code": "panhandle",
+    "name": "Panhandle Library Access Network"
+  },
+  {
+    "code": "prls",
+    "name": "Parkland Regional Library"
+  },
+  {
+    "code": "pasadena",
+    "name": "Pasadena Public Library"
+  },
+  {
+    "code": "pembrokeshire",
+    "name": "Pembrokeshire Libraries"
+  },
+  {
+    "code": "penang",
+    "name": "Penang Digital Library"
+  },
+  {
+    "code": "pls",
+    "name": "Peninsula Library System"
+  },
+  {
+    "code": "penrith",
+    "name": "Penrith City Library"
+  },
+  {
+    "code": "pentagonlib",
+    "name": "Pentagon Library"
+  },
+  {
+    "code": "ppas",
+    "name": "Perbadanan Perpustakaan Awam Selangor"
+  },
+  {
+    "code": "librarybrunei",
+    "name": "Perpustakaan Dewan Bahasa dan Pustaka Brunei"
+  },
+  {
+    "code": "ptbolibrary",
+    "name": "Peterborough Public Library"
+  },
+  {
+    "code": "pettes",
+    "name": "Pettes Memorial Library"
+  },
+  {
+    "code": "phillipsburgnj",
+    "name": "Phillipsburg Free Public Library"
+  },
+  {
+    "code": "pickens",
+    "name": "Pickens County Library System"
+  },
+  {
+    "code": "piercecounty",
+    "name": "Pierce County Library System"
+  },
+  {
+    "code": "ppld",
+    "name": "Pikes Peak Library District"
+  },
+  {
+    "code": "piki",
+    "name": "PIKI Libraries"
+  },
+  {
+    "code": "pima",
+    "name": "Pima County Public Library"
+  },
+  {
+    "code": "pplc",
+    "name": "Pinellas Public Library Cooperative"
+  },
+  {
+    "code": "pwdl",
+    "name": "Piney Woods Digital Consortium"
+  },
+  {
+    "code": "pinnacle",
+    "name": "Pinnacle Digital Consortium"
+  },
+  {
+    "code": "pioneerok",
+    "name": "Pioneer Library System"
+  },
+  {
+    "code": "pioneerland",
+    "name": "Pioneerland Library System"
+  },
+  {
+    "code": "piti-library",
+    "name": "Piti Library"
+  },
+  {
+    "code": "plano",
+    "name": "Plano Public Library System"
+  },
+  {
+    "code": "plumcreeklibrary",
+    "name": "Plum Creek Library System"
+  },
+  {
+    "code": "plymouthuk",
+    "name": "Plymouth Library Services"
+  },
+  {
+    "code": "pek",
+    "name": "Pohjoisen eKirjasto"
+  },
+  {
+    "code": "pokagon",
+    "name": "Pokagon Tribal Library"
+  },
+  {
+    "code": "pclc",
+    "name": "Polk County Library Cooperative"
+  },
+  {
+    "code": "portphillip",
+    "name": "Port Phillip Library Service"
+  },
+  {
+    "code": "portagelibrary",
+    "name": "Portage County District Library"
+  },
+  {
+    "code": "poudre",
+    "name": "Poudre River Public Library District"
+  },
+  {
+    "code": "powysuk",
+    "name": "Powys County Council"
+  },
+  {
+    "code": "prairiestate",
+    "name": "Prairie State College"
+  },
+  {
+    "code": "peipls",
+    "name": "Prince Edward Island Public Library Service"
+  },
+  {
+    "code": "pgcmls",
+    "name": "Prince George's County Memorial Library System"
+  },
+  {
+    "code": "princewilliam",
+    "name": "Prince William Public Library System"
+  },
+  {
+    "code": "princetonlibrary",
+    "name": "Princeton Public Library"
+  },
+  {
+    "code": "saginawlibrary",
+    "name": "Public Libraries of Saginaw"
+  },
+  {
+    "code": "interlinklibraries",
+    "name": "Public Library InterLINK - Restricted to Print Disabled Patrons"
+  },
+  {
+    "code": "pueblolibrary",
+    "name": "Pueblo City-County Library District"
+  },
+  {
+    "code": "queenslibrary",
+    "name": "Queens Public Library"
+  },
+  {
+    "code": "qroc",
+    "name": "Queensland Regional OverDrive Consortium"
+  },
+  {
+    "code": "rafbokasafnid",
+    "name": "Rafbókasafnið"
+  },
+  {
+    "code": "rcls",
+    "name": "Ramapo Catskill Library System"
+  },
+  {
+    "code": "rml",
+    "name": "Rancho Mirage Public Library"
+  },
+  {
+    "code": "randolph",
+    "name": "Randolph County Public Library"
+  },
+  {
+    "code": "randwick",
+    "name": "Randwick City Library Services"
+  },
+  {
+    "code": "anythinklibraries",
+    "name": "Rangeview Library District"
+  },
+  {
+    "code": "rpl",
+    "name": "Rapides Parish Library"
+  },
+  {
+    "code": "reading",
+    "name": "Reading District Libraries"
+  },
+  {
+    "code": "readinguk",
+    "name": "Reading Libraries"
+  },
+  {
+    "code": "bibliotecascomfenalcoantioquia",
+    "name": "Red de Bibliotecas de CCF Comfenalco Antioquia"
+  },
+  {
+    "code": "rdpl",
+    "name": "Red Deer Public Library"
+  },
+  {
+    "code": "redlandqld",
+    "name": "Redland City Library Service"
+  },
+  {
+    "code": "rbpl",
+    "name": "Redondo Beach Public Library"
+  },
+  {
+    "code": "rpidrs",
+    "name": "Religionspädagogische Institute der Diözese Rottenburg-Stuttgart"
+  },
+  {
+    "code": "renfrewshire",
+    "name": "Renfrewshire Libraries"
+  },
+  {
+    "code": "rctcbcuk",
+    "name": "Rhondda-Cynon-Taf County Borough Libraries"
+  },
+  {
+    "code": "ricepubliclibrary",
+    "name": "Rice Public Library"
+  },
+  {
+    "code": "richardson",
+    "name": "Richardson Public Library"
+  },
+  {
+    "code": "myrl",
+    "name": "Richland Library"
+  },
+  {
+    "code": "rhpl",
+    "name": "Richmond Hill Public Library"
+  },
+  {
+    "code": "yourlibraryca",
+    "name": "Richmond Public Library"
+  },
+  {
+    "code": "richmondpubliclibrary",
+    "name": "Richmond Public Library"
+  },
+  {
+    "code": "richmondlibrary",
+    "name": "Richmond Public Library"
+  },
+  {
+    "code": "rtrlnsw",
+    "name": "Richmond-Tweed Regional Library"
+  },
+  {
+    "code": "riopl",
+    "name": "Rio Rancho Public Library"
+  },
+  {
+    "code": "rivershare",
+    "name": "RiverShare Library System"
+  },
+  {
+    "code": "iedigital",
+    "name": "Riverside County Library System"
+  },
+  {
+    "code": "rvl",
+    "name": "Roanoke Valley Libraries"
+  },
+  {
+    "code": "kleberglibrary",
+    "name": "Robert J. Kleberg Public Library"
+  },
+  {
+    "code": "rochdaleuk",
+    "name": "Rochdale Libraries"
+  },
+  {
+    "code": "rochester",
+    "name": "Rochester Public Library"
+  },
+  {
+    "code": "rockhampton",
+    "name": "Rockhampton Regional Library Services"
+  },
+  {
+    "code": "rpls",
+    "name": "Rolling Prairie Digital Consortium"
+  },
+  {
+    "code": "roscommonie",
+    "name": "Roscommon County Library"
+  },
+  {
+    "code": "rotorua",
+    "name": "Rotorua Library"
+  },
+  {
+    "code": "roundrock",
+    "name": "Round Rock Public Library System"
+  },
+  {
+    "code": "rbwm",
+    "name": "Royal Borough of Windsor & Maidenhead"
+  },
+  {
+    "code": "rutlanduk",
+    "name": "Rutland Library Service"
+  },
+  {
+    "code": "ryutosho",
+    "name": "Ryugasaki Public Library"
+  },
+  {
+    "code": "simbacqlm",
+    "name": "Réseau BIBLIO CQLM"
+  },
+  {
+    "code": "simba2",
+    "name": "Réseau BIBLIO de la Montérégie"
+  },
+  {
+    "code": "sabah",
+    "name": "Sabah State Library"
+  },
+  {
+    "code": "saclibrary",
+    "name": "Sacramento Public Library"
+  },
+  {
+    "code": "sails",
+    "name": "SAILS Library Network"
+  },
+  {
+    "code": "stclaircounty",
+    "name": "Saint Clair County Library"
+  },
+  {
+    "code": "bibstlaz",
+    "name": "Saint-Lazare Library"
+  },
+  {
+    "code": "sakuradigital-library",
+    "name": "Sakura City Library"
+  },
+  {
+    "code": "salforduk",
+    "name": "Salford Libraries"
+  },
+  {
+    "code": "salinaspubliclibrary",
+    "name": "Salinas Public Library"
+  },
+  {
+    "code": "slcpl",
+    "name": "Salt Lake City Public Library"
+  },
+  {
+    "code": "slco",
+    "name": "Salt Lake County Library Services"
+  },
+  {
+    "code": "samepage",
+    "name": "Same Page Libraries"
+  },
+  {
+    "code": "samsung",
+    "name": "Samsung Electronics UK"
+  },
+  {
+    "code": "sanantonio",
+    "name": "San Antonio Public Library"
+  },
+  {
+    "code": "sbcldigital",
+    "name": "San Bernardino County Library"
+  },
+  {
+    "code": "sbpl",
+    "name": "San Bernardino Public Library"
+  },
+  {
+    "code": "sdcl",
+    "name": "San Diego County Library"
+  },
+  {
+    "code": "sfpl",
+    "name": "San Francisco Public Library"
+  },
+  {
+    "code": "sanjose",
+    "name": "San Jose Public Library"
+  },
+  {
+    "code": "ebookssjclibrary",
+    "name": "San Juan Community Library"
+  },
+  {
+    "code": "sanleandrolibrary",
+    "name": "San Leandro Public Library"
+  },
+  {
+    "code": "srlsinfo",
+    "name": "Sandhill Regional Library System"
+  },
+  {
+    "code": "sandoval",
+    "name": "Sandoval County Library Consortium"
+  },
+  {
+    "code": "sandwelluk",
+    "name": "Sandwell Libraries"
+  },
+  {
+    "code": "sanibel",
+    "name": "Sanibel Public Library"
+  },
+  {
+    "code": "sanjo-digital-lib",
+    "name": "Sanjo City Library"
+  },
+  {
+    "code": "santaanapubliclibrary",
+    "name": "Santa Ana Public Library"
+  },
+  {
+    "code": "santabarbara",
+    "name": "Santa Barbara Public Library"
+  },
+  {
+    "code": "santaclara",
+    "name": "Santa Clara County Library"
+  },
+  {
+    "code": "sanfe",
+    "name": "Santa Fe Public Library"
+  },
+  {
+    "code": "santamonica",
+    "name": "Santa Monica Public Library"
+  },
+  {
+    "code": "santarosa",
+    "name": "Santa Rosa County Library System"
+  },
+  {
+    "code": "saskatchewan",
+    "name": "Saskatchewan Library Consortium"
+  },
+  {
+    "code": "saxtonblittle",
+    "name": "Saxton B. Little Free Library"
+  },
+  {
+    "code": "scarborough",
+    "name": "Scarborough Public Library"
+  },
+  {
+    "code": "scenicregional",
+    "name": "Scenic Regional Library"
+  },
+  {
+    "code": "seagirtnj",
+    "name": "Sea Girt Public Library"
+  },
+  {
+    "code": "spl",
+    "name": "Seattle Public Library"
+  },
+  {
+    "code": "seftonuk",
+    "name": "Sefton Libraries"
+  },
+  {
+    "code": "sekicity",
+    "name": "Seki City Library"
+  },
+  {
+    "code": "semcofl",
+    "name": "Seminole County Public Library System"
+  },
+  {
+    "code": "senecalibraries",
+    "name": "Seneca District Libraries"
+  },
+  {
+    "code": "seocholib",
+    "name": "Seocho Library"
+  },
+  {
+    "code": "seoullib",
+    "name": "Seoul Metropolitan Library"
+  },
+  {
+    "code": "sequoyah",
+    "name": "Sequoyah Regional Library System"
+  },
+  {
+    "code": "serra",
+    "name": "Serra Cooperative Library System"
+  },
+  {
+    "code": "seynatlib",
+    "name": "Seychelles National Library"
+  },
+  {
+    "code": "sst",
+    "name": "Shanghai Children's Library (上海少年儿童图书馆)"
+  },
+  {
+    "code": "sh",
+    "name": "Shanghai Library (上海图书馆)"
+  },
+  {
+    "code": "xhlib",
+    "name": "Shanghai Xuhui District Library ?????????"
+  },
+  {
+    "code": "sheffielduk",
+    "name": "Sheffield Libraries"
+  },
+  {
+    "code": "sz",
+    "name": "Shenzhen Library (深圳图书馆)"
+  },
+  {
+    "code": "sheppardnc",
+    "name": "Sheppard Memorial Library"
+  },
+  {
+    "code": "shetlanduk",
+    "name": "Shetland Library"
+  },
+  {
+    "code": "shioya-town-lib",
+    "name": "Shioya Town Library"
+  },
+  {
+    "code": "campaspe",
+    "name": "Shire of Campaspe"
+  },
+  {
+    "code": "shorelinknsw",
+    "name": "Shorelink Library Network"
+  },
+  {
+    "code": "shortgrass",
+    "name": "Shortgrass Library System"
+  },
+  {
+    "code": "sxmlibrary",
+    "name": "Sint Maarten Library"
+  },
+  {
+    "code": "siouxlndsd",
+    "name": "Siouxland Libraries"
+  },
+  {
+    "code": "skokielibrary",
+    "name": "Skokie Public Library"
+  },
+  {
+    "code": "sligocountyie",
+    "name": "Sligo County Council"
+  },
+  {
+    "code": "sloughuk",
+    "name": "Slough Libraries"
+  },
+  {
+    "code": "svld",
+    "name": "Smoky Valley Library District"
+  },
+  {
+    "code": "sno-isle",
+    "name": "Sno-Isle Libraries"
+  },
+  {
+    "code": "solano",
+    "name": "Solano County Library"
+  },
+  {
+    "code": "solihulluk",
+    "name": "Solihull Metropolitan Borough Council"
+  },
+  {
+    "code": "solna",
+    "name": "Solna Stadsbibliotek"
+  },
+  {
+    "code": "somerset",
+    "name": "Somerset County Library System"
+  },
+  {
+    "code": "somersetuk",
+    "name": "Somerset Library"
+  },
+  {
+    "code": "yspubliclib",
+    "name": "Songdo International Children's Library"
+  },
+  {
+    "code": "ssllib",
+    "name": "Songshan Lake Library"
+  },
+  {
+    "code": "sonoma",
+    "name": "Sonoma County Library"
+  },
+  {
+    "code": "sapln",
+    "name": "South Australian Public Library Network"
+  },
+  {
+    "code": "south-ayrshire",
+    "name": "South Ayrshire Libraries"
+  },
+  {
+    "code": "jasmine",
+    "name": "South Carolina Low Country Consortium"
+  },
+  {
+    "code": "southdakota",
+    "name": "South Dakota Digital Consortium"
+  },
+  {
+    "code": "southdublinie",
+    "name": "South Dublin Libraries"
+  },
+  {
+    "code": "southeastzone",
+    "name": "South East Zone"
+  },
+  {
+    "code": "southglosuk",
+    "name": "South Gloucestershire Libraries"
+  },
+  {
+    "code": "southisland",
+    "name": "South Island"
+  },
+  {
+    "code": "sjrlc",
+    "name": "South Jersey Regional Library Cooperative"
+  },
+  {
+    "code": "slanarkshire",
+    "name": "South Lanarkshire Libraries"
+  },
+  {
+    "code": "southtexas",
+    "name": "South Texas Library System"
+  },
+  {
+    "code": "southtyneside",
+    "name": "South Tyneside Libraries"
+  },
+  {
+    "code": "southwestzone",
+    "name": "South West Zone"
+  },
+  {
+    "code": "southamptonuk",
+    "name": "Southampton City Libraries"
+  },
+  {
+    "code": "seadl",
+    "name": "Southeast Alabama Digital Library"
+  },
+  {
+    "code": "sefl-municipal",
+    "name": "Southeast Florida Library Association"
+  },
+  {
+    "code": "southeasternok",
+    "name": "Southeast Oklahoma Library System"
+  },
+  {
+    "code": "selco",
+    "name": "Southeastern Libraries Cooperating"
+  },
+  {
+    "code": "southendonseauk",
+    "name": "Southend-on-Sea Libraries"
+  },
+  {
+    "code": "salon",
+    "name": "Southern Adirondack Library System"
+  },
+  {
+    "code": "scdl",
+    "name": "Southern California Digital Library"
+  },
+  {
+    "code": "sdrcqld",
+    "name": "Southern Downs Regional Council"
+  },
+  {
+    "code": "stls",
+    "name": "Southern Tier Library System"
+  },
+  {
+    "code": "sovalue",
+    "name": "Southern Virginia Libraries United Electronically"
+  },
+  {
+    "code": "southwestfl",
+    "name": "Southwest Florida Library Network"
+  },
+  {
+    "code": "smdl",
+    "name": "Southwest Michigan Digital Library"
+  },
+  {
+    "code": "svlc",
+    "name": "Southwest Valley Library Consortium"
+  },
+  {
+    "code": "swvapub",
+    "name": "Southwest Virginia Public Libraries"
+  },
+  {
+    "code": "spartanburglibraries",
+    "name": "Spartanburg County Public Libraries"
+  },
+  {
+    "code": "scld",
+    "name": "Spokane County Library District"
+  },
+  {
+    "code": "spokanelibrary",
+    "name": "Spokane Public Library"
+  },
+  {
+    "code": "springfield",
+    "name": "Springfield-Greene County Library"
+  },
+  {
+    "code": "sapl",
+    "name": "St. Albert Public Library"
+  },
+  {
+    "code": "stcharles",
+    "name": "St. Charles City-County Library District"
+  },
+  {
+    "code": "sthelensuk",
+    "name": "St. Helens Library Service"
+  },
+  {
+    "code": "sjcpls",
+    "name": "St. Johns County Public Library"
+  },
+  {
+    "code": "sjcpl",
+    "name": "St. Joseph County Public Library"
+  },
+  {
+    "code": "slcl",
+    "name": "St. Louis County Library"
+  },
+  {
+    "code": "slpl",
+    "name": "St. Louis Public Library"
+  },
+  {
+    "code": "stlucieco",
+    "name": "St. Lucie County Library System"
+  },
+  {
+    "code": "sttammany",
+    "name": "St. Tammany Parish Library"
+  },
+  {
+    "code": "dortmund",
+    "name": "Stadt- und Landesbibliothek Dortmund"
+  },
+  {
+    "code": "slb-potsdam",
+    "name": "Stadt- und Landesbibliothek Potsdam"
+  },
+  {
+    "code": "stbbielefeld",
+    "name": "Stadtbibliothek Bielefeld"
+  },
+  {
+    "code": "braunschweig",
+    "name": "Stadtbibliothek Braunschweig"
+  },
+  {
+    "code": "bremen",
+    "name": "Stadtbibliothek Bremen"
+  },
+  {
+    "code": "detmold",
+    "name": "Stadtbibliothek Detmold"
+  },
+  {
+    "code": "stadtbibliothek-graz",
+    "name": "Stadtbibliothek Graz"
+  },
+  {
+    "code": "guetersloh",
+    "name": "Stadtbibliothek Gütersloh"
+  },
+  {
+    "code": "halle",
+    "name": "Stadtbibliothek Halle"
+  },
+  {
+    "code": "eausleihe-hannover",
+    "name": "Stadtbibliothek Hannover"
+  },
+  {
+    "code": "karlsruhe",
+    "name": "Stadtbibliothek Karlsruhe"
+  },
+  {
+    "code": "koeln",
+    "name": "Stadtbibliothek Köln"
+  },
+  {
+    "code": "md",
+    "name": "Stadtbibliothek Magdeburg"
+  },
+  {
+    "code": "osnabrueck",
+    "name": "Stadtbibliothek Osnabrück"
+  },
+  {
+    "code": "paderborn",
+    "name": "Stadtbibliothek Paderborn"
+  },
+  {
+    "code": "pforzheim",
+    "name": "Stadtbibliothek Pforzheim"
+  },
+  {
+    "code": "stuttgart",
+    "name": "Stadtbibliothek Stuttgart"
+  },
+  {
+    "code": "wuppertal",
+    "name": "Stadtbibliothek Wuppertal"
+  },
+  {
+    "code": "stabuebadsalzuflen",
+    "name": "Stadtbücherei Bad Salzuflen"
+  },
+  {
+    "code": "biberach",
+    "name": "Stadtbücherei Biberach"
+  },
+  {
+    "code": "stadtbuechereimuenster",
+    "name": "Stadtbücherei Münster"
+  },
+  {
+    "code": "duesseldorf",
+    "name": "Stadtbüchereien Düsseldorf"
+  },
+  {
+    "code": "staffordshireuk",
+    "name": "Staffordshire County Council"
+  },
+  {
+    "code": "statelibks",
+    "name": "State Library of Kansas"
+  },
+  {
+    "code": "jerseylibrary",
+    "name": "States of Jersey"
+  },
+  {
+    "code": "stirlinguk",
+    "name": "Stirling Libraries"
+  },
+  {
+    "code": "stockportgb",
+    "name": "Stockport Libraries, Information, Advice"
+  },
+  {
+    "code": "e-stockton",
+    "name": "Stockton-on-Tees Libraries"
+  },
+  {
+    "code": "ssjcpl",
+    "name": "Stockton-San Joaquin County Public Library"
+  },
+  {
+    "code": "stonington",
+    "name": "Stonington Free Library"
+  },
+  {
+    "code": "stratford",
+    "name": "Stratford Library Association"
+  },
+  {
+    "code": "sclibrary",
+    "name": "Strathcona County Library"
+  },
+  {
+    "code": "slc",
+    "name": "Suburban Library Cooperative"
+  },
+  {
+    "code": "suffolklibraries",
+    "name": "Suffolk Libraries"
+  },
+  {
+    "code": "suffolkva",
+    "name": "Suffolk Public Library System"
+  },
+  {
+    "code": "scw",
+    "name": "Sun City West - R. H. Johnson Library"
+  },
+  {
+    "code": "sunderlanduk",
+    "name": "Sunderland Libraries Services"
+  },
+  {
+    "code": "sunflowerelibrary",
+    "name": "Sunflower eLibrary"
+  },
+  {
+    "code": "sunnyvale",
+    "name": "Sunnyvale Public Library"
+  },
+  {
+    "code": "scl",
+    "name": "Sunshine Coast Libraries"
+  },
+  {
+    "code": "surreycountyuk",
+    "name": "Surrey County Council"
+  },
+  {
+    "code": "surreyca",
+    "name": "Surrey Libraries"
+  },
+  {
+    "code": "city-susaki",
+    "name": "Susaki City Library"
+  },
+  {
+    "code": "sutherland",
+    "name": "Sutherland Shire Council"
+  },
+  {
+    "code": "szlib",
+    "name": "Suzhou Library (苏州图书馆)"
+  },
+  {
+    "code": "swanseauk",
+    "name": "Swansea Libraries"
+  },
+  {
+    "code": "smsa",
+    "name": "Sydney Mechanics' School of Arts"
+  },
+  {
+    "code": "stavanger",
+    "name": "Sølvberget bibliotek og kulturhus"
+  },
+  {
+    "code": "tacoma",
+    "name": "Tacoma Public Library"
+  },
+  {
+    "code": "taipei",
+    "name": "Taipei Public Library"
+  },
+  {
+    "code": "keskraamatukogu",
+    "name": "Tallinn Central Library"
+  },
+  {
+    "code": "tamaki-town-library",
+    "name": "Tamaki Town Library"
+  },
+  {
+    "code": "tamesideuk",
+    "name": "Tameside Libraries"
+  },
+  {
+    "code": "tblc",
+    "name": "Tampa Bay Library Consortium"
+  },
+  {
+    "code": "tateyama-city",
+    "name": "Tateyama Municipal Library"
+  },
+  {
+    "code": "telford",
+    "name": "Telford & Wrekin Libraries"
+  },
+  {
+    "code": "tempe",
+    "name": "Tempe Public Library"
+  },
+  {
+    "code": "reads",
+    "name": "Tennessee READS"
+  },
+  {
+    "code": "teshiotown",
+    "name": "Teshio Town Social Welfare Center Library"
+  },
+  {
+    "code": "tkpark",
+    "name": "Thailand Knowledge Park"
+  },
+  {
+    "code": "stamford",
+    "name": "The Ferguson Library"
+  },
+  {
+    "code": "freelibrary",
+    "name": "The Free Library of Philadelphia"
+  },
+  {
+    "code": "thehills",
+    "name": "The Hills Library Service"
+  },
+  {
+    "code": "tlc",
+    "name": "The Libraries Consortium"
+  },
+  {
+    "code": "mercantile",
+    "name": "The Mercantile Library"
+  },
+  {
+    "code": "ohdbks",
+    "name": "The Ohio Digital Library"
+  },
+  {
+    "code": "youngstown",
+    "name": "The Public Library of Youngstown and Mahoning County"
+  },
+  {
+    "code": "thomasbran",
+    "name": "Thomas Branigan Memorial Library"
+  },
+  {
+    "code": "tolibrary",
+    "name": "Thousand Oaks Library System"
+  },
+  {
+    "code": "tbpl",
+    "name": "Thunder Bay Public Library"
+  },
+  {
+    "code": "thurrockuk",
+    "name": "Thurrock Library Service"
+  },
+  {
+    "code": "tibet",
+    "name": "Tibet Library"
+  },
+  {
+    "code": "timberland",
+    "name": "Timberland Regional Library"
+  },
+  {
+    "code": "tipperaryie",
+    "name": "Tipperary Public Library"
+  },
+  {
+    "code": "toledo",
+    "name": "Toledo Lucas County Public Library"
+  },
+  {
+    "code": "tgclibrary",
+    "name": "Tom Green County Library System"
+  },
+  {
+    "code": "toowoombaqld",
+    "name": "Toowoomba Region Libraries"
+  },
+  {
+    "code": "tscpl",
+    "name": "Topeka and Shawnee County Public Library"
+  },
+  {
+    "code": "torfaenuk",
+    "name": "Torfaen County Borough Library"
+  },
+  {
+    "code": "toronto",
+    "name": "Toronto Public Library"
+  },
+  {
+    "code": "torrance",
+    "name": "Torrance Public Library"
+  },
+  {
+    "code": "townsvilleqld",
+    "name": "Townsville Library Service"
+  },
+  {
+    "code": "trac",
+    "name": "TRAC Consortium"
+  },
+  {
+    "code": "traffordgb",
+    "name": "Trafford Libraries"
+  },
+  {
+    "code": "tadl",
+    "name": "Traverse Area District Library"
+  },
+  {
+    "code": "tds",
+    "name": "Traverse des Sioux Library Cooperative"
+  },
+  {
+    "code": "triparish",
+    "name": "Tri-Parish E-Library"
+  },
+  {
+    "code": "trondelag",
+    "name": "Trøndelag"
+  },
+  {
+    "code": "tularecounty",
+    "name": "Tulare County Library"
+  },
+  {
+    "code": "tulsa",
+    "name": "Tulsa City-County Library"
+  },
+  {
+    "code": "tuscaloosa",
+    "name": "Tuscaloosa Public Library"
+  },
+  {
+    "code": "cwcl",
+    "name": "Uichang Library"
+  },
+  {
+    "code": "uilib",
+    "name": "Uijeongbu Library"
+  },
+  {
+    "code": "uwlib",
+    "name": "Uiwang City Global Library"
+  },
+  {
+    "code": "ujicity-library",
+    "name": "Uji City Library"
+  },
+  {
+    "code": "unioncounty",
+    "name": "Union County Library"
+  },
+  {
+    "code": "upnorth",
+    "name": "Up North Michigan Consortium"
+  },
+  {
+    "code": "uhls",
+    "name": "Upper Hudson Library System"
+  },
+  {
+    "code": "novel",
+    "name": "Upper North Island"
+  },
+  {
+    "code": "rubysisson",
+    "name": "Upper San Juan Library District"
+  },
+  {
+    "code": "usu",
+    "name": "Utah State University"
+  },
+  {
+    "code": "valeofglamorgan",
+    "name": "Vale of Glamorgan Libraries"
+  },
+  {
+    "code": "vdl",
+    "name": "Valley Digital Library"
+  },
+  {
+    "code": "valnet",
+    "name": "Valnet"
+  },
+  {
+    "code": "virl",
+    "name": "Vancouver Island Regional Library"
+  },
+  {
+    "code": "vpl",
+    "name": "Vancouver Public Library"
+  },
+  {
+    "code": "vaski",
+    "name": "Vaski/Turku City Library"
+  },
+  {
+    "code": "vaughanpl",
+    "name": "Vaughan Public Libraries"
+  },
+  {
+    "code": "vapld",
+    "name": "Vernon Area Public Library District"
+  },
+  {
+    "code": "viken",
+    "name": "Viken Fylkesbibliotek"
+  },
+  {
+    "code": "vikingdigitallibrary",
+    "name": "Viking Library System"
+  },
+  {
+    "code": "vbpl",
+    "name": "Virginia Beach Public Library"
+  },
+  {
+    "code": "vppl",
+    "name": "Virginia Piedmont Public Libraries"
+  },
+  {
+    "code": "virtuallibrary",
+    "name": "Virtual Library of Wyoming"
+  },
+  {
+    "code": "volusia",
+    "name": "Volusia County Public Library"
+  },
+  {
+    "code": "wakegov",
+    "name": "Wake County Public Libraries"
+  },
+  {
+    "code": "wakefielduk",
+    "name": "Wakefield Libraries and Information Services"
+  },
+  {
+    "code": "walsalluk",
+    "name": "Walsall Libraries"
+  },
+  {
+    "code": "warrenco",
+    "name": "Warren County-Vicksburg Public Library"
+  },
+  {
+    "code": "wtcpl",
+    "name": "Warren-Trumbull County Public Library"
+  },
+  {
+    "code": "warwickshiregb",
+    "name": "Warwickshire Library and Information Service"
+  },
+  {
+    "code": "anytime",
+    "name": "Washington Anytime Library"
+  },
+  {
+    "code": "wccls",
+    "name": "Washington County Cooperative Library Services"
+  },
+  {
+    "code": "waggin",
+    "name": "Washington District Libraries"
+  },
+  {
+    "code": "washoecounty",
+    "name": "Washoe County Library System"
+  },
+  {
+    "code": "waterfordlib",
+    "name": "Waterford City & County Libraries"
+  },
+  {
+    "code": "waverley",
+    "name": "Waverley Library"
+  },
+  {
+    "code": "wflib",
+    "name": "Weifang Library (潍坊市图书馆)"
+  },
+  {
+    "code": "wcl",
+    "name": "Wellington City Libraries"
+  },
+  {
+    "code": "wellingtonvic",
+    "name": "Wellington Shire Library Service"
+  },
+  {
+    "code": "wzlib",
+    "name": "Wenzhou Library (温州市图书馆)"
+  },
+  {
+    "code": "westberks",
+    "name": "West Berkshire Libraries"
+  },
+  {
+    "code": "westcaldwellnj",
+    "name": "West Caldwell Public Library"
+  },
+  {
+    "code": "westlothianuk",
+    "name": "West Lothian Libraries"
+  },
+  {
+    "code": "westsussexuk",
+    "name": "West Sussex County Council"
+  },
+  {
+    "code": "westtexas",
+    "name": "West Texas Digital Consortium"
+  },
+  {
+    "code": "wvdeli",
+    "name": "West Virginia Downloadable Entertainment Library Initiative"
+  },
+  {
+    "code": "wvreads",
+    "name": "West Virginia Reads"
+  },
+  {
+    "code": "westbanklibrary",
+    "name": "Westbank Community Library District"
+  },
+  {
+    "code": "westchester",
+    "name": "Westchester Library System"
+  },
+  {
+    "code": "wpl",
+    "name": "Westchester Public Library"
+  },
+  {
+    "code": "wapldmc",
+    "name": "Western Australia Public Libraries"
+  },
+  {
+    "code": "westerncape",
+    "name": "Western Cape Provincial Library"
+  },
+  {
+    "code": "wdsbau",
+    "name": "Western Downs-South Burnett Consortium"
+  },
+  {
+    "code": "cne-siar",
+    "name": "Western Isles Libraries"
+  },
+  {
+    "code": "wplibs",
+    "name": "Western Plains Library System"
+  },
+  {
+    "code": "westleihe24",
+    "name": "Westleihe24"
+  },
+  {
+    "code": "westmeathie",
+    "name": "Westmeath County Library"
+  },
+  {
+    "code": "westmoreland",
+    "name": "Westmoreland eBook Network"
+  },
+  {
+    "code": "westmount",
+    "name": "Westmount Public Library"
+  },
+  {
+    "code": "wexfordie",
+    "name": "Wexford County Council Public Libraries"
+  },
+  {
+    "code": "whitby",
+    "name": "Whitby Public Library"
+  },
+  {
+    "code": "fuelyourmind",
+    "name": "White Pine Library Cooperative"
+  },
+  {
+    "code": "wml",
+    "name": "Whitehorse Manningham Regional Library Corporation"
+  },
+  {
+    "code": "whitsundayrc",
+    "name": "Whitsunday Regional Council Library Service"
+  },
+  {
+    "code": "whittierpubliclibrary",
+    "name": "Whittier Public Library"
+  },
+  {
+    "code": "wichita",
+    "name": "Wichita Public Library"
+  },
+  {
+    "code": "wicklowie",
+    "name": "Wicklow County Library"
+  },
+  {
+    "code": "wiganuk",
+    "name": "Wigan Libraries"
+  },
+  {
+    "code": "wrl",
+    "name": "Williamsburg Regional Library"
+  },
+  {
+    "code": "willoughbycc",
+    "name": "Willoughby City Council"
+  },
+  {
+    "code": "wiltshirelibsuk",
+    "name": "Wiltshire Council Libraries"
+  },
+  {
+    "code": "windsorca",
+    "name": "Windsor Public Library"
+  },
+  {
+    "code": "winnipeg",
+    "name": "Winnipeg Public Library"
+  },
+  {
+    "code": "winterparklibrary",
+    "name": "Winter Park Public Library"
+  },
+  {
+    "code": "wirral",
+    "name": "Wirral Libraries"
+  },
+  {
+    "code": "wiscal",
+    "name": "Wisconsin Academic Library Consortium"
+  },
+  {
+    "code": "wplc",
+    "name": "Wisconsin Public Library Consortium"
+  },
+  {
+    "code": "wokinghamuk",
+    "name": "Wokingham Libraries"
+  },
+  {
+    "code": "wbrl",
+    "name": "Wood Buffalo Regional Library"
+  },
+  {
+    "code": "wcdpl",
+    "name": "Wood County District Public Library"
+  },
+  {
+    "code": "woodlands",
+    "name": "Woodlands Library Cooperative"
+  },
+  {
+    "code": "woollahra",
+    "name": "Woollahra Libraries"
+  },
+  {
+    "code": "worcesteruk",
+    "name": "Worcestershire County Libraries"
+  },
+  {
+    "code": "librarynetwork",
+    "name": "World Bank International Monetary Fund Library Network"
+  },
+  {
+    "code": "wrexhamuk",
+    "name": "Wrexham County Library"
+  },
+  {
+    "code": "jhlib",
+    "name": "Wuhan Jianghan District Library"
+  },
+  {
+    "code": "wyndhamvic",
+    "name": "Wyndham City Libraries"
+  },
+  {
+    "code": "yahabatown",
+    "name": "Yahapark"
+  },
+  {
+    "code": "yvl",
+    "name": "Yakima Valley Libraries"
+  },
+  {
+    "code": "yamecity-lib",
+    "name": "Yame City Library"
+  },
+  {
+    "code": "yarralibraries",
+    "name": "Yarra Libraries"
+  },
+  {
+    "code": "yprl",
+    "name": "Yarra Plenty Regional Library"
+  },
+  {
+    "code": "yln",
+    "name": "Yavapai Library Network"
+  },
+  {
+    "code": "yoichi-library",
+    "name": "Yoichi Town Library"
+  },
+  {
+    "code": "yolocounty",
+    "name": "Yolo County Library"
+  },
+  {
+    "code": "yonginlib",
+    "name": "YongIn City Library"
+  },
+  {
+    "code": "ylpl",
+    "name": "Yorba Linda Public Library"
+  },
+  {
+    "code": "ycl",
+    "name": "York County Libraries"
+  },
+  {
+    "code": "yclibrary",
+    "name": "York County Library"
+  },
+  {
+    "code": "yorkcountyva",
+    "name": "York County Public Library"
+  },
+  {
+    "code": "yorklibraries",
+    "name": "York Libraries"
+  },
+  {
+    "code": "yukon",
+    "name": "Yukon Public Libraries"
+  },
+  {
+    "code": "yuma",
+    "name": "Yuma County Library District"
+  },
+  {
+    "code": "yuseonglib",
+    "name": "Yuseong-gu Library"
+  },
+  {
+    "code": "pura",
+    "name": "Zentralbibliothek PURA"
+  },
+  {
+    "code": "zjlib",
+    "name": "Zhejiang Library (浙江图书馆)"
+  },
+  {
+    "code": "zslib",
+    "name": "Zhongshan Public Library (中山市中山图书馆)"
+  },
+  {
+    "code": "jwlib",
+    "name": "Zhuhai Jinwan District Library"
+  },
+  {
+    "code": "zulabryantwylie",
+    "name": "Zula Bryant Wylie Library"
+  }
+]

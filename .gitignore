@@ -1,0 +1,88 @@
+# ---- Editors / OS noise ----
+.DS_Store
+.AppleDouble
+.LSOverride
+.idea/
+.vscode/
+*.swp
+*.swo
+*.swn
+*.iml
+*~
+
+# ---- Secrets / local-only config ----
+*.jks
+*.keystore
+*.p12
+*.p8
+.env
+.env.*
+.mise/secrets.env
+local.properties
+
+# ---- Gradle / Kotlin daemon (Android) ----
+.gradle/
+.kotlin/
+**/build/
+**/.gradle/
+**/.kotlin/
+**/.cxx/
+.cxx/
+captures/
+
+# ---- Android build outputs ----
+*.apk
+*.aab
+*.ap_
+*.aar
+*.dex
+*.class
+*.log
+
+# UniFFI-generated Kotlin bindings (mobile/android/AGENTS.md)
+**/build/generated/
+
+# Prebuilt Rust .so cache for the FFI bridge (mobile/android/AGENTS.md)
+android/app/src/main/jniLibs/
+
+# playstore-only baseline profile, regenerated per build
+android/app/src/main/baseline-prof.txt
+
+# ---- IDE / Xcode / iOS ----
+# Note: ios/Podfile.lock is intentionally committed when present.
+ios/Pods/
+ios/.derivedData/
+ios/.build/
+ios/.swiftpm/
+ios/**/Package.resolved
+
+# xcframework: produced by `mise run ios-build` (mobile/ios/AGENTS.md)
+ios/LivtetKit.xcframework/
+
+# UniFFI-generated Swift bindings (mobile/ios/AGENTS.md)
+ios/LivtetKit/Sources/LivtetKitFFI/
+ios/LivtetKit/Sources/LivtetKitFFI_types/
+ios/LivtetKit/Sources/livtet_ffiFFI/
+ios/LivtetKit/Sources/livtet_ffi_typesFFI/
+
+xcuserdata/
+*.xcuserstate
+*.xcscmblueprint
+*.xccheckout
+DerivedData/
+*.xcarchive
+*.dSYM/
+*.dSYM.zip
+*.ipa
+
+# ---- SnapshotTesting reference images ----
+# Checked-in reference sources live in ios/LivtetUnitTests/Snapshots/*.swift;
+# rendered PNGs land in __Snapshots__/ and should not be tracked.
+**/__Snapshots__/*.png
+
+# ---- Fastlane transient output ----
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/test_output
+fastlane/screenshots
+fastlane/.build-counter

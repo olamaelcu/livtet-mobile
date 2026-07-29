@@ -1,0 +1,5 @@
+Livtet enables you to have discussions about the books that you're reading in a
+open but secure social network. It also allows you to track your reading using
+multiple sources and keep track of your progress across multiple devices and
+platforms. It serves as your one-stop shop for becoming a socialite when it
+comes to reading.
