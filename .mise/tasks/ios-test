@@ -1,0 +1,51 @@
+#!/usr/bin/env bash
+#MISE description="Run iOS unit tests on booted simulator"
+#MISE sources=["ios/Livtet/**/*.swift", "ios/LivtetUnitTests/**/*.swift"]
+#MISE outputs=[]
+#USAGE flag "--profile <profile>" help="Build profile" default="debug" {
+#USAGE   choices "debug" "release"
+#USAGE }
+#USAGE flag "--instrumented" help="Run on physical device (requires booted device and --device flag on build)"
+
+set -euo pipefail
+# shellcheck disable=SC1091
+source "$(dirname "${BASH_SOURCE[0]}")/_os-check" && require_os macos
+
+# shellcheck source=/dev/null
+source "$(dirname "${BASH_SOURCE[0]}")/_build_profile.sh"
+
+DERIVED_DATA="ios/.derivedData"
+PROJECT_DIR="ios"
+
+echo "=== ios-test: profile=$PROFILE${usage_instrumented:+ instrumented} ==="
+
+#######################################
+# Build test target
+#######################################
+if [ "${usage_instrumented:-false}" = "true" ]; then
+	# For instrumented, we need device build
+	echo "Running tests on device requires --device flag on ios-build first." >&2
+	echo "Run: mise run ios-build --device --profile $PROFILE" >&2
+	exit 1
+fi
+
+#######################################################################
+# Execute tests on booted simulator (no --select; tests run on any booted sim)
+#######################################################################
+# Check if any simulator is booted
+BOOTED_SIM=$(xcrun simctl list devices booted 2>/dev/null | grep -E "Livtet (iPhone|iPad)" || true)
+if [ -z "$BOOTED_SIM" ]; then
+	echo "ERROR: No Livtet simulator booted. Run 'mise run ios-simulator --start phone' first." >&2
+	exit 1
+fi
+
+echo "Running LivtetUnitTests scheme..."
+env -u CC -u CXX xcodebuild \
+	-project "$PROJECT_DIR/Livtet.xcodeproj" \
+	-scheme Livtet \
+	-destination "platform=iOS Simulator,name=Livtet iPhone" \
+	-derivedDataPath "$DERIVED_DATA" \
+	-only-testing:LivtetUnitTests \
+	test
+
+echo "=== ios-test: done ==="

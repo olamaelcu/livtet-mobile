@@ -1,0 +1,315 @@
+#!/usr/bin/env bash
+#MISE description="One-time iOS setup: Xcode 16.4, iOS 18 sim runtime, sims, xcodegen, pod install, cargo config"
+#MISE dir="ios"
+set -euo pipefail
+# shellcheck disable=SC1091
+source "$(dirname "${BASH_SOURCE[0]}")/_os-check" && require_os macos
+
+SKIP_SIM=0
+for arg in "$@"; do
+	case "$arg" in
+	--no-sim) SKIP_SIM=1 ;;
+	*)
+		echo "Unknown argument: $arg" >&2
+		exit 1
+		;;
+	esac
+done
+
+REQUIRED_XCODE_VERSION="16.4"
+REQUIRED_IOS_SDK="18"
+RUNTIME_ID="com.apple.CoreSimulator.SimRuntime.iOS-18-6"       # newest known at install time
+RUNTIME_ID_PREFIX="com.apple.CoreSimulator.SimRuntime.iOS-18-" # accept any 18.x update
+
+echo "=== Installing Rust targets for iOS ==="
+rustup target add \
+	aarch64-apple-ios \
+	aarch64-apple-ios-sim \
+	x86_64-apple-ios
+
+#######################################
+# 1. Locate / install Xcode 16+
+#######################################
+echo "=== Locating Xcode $REQUIRED_XCODE_VERSION+ ==="
+XCODE_DIR=""
+
+# Helper: find Xcode via mise-managed xcodes
+find_xcode_via_xcodes() {
+	mise exec xcodes -- xcodes installed 2>/dev/null |
+		awk -F'\t' -v ver="$REQUIRED_XCODE_VERSION" '$1 ~ "^" ver " " {print $2; exit}'
+}
+
+# Helper: find Xcode in /Applications
+find_xcode_in_applications() {
+	# Xcode installs as e.g. Xcode-16.0.0.app, Xcode-16.4.app, etc.
+	# Glob on the major version prefix to catch all 16.x variants
+	local MAJOR_VER="${REQUIRED_XCODE_VERSION%%.*}"
+	for candidate in /Applications/Xcode-"$MAJOR_VER".*.app /Applications/Xcode-"$MAJOR_VER"*.app; do
+		if [ -d "$candidate/Contents/Developer" ]; then
+			local INSTALLED_VER
+			INSTALLED_VER=$(defaults read "$candidate/Contents/Info.plist" CFBundleShortVersionString 2>/dev/null || basename "$candidate" | sed -E 's/^Xcode-([0-9.]+)\.app.*/\1/')
+			local INSTALLED_SHORT
+			INSTALLED_SHORT=$(echo "$INSTALLED_VER" | cut -d. -f1-2)
+			if [ "$INSTALLED_SHORT" = "$REQUIRED_XCODE_VERSION" ]; then
+				echo "$candidate/Contents/Developer"
+				return 0
+			fi
+		fi
+	done
+	return 1
+}
+
+# 1. Try mise-managed xcodes
+echo "Checking for Xcode $REQUIRED_XCODE_VERSION+ via xcodes..."
+XCODE_PATH=$(find_xcode_via_xcodes)
+if [ -n "$XCODE_PATH" ] && [ -d "$XCODE_PATH/Contents/Developer" ]; then
+	XCODE_DIR="$XCODE_PATH/Contents/Developer"
+	echo "Found Xcode at $XCODE_DIR"
+fi
+
+# 2. Fallback: /Applications glob
+if [ -z "$XCODE_DIR" ]; then
+	echo "Checking /Applications for Xcode $REQUIRED_XCODE_VERSION..."
+	XCODE_DIR=$(find_xcode_in_applications) || true
+	if [ -n "$XCODE_DIR" ]; then
+		echo "Found Xcode at $XCODE_DIR"
+	fi
+fi
+
+# 3. Fallback: xcode-select
+if [ -z "$XCODE_DIR" ]; then
+	XCODE_DIR="$(xcode-select -p 2>/dev/null || true)"
+	if [ -n "$XCODE_DIR" ]; then
+		echo "Using xcode-select path: $XCODE_DIR"
+	fi
+fi
+
+# 4. Verify version matches requirement exactly
+if [ -n "$XCODE_DIR" ]; then
+	XCODE_VER=$("$XCODE_DIR/usr/bin/xcodebuild" -version 2>/dev/null | head -1 | grep -oE '[0-9]+\.[0-9]+(\.[0-9]+)?' | head -1 || true)
+	XCODE_SHORT=$(echo "$XCODE_VER" | cut -d. -f1-2)
+	if [ "$XCODE_SHORT" != "$REQUIRED_XCODE_VERSION" ]; then
+		echo "WARNING: Found Xcode $XCODE_VER (expected exactly $REQUIRED_XCODE_VERSION). Simulator GUI will not work on macOS 15+ with other versions."
+		echo "Installing Xcode $REQUIRED_XCODE_VERSION via xcodes..."
+		mise exec xcodes -- xcodes install "$REQUIRED_XCODE_VERSION" --experimental-unip
+		# Re-detect after install: try xcodes first, fall back to /Applications
+		# bundle (xcodes can be slow to register a freshly-installed Xcode in
+		# its installed list).
+		XCODE_PATH=$(find_xcode_via_xcodes)
+		if [ -z "$XCODE_PATH" ] || [ ! -d "$XCODE_PATH/Contents/Developer" ]; then
+			XCODE_PATH=""
+			XCODE_DIR=$(find_xcode_in_applications) || true
+		fi
+		if [ -n "$XCODE_PATH" ] && [ -d "$XCODE_PATH/Contents/Developer" ]; then
+			XCODE_DIR="$XCODE_PATH/Contents/Developer"
+		else
+			XCODE_DIR=""
+		fi
+	else
+		echo "Using Xcode $XCODE_VER at $XCODE_DIR"
+	fi
+fi
+
+# 5. If still no matching Xcode, install it
+if [ -z "$XCODE_DIR" ]; then
+	echo "Xcode $REQUIRED_XCODE_VERSION not found. Installing via xcodes..."
+	mise exec xcodes -- xcodes install "$REQUIRED_XCODE_VERSION" --experimental-unip
+fi
+
+# Re-detect one more time across both helpers, just in case the install
+# succeeded but neither helper picked it up yet.
+if [ -z "$XCODE_DIR" ]; then
+	XCODE_PATH=$(find_xcode_via_xcodes)
+	if [ -n "$XCODE_PATH" ] && [ -d "$XCODE_PATH/Contents/Developer" ]; then
+		XCODE_DIR="$XCODE_PATH/Contents/Developer"
+	else
+		XCODE_DIR=$(find_xcode_in_applications) || true
+	fi
+fi
+
+if [ -z "$XCODE_DIR" ]; then
+	echo "ERROR: Failed to locate or install Xcode 16+" >&2
+	exit 1
+fi
+
+export DEVELOPER_DIR="$XCODE_DIR"
+echo "Using Xcode at $DEVELOPER_DIR"
+
+#######################################
+# 3. Download iOS simulator runtime if missing
+#######################################
+if [ "$SKIP_SIM" -eq 1 ]; then
+	echo "=== Skipping simulator setup (--no-sim) ==="
+else
+	if ! xcrun simctl list runtimes 2>/dev/null | grep -q "$RUNTIME_ID_PREFIX"; then
+		echo "=== Downloading iOS $REQUIRED_IOS_SDK simulator runtime (one-time, ~7 GB) ==="
+		# Pin xcode-select to the discovered Xcode so xcodebuild -downloadPlatform
+		# writes to the correct toolchain. Otherwise it resolves against whatever
+		# xcode-select -p currently points at and silently downloads to the wrong Xcode.
+		if [ "$(xcode-select -p 2>/dev/null)" != "$XCODE_DIR" ]; then
+			echo "Switching xcode-select from $(xcode-select -p 2>/dev/null) to $XCODE_DIR"
+			sudo -n xcode-select -s "$XCODE_DIR" 2>/dev/null || xcode-select -s "$XCODE_DIR" 2>/dev/null || {
+				echo "WARN: Could not switch xcode-select; downloads may go elsewhere." >&2
+			}
+		fi
+		"$DEVELOPER_DIR/usr/bin/xcodebuild" -downloadPlatform iOS
+		if ! xcrun simctl list runtimes 2>/dev/null | grep -q "$RUNTIME_ID_PREFIX"; then
+			echo "ERROR: iOS $REQUIRED_IOS_SDK simulator runtime not present after download." >&2
+			echo "       Current xcode-select: $(xcode-select -p 2>/dev/null)" >&2
+			exit 1
+		fi
+	fi
+
+	#######################################
+	# 4. Prune unsupported simulator runtimes
+	#######################################
+	echo "=== Pruning unsupported simulator runtimes (keep iOS 18) ==="
+	DEAD_RUNTIMES=$(DEVELOPER_DIR="$DEVELOPER_DIR" xcrun simctl list runtimes -j 2>/dev/null | python3 -c "
+import json, sys, os
+data = json.load(sys.stdin)
+keep_prefix = 'com.apple.CoreSimulator.SimRuntime.iOS-18-'
+for runtime in data.get('runtimes', []):
+    ident = runtime.get('identifier')
+    if ident and not ident.startswith(keep_prefix) and runtime.get('isAvailable', False):
+        print(ident)
+" 2>/dev/null || true)
+	if [ -n "$DEAD_RUNTIMES" ]; then
+		for rt in $DEAD_RUNTIMES; do
+			echo "  Removing runtime: $rt"
+			xcrun simctl delete "$rt" 2>/dev/null || true
+		done
+	else
+		echo "  (no unsupported runtimes)"
+	fi
+
+	echo "=== Pruning orphaned / non-18.0 simulator devices ==="
+	ORPHANS=$(DEVELOPER_DIR="$DEVELOPER_DIR" xcrun simctl list devices -j 2>/dev/null | python3 -c "
+import json, sys
+data = json.load(sys.stdin)
+keep_prefix = 'com.apple.CoreSimulator.SimRuntime.iOS-18-'
+for runtime, devices in data.get('devices', {}).items():
+    if runtime.startswith(keep_prefix):
+        continue
+    for d in devices:
+        if d.get('isAvailable'):
+            print(d['udid'])
+" 2>/dev/null || true)
+	if [ -n "$ORPHANS" ]; then
+		for udid in $ORPHANS; do
+			echo "  Removing device: $udid"
+			xcrun simctl delete "$udid" 2>/dev/null || true
+		done
+	else
+		echo "  (no orphans)"
+	fi
+
+	#######################################
+	# 5. Ensure iPhone + iPad simulators
+	#######################################
+	create_sim() {
+		local name="$1"
+		local device_type="$2"
+		if xcrun simctl list devices 2>/dev/null | grep -q "  $name ("; then
+			echo "  $name already exists — skipping."
+		else
+			# Pick the newest iOS 18.x runtime available
+			local runtime
+			runtime=$(xcrun simctl list runtimes -j 2>/dev/null | python3 -c "
+import json, sys
+data = json.load(sys.stdin)
+rts = sorted([r['identifier'] for r in data.get('runtimes', [])
+              if r['identifier'].startswith('com.apple.CoreSimulator.SimRuntime.iOS-18-') and r.get('isAvailable', False)])
+print(rts[-1] if rts else '')
+" 2>/dev/null)
+			if [ -z "$runtime" ]; then
+				echo "  No iOS 18.x runtime available; cannot create $name"
+				return 1
+			fi
+			echo "  Creating $name on $runtime..."
+			xcrun simctl create "$name" "$device_type" "$runtime" ||
+				echo "  WARNING: failed to create $name"
+		fi
+	}
+
+	echo "=== Ensuring iPhone + iPad simulators on iOS $REQUIRED_IOS_SDK ==="
+	create_sim "Livtet iPhone" "com.apple.CoreSimulator.SimDeviceType.iPhone-15"
+	create_sim "Livtet iPad" "com.apple.CoreSimulator.SimDeviceType.iPad-10th-generation"
+fi
+
+#######################################
+# 6. Install Homebrew dependencies from Brewfile
+#######################################
+# The Brewfile pins the macOS-only binaries that the iOS / Rust FFI build
+# pipeline needs but that mise cannot provide across both arm64 and
+# x86_64 hosts. Currently just minisign — see the Brewfile for the full
+# rationale on why brew ships a universal binary where the GitHub release
+# tarballs and crates.io only ship arm64.
+if command -v brew >/dev/null 2>&1; then
+	echo "=== Installing Homebrew dependencies from Brewfile ==="
+	brew bundle install --no-upgrade --file ./Brewfile || {
+		echo "WARN: brew bundle failed; verify manually with \`brew bundle install --file ./Brewfile\`" >&2
+	}
+else
+	echo "WARN: Homebrew not on PATH; skipping Brewfile install. minisign and other brew-pinned tools will be missing." >&2
+fi
+
+#######################################
+# 7. Generate Xcode project + install pods
+#######################################
+echo "=== Generating Xcode project from project.yml ==="
+xcodegen generate --spec project.yml --project .
+
+echo "=== Installing CocoaPods dependencies ==="
+pod install --repo-update
+
+#######################################
+# 8. Write iOS cargo config
+#######################################
+IPHONEOS_SDK="$(xcrun --sdk iphoneos --show-sdk-path 2>/dev/null || true)"
+IPHONESIM_SDK="$(xcrun --sdk iphonesimulator --show-sdk-path 2>/dev/null || true)"
+
+# The Cargo workspace root is at ../core (git submodule). Cargo searches for
+# .cargo/config.toml upward from the workspace root, so a file at the mobile
+# repo root is picked up. Since this task runs with `dir = "ios"`, the
+# mobile repo root is one parent up.
+CARGO_DIR="../.cargo"
+MARKER_SCRIPT="$(dirname "${BASH_SOURCE[0]}")/_cargo_marker.py"
+mkdir -p "$CARGO_DIR"
+
+python3 "$MARKER_SCRIPT" \
+	--file "$CARGO_DIR/config.toml" \
+	--marker iOS \
+	--content "[target.aarch64-apple-ios]
+rustflags = [\"-C\", \"link-arg=-mios-version-min=13.0\"]
+
+[target.aarch64-apple-ios-sim]
+rustflags = [\"-C\", \"link-arg=-mios-version-min=13.0\"]
+
+[target.x86_64-apple-ios]
+rustflags = [\"-C\", \"link-arg=-mios-version-min=13.0\"]
+"
+
+grep -q "^\[env\]$" "$CARGO_DIR/config.toml" 2>/dev/null || printf '\n[env]\n' >>"$CARGO_DIR/config.toml"
+
+python3 "$MARKER_SCRIPT" \
+	--file "$CARGO_DIR/config.toml" \
+	--marker iOSENV \
+	--content "BINDGEN_EXTRA_CLANG_ARGS_aarch64_apple_ios = \"--target=arm64-apple-ios13.0 -isysroot $IPHONEOS_SDK -I$IPHONEOS_SDK/usr/include\"
+BINDGEN_EXTRA_CLANG_ARGS_aarch64_apple_ios_sim = \"--target=arm64-apple-ios13.0-simulator -isysroot $IPHONESIM_SDK -I$IPHONESIM_SDK/usr/include\"
+BINDGEN_EXTRA_CLANG_ARGS_x86_64_apple_ios = \"--target=x86_64-apple-ios13.0 -isysroot $IPHONESIM_SDK -I$IPHONESIM_SDK/usr/include\"
+# Allow \`livtet-core\`'s build script to find sqlite3 via pkg-config when
+# cross-compiling for iOS. The mise-managed sqlite install lives in a
+# host-only path; without this flag pkg-config refuses to probe it for a
+# foreign target triple.
+PKG_CONFIG_ALLOW_CROSS_aarch64_apple_ios = \"1\"
+PKG_CONFIG_ALLOW_CROSS_aarch64_apple_ios_sim = \"1\"
+PKG_CONFIG_ALLOW_CROSS_x86_64_apple_ios = \"1\""
+
+echo ""
+echo "iOS workspace ready at Livtet.xcworkspace"
+echo "  Xcode:        $XCODE_DIR"
+echo "  iOS SDK:      $REQUIRED_IOS_SDK"
+echo "  Runtime:      $RUNTIME_ID"
+echo "  iPhone sim:   Livtet iPhone"
+echo "  iPad sim:     Livtet iPad"
+echo "  iOS sections written to .cargo/config.toml (iOS target + iOSENV env)"

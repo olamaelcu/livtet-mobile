@@ -1,0 +1,99 @@
+#!/usr/bin/env bash
+#MISE description="Run iOS ecosystem audits (unused deps, dead code, outdated). Defaults to all audits in report mode. Flags: --type, --scope, --strict"
+#USAGE flag "--type <type>" help="Audit type: unused, deadcode, or outdated"
+#USAGE flag "--scope <scope>" help="Scope: swiftpm, ios, or pods"
+#USAGE flag "--strict" help="Fail on audit findings (default: report mode - informational only)"
+
+set -euo pipefail
+# shellcheck disable=SC1091
+source "$(dirname "${BASH_SOURCE[0]}")/_os-check" && require_os macos
+
+# --- Defaults (mise sets usage_<flag> from #USAGE directives) -------------
+TYPE="${usage_type:-}"
+SCOPE="${usage_scope:-}"
+STRICT="${usage_strict:-false}"
+
+# --- Validation ------------------------------------------------------------
+case "$TYPE" in
+"" | unused | deadcode | outdated) ;;
+*)
+	echo "ERROR: --type must be one of: unused, deadcode, outdated (got '$TYPE')" >&2
+	exit 2
+	;;
+esac
+case "$SCOPE" in
+"" | swiftpm | ios | pods) ;;
+*)
+	echo "ERROR: --scope must be one of: swiftpm, ios, pods (got '$SCOPE')" >&2
+	exit 2
+	;;
+esac
+
+# --- Audit catalogue -------------------------------------------------------
+# Pipe-delimited tuples: type|scope|cwd|command|label
+# Mobile repo paths: LivtetKit SwiftPM lives at ios/LivtetKit/ (no `mobile/`
+# prefix). Xcode project at ios/.
+AUDITS=(
+	"unused|swiftpm|.|scripts/check-swift-deps.sh ios/LivtetKit|unused SwiftPM deps for LivtetKit"
+	"deadcode|swiftpm|ios/LivtetKit|periphery scan --retain-public --format json|dead code in LivtetKit SwiftPM"
+	"deadcode|ios|ios|periphery scan --project Livtet.xcodeproj --schemes Livtet --retain-objc-accessible --retain-objc-annotated --include-test-targets --format json|dead code in iOS Livtet Xcode project"
+	"outdated|swiftpm|ios/LivtetKit|swift outdated --check-security --format json|outdated SwiftPM deps for LivtetKit (CVE cross-check)"
+	"outdated|pods|ios|pod outdated --no-repo-update|outdated CocoaPods for iOS Livtet"
+)
+
+# --- Filter ---------------------------------------------------------------
+SELECTED=()
+for entry in "${AUDITS[@]}"; do
+	IFS='|' read -r t s _cwd _cmd _label <<<"$entry"
+	[[ -n "$TYPE" && "$TYPE" != "$t" ]] && continue
+	[[ -n "$SCOPE" && "$SCOPE" != "$s" ]] && continue
+	SELECTED+=("$entry")
+done
+
+if [[ ${#SELECTED[@]} -eq 0 ]]; then
+	cat >&2 <<EOF
+ERROR: no audit matches --type='$TYPE' --scope='$SCOPE'
+  Valid combinations:
+    unused     x swiftpm
+    deadcode   x swiftpm | ios
+    outdated   x swiftpm | pods
+  Run 'mise run ios-audit' (no args) to run every audit.
+EOF
+	exit 2
+fi
+
+# --- Execute --------------------------------------------------------------
+PASSED=0
+FAILED=0
+for entry in "${SELECTED[@]}"; do
+	IFS='|' read -r t s cwd cmd label <<<"$entry"
+	echo "==> $t/$s: $label"
+	if [[ "$STRICT" == "true" ]]; then
+		if (cd "$cwd" && eval "$cmd"); then
+			PASSED=$((PASSED + 1))
+		else
+			FAILED=$((FAILED + 1))
+		fi
+	else
+		# Report mode: stream output, track but never propagate
+		set +e
+		(cd "$cwd" && eval "$cmd")
+		rc=$?
+		set -e
+		if [[ $rc -eq 0 ]]; then
+			PASSED=$((PASSED + 1))
+		else
+			FAILED=$((FAILED + 1))
+			echo "  (exit $rc — ignored in report mode)" >&2
+		fi
+	fi
+	echo
+done
+
+echo "Summary: ${PASSED} passed, ${FAILED} with findings or errors"
+echo "Mode: $([[ "$STRICT" == "true" ]] && echo "strict" || echo "report (informational)")"
+
+if [[ "$STRICT" == "true" && "$FAILED" -gt 0 ]]; then
+	exit 1
+fi
+exit 0

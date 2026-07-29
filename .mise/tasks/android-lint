@@ -1,0 +1,57 @@
+#!/usr/bin/env bash
+#MISE description="Run ktfmt, ktlint, and detekt against every Android module"
+#MISE sources=["android/**/*.kt", "android/**/*.kts", "android/build-logic/**/*.kt"]
+#MISE outputs=[]
+#USAGE flag "--flavor <flavor>" help="Android product flavor (or 'all' for all flavors)" default="generic" {
+#USAGE   choices "all" "generic" "playstore" "fdroid"
+#USAGE }
+#USAGE flag "--fix" help="Auto-fix lint violations via ktfmtFormat + ktlintFormat + detekt --auto-correct"
+
+set -e
+# shellcheck disable=SC1091
+source "$(dirname "${BASH_SOURCE[0]}")/_os-check" && require_os linux
+
+FLAVOR="${usage_flavor:-generic}"
+
+echo "=== android-lint: flavor=$FLAVOR${usage_fix:+ fix} ==="
+
+cd android
+
+# `ktfmtCheck` / `ktlintCheck` are top-level Gradle tasks per module
+# that cover every source set (main, test, androidTest, …). They are
+# *not* per-flavor — invoking them once per module is correct.
+#
+# `detekt` on `:app` is per-variant (the plugin emits a separate
+# report for each `*Debug` / `*Release` variant), so we still loop
+# over flavors for detekt only. Library modules get a single top-level
+# `detekt` task.
+run_lint() {
+	local flavor="$1"
+	local cap
+	cap="${flavor^^}"
+
+	if [ "${usage_fix:-false}" = "true" ]; then
+		echo "  [$flavor] Auto-fix: ktfmtFormat + ktlintFormat + detekt --auto-correct"
+		gradle \
+			":app:ktfmtFormat" ":core:designsystem:ktfmtFormat" \
+			":app:ktlintFormat" ":core:designsystem:ktlintFormat" \
+			":app:detekt${cap}Debug" ":core:designsystem:detekt" \
+			--auto-correct --no
+	else
+		echo "  [$flavor] Check: ktfmtCheck + ktlintCheck + detekt"
+		gradle \
+			":app:ktfmtCheck" ":core:designsystem:ktfmtCheck" \
+			":app:ktlintCheck" ":core:designsystem:ktlintCheck" \
+			":app:detekt${cap}Debug" ":core:designsystem:detekt"
+	fi
+}
+
+if [ "$FLAVOR" = "all" ]; then
+	for f in generic playstore fdroid; do
+		run_lint "$f"
+	done
+else
+	run_lint "$FLAVOR"
+fi
+
+echo "=== android-lint: done ==="

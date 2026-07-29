@@ -1,0 +1,52 @@
+#!/usr/bin/env bash
+#MISE description="Run Android unit tests (JVM) and optionally instrumented tests (device)"
+#MISE sources=["android/**/*.kt", "android/**/*.kts", "android/**/build.gradle.kts"]
+#MISE outputs=[]
+#USAGE flag "--flavor <flavor>" help="Android product flavor (or 'all' for all flavors)" default="generic" {
+#USAGE   choices "all" "generic" "playstore" "fdroid"
+#USAGE }
+#USAGE flag "--instrumented" help="Run instrumented tests on a connected device (requires device)"
+
+set -e
+# shellcheck disable=SC1091,SC2001
+source "$(dirname "${BASH_SOURCE[0]}")/_os-check" && require_os linux
+
+FLAVOR="${usage_flavor:-generic}"
+
+echo "=== android-test: flavor=$FLAVOR${usage_instrumented:+ instrumented} ==="
+
+cd android
+
+if [ "${usage_instrumented:-false}" = "true" ]; then
+	echo "  Checking for connected device..."
+	DEVICE_COUNT=$(adb devices 2>/dev/null | grep -c 'device$' || true)
+	if [ "$DEVICE_COUNT" -eq 0 ]; then
+		echo "Error: --instrumented requires a connected device or emulator" >&2
+		exit 1
+	fi
+fi
+
+run_test() {
+	local flavor="$1"
+	local cap
+	# shellcheck disable=SC2001
+	cap="$(echo "$flavor" | sed 's/.*/\u&/')"
+
+	echo "  [$flavor] Running unit tests..."
+	gradle ":app:test${cap}DebugUnitTest"
+
+	if [ "${usage_instrumented:-false}" = "true" ]; then
+		echo "  [$flavor] Running instrumented tests..."
+		gradle ":app:connected${cap}DebugAndroidTest"
+	fi
+}
+
+if [ "$FLAVOR" = "all" ]; then
+	for f in generic playstore fdroid; do
+		run_test "$f"
+	done
+else
+	run_test "$FLAVOR"
+fi
+
+echo "=== android-test: done ==="

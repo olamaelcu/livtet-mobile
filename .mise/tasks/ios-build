@@ -1,0 +1,375 @@
+#!/usr/bin/env bash
+#MISE description="Build iOS app: Rust FFI (core/) → XCFramework → Xcode build. Flags: --sim|--device|--ipad|--clean"
+#MISE env={_.file=".mise/secrets.env"}
+#MISE depends=["secrets-export-env", "secrets-ios-buildconfig"]
+#MISE sources=["core/livtet-ffi/**/*.rs", "core/livtet-core/**/*.rs", "ios/Livtet/**/*.swift", "ios/project.yml"]
+#MISE outputs=["ios/LivtetKit.xcframework/**", "ios/.derivedData/**/Livtet.app"]
+#USAGE flag "--profile <profile>" help="Build profile" default="debug" {
+#USAGE   choices "debug" "release"
+#USAGE }
+#USAGE flag "--sim" help="Build only for arm64 simulator (fast, skip x86_64). Use for Apple Silicon Macs."
+#USAGE flag "--sim-x86" help="Build only for x86_64 simulator (fast, skip arm64). Use for Intel Macs."
+#USAGE flag "--device" help="Build for physical device (aarch64-apple-ios). For simulators without --sim/--sim-x86, builds fat lib for both arm64 and x86_64."
+#USAGE flag "--ipad" help="Build for iPad simulator (default: iPhone simulator)"
+#USAGE flag "--clean" help="Delete the XCFramework before building (forces native rebuild)"
+#USAGE flag "--only-swift" help="Skip native build and UniFFI binding generation; only compile Swift changes"
+
+set -euo pipefail
+
+# shellcheck source=/dev/null
+source "$(dirname "${BASH_SOURCE[0]}")/_os-check" && require_os macos
+
+# shellcheck source=/dev/null
+source "$(dirname "${BASH_SOURCE[0]}")/_build_profile.sh"
+
+PROJECT_DIR="ios"
+DERIVED_DATA="$PROJECT_DIR/.derivedData"
+XCFRAMEWORK_DIR="ios/LivtetKit.xcframework"
+PHONE_SIM_NAME="Livtet iPhone"
+TABLET_SIM_NAME="Livtet iPad"
+
+# The Cargo workspace lives at core/ (git submodule). All cargo build
+# artifacts go into core/target/, so ROOT_CARGO is what the task uses
+# to address those outputs.
+MOBILE_ROOT="$(pwd)"
+CARGO_WS="$MOBILE_ROOT/core"
+ROOT_CARGO="$CARGO_WS"
+
+#######################################
+# Native: Build Rust FFI and create XCFramework
+#######################################
+build_native() {
+	local TARGETS=()
+	local TARGET_LABEL=""
+
+	if [ "${usage_sim:-false}" = "true" ]; then
+		# Fast path: only arm64 simulator (no x86_64, no fat library)
+		TARGETS=(aarch64-apple-ios-sim)
+		TARGET_LABEL="sim-arm64"
+	elif [ "${usage_sim_x86:-false}" = "true" ]; then
+		# Fast path: only x86_64 simulator (no arm64, no fat library) - native on Intel
+		TARGETS=(x86_64-apple-ios)
+		TARGET_LABEL="sim-x86"
+	elif [ "${usage_device:-false}" = "true" ]; then
+		TARGETS=(aarch64-apple-ios)
+		TARGET_LABEL="device"
+	else
+		# Default: both simulator architectures (fat library)
+		TARGETS=(aarch64-apple-ios-sim x86_64-apple-ios)
+		TARGET_LABEL="sim-fat"
+	fi
+
+	echo "=== ios-build: Building livtet-ffi for targets: $TARGET_LABEL (profile: $PROFILE) ==="
+	for TARGET in "${TARGETS[@]}"; do
+		echo "--- Building for $TARGET ---"
+		(
+			cd "$CARGO_WS"
+			if [[ -n "$CARGO_PROFILE_FLAG" ]]; then
+				cargo build -p livtet-ffi --target "$TARGET" ${CARGO_PROFILE_FLAG:+"$CARGO_PROFILE_FLAG"}
+			else
+				cargo build -p livtet-ffi --target "$TARGET"
+			fi
+		)
+	done
+
+	local BUILT_DEVICE=false
+	local BUILT_SIM_ARM=false
+	local BUILT_SIM_X86=false
+	for T in "${TARGETS[@]}"; do
+		case "$T" in
+		aarch64-apple-ios) BUILT_DEVICE=true ;;
+		aarch64-apple-ios-sim) BUILT_SIM_ARM=true ;;
+		x86_64-apple-ios) BUILT_SIM_X86=true ;;
+		esac
+	done
+
+	# Create fat library for simulator if both arches built
+	local SIM_FAT_DIR="$ROOT_CARGO/target/ios-sim-fat"
+	if [ "$BUILT_SIM_ARM" = true ] && [ "$BUILT_SIM_X86" = true ]; then
+		mkdir -p "$SIM_FAT_DIR"
+		echo "--- Creating simulator fat library ---"
+
+		# Find liblua5.4.a - use shell globbing to expand mlua-sys build dir
+		# The mlua-sys build dirs have unpredictable hash suffixes, so we must glob
+		local LUA_ARM_SIM LUA_X86_SIM
+		LUA_ARM_SIM=$(find "$ROOT_CARGO/target/aarch64-apple-ios-sim/$CARGO_PROFILE_DIR/build/mlua-sys-"* -path "*/lib/liblua5.4.a" -o -path "*/lua-build/lib/liblua5.4.a" 2>/dev/null | head -1)
+		LUA_X86_SIM=$(find "$ROOT_CARGO/target/x86_64-apple-ios/$CARGO_PROFILE_DIR/build/mlua-sys-"* -path "*/lib/liblua5.4.a" -o -path "*/lua-build/lib/liblua5.4.a" 2>/dev/null | head -1)
+
+		# For each arch, merge ffi and lua objects into a single archive
+		# Then lipo the merged arches together
+		local TMP_ARM="$SIM_FAT_DIR/tmp_arm64"
+		local TMP_X86="$SIM_FAT_DIR/tmp_x86_64"
+		mkdir -p "$TMP_ARM" "$TMP_X86"
+
+		# Extract objects from arm64 ffi and lua, merge into single arm64 archive
+		if [ -n "$LUA_ARM_SIM" ]; then
+			echo "--- Merging arm64 ffi + lua ---"
+			(cd "$TMP_ARM" && ar x "$ROOT_CARGO/target/aarch64-apple-ios-sim/$CARGO_PROFILE_DIR/liblivtet_ffi.a")
+			(cd "$TMP_ARM" && ar x "$LUA_ARM_SIM")
+			(cd "$TMP_ARM" && ar rcs "$SIM_FAT_DIR/liblivtet_ffi_arm64.a" *.o)
+		fi
+
+		# Extract objects from x86_64 ffi and lua, merge into single x86_64 archive
+		if [ -n "$LUA_X86_SIM" ]; then
+			echo "--- Merging x86_64 ffi + lua ---"
+			(cd "$TMP_X86" && ar x "$ROOT_CARGO/target/x86_64-apple-ios/$CARGO_PROFILE_DIR/liblivtet_ffi.a")
+			(cd "$TMP_X86" && ar x "$LUA_X86_SIM")
+			(cd "$TMP_X86" && ar rcs "$SIM_FAT_DIR/liblivtet_ffi_x86_64.a" *.o)
+		fi
+
+		# Create the fat library from the merged per-arch libs
+		echo "--- Creating final fat merged library ---"
+		lipo -create "$SIM_FAT_DIR/liblivtet_ffi_arm64.a" "$SIM_FAT_DIR/liblivtet_ffi_x86_64.a" -output "$SIM_FAT_DIR/liblivtet_ffi.a"
+
+		# Cleanup temp dirs and per-arch arches
+		rm -rf "$TMP_ARM" "$SIM_FAT_DIR/liblivtet_ffi_arm64.a" "$SIM_FAT_DIR/liblivtet_ffi_x86_64.a"
+	fi
+
+	#######################################
+	# Single-arch simulator builds also need Lua merged in, otherwise the
+	# XCFramework the Xcode link consumes is missing every _lua_* symbol
+	# (mlua-sys's "vendored" feature compiled the Lua C source into a static
+	# archive that cargo's link line does not embed automatically).
+	# Fat case above handles both archs together; this branches handle the
+	# --sim / --sim-x86 fast paths where only one arch was built.
+	#######################################
+	if [ "$TARGET_LABEL" = "sim-arm64" ] && [ "$BUILT_SIM_ARM" = true ]; then
+		local LUA_ARM_ONLY
+		LUA_ARM_ONLY=$(find "$ROOT_CARGO/target/aarch64-apple-ios-sim/$CARGO_PROFILE_DIR/build/mlua-sys-"* -path "*/lib/liblua5.4.a" -o -path "*/lua-build/lib/liblua5.4.a" 2>/dev/null | head -1)
+		if [ -n "$LUA_ARM_ONLY" ]; then
+			echo "--- Merging arm64 ffi + lua (single-arch build) ---"
+			local TMP_MERGE="$ROOT_CARGO/target/aarch64-apple-ios-sim/$CARGO_PROFILE_DIR/_lua_merge"
+			mkdir -p "$TMP_MERGE"
+			(cd "$TMP_MERGE" && ar x "$ROOT_CARGO/target/aarch64-apple-ios-sim/$CARGO_PROFILE_DIR/liblivtet_ffi.a")
+			(cd "$TMP_MERGE" && ar x "$LUA_ARM_ONLY")
+			(cd "$TMP_MERGE" && ar rcs "$ROOT_CARGO/target/aarch64-apple-ios-sim/$CARGO_PROFILE_DIR/liblivtet_ffi.a" *.o)
+			rm -rf "$TMP_MERGE"
+		else
+			echo "WARN: liblua5.4.a not found for aarch64-apple-ios-sim; link will fail unless mlua's vendored archive is embedded" >&2
+		fi
+	fi
+
+	if [ "$TARGET_LABEL" = "sim-x86" ] && [ "$BUILT_SIM_X86" = true ]; then
+		local LUA_X86_ONLY
+		LUA_X86_ONLY=$(find "$ROOT_CARGO/target/x86_64-apple-ios/$CARGO_PROFILE_DIR/build/mlua-sys-"* -path "*/lib/liblua5.4.a" -o -path "*/lua-build/lib/liblua5.4.a" 2>/dev/null | head -1)
+		if [ -n "$LUA_X86_ONLY" ]; then
+			echo "--- Merging x86_64 ffi + lua (single-arch build) ---"
+			local TMP_MERGE="$ROOT_CARGO/target/x86_64-apple-ios/$CARGO_PROFILE_DIR/_lua_merge"
+			mkdir -p "$TMP_MERGE"
+			(cd "$TMP_MERGE" && ar x "$ROOT_CARGO/target/x86_64-apple-ios/$CARGO_PROFILE_DIR/liblivtet_ffi.a")
+			(cd "$TMP_MERGE" && ar x "$LUA_X86_ONLY")
+			(cd "$TMP_MERGE" && ar rcs "$ROOT_CARGO/target/x86_64-apple-ios/$CARGO_PROFILE_DIR/liblivtet_ffi.a" *.o)
+			rm -rf "$TMP_MERGE"
+		else
+			echo "WARN: liblua5.4.a not found for x86_64-apple-ios; link will fail unless mlua's vendored archive is embedded" >&2
+		fi
+	fi
+
+	echo "=== Creating XCFramework ==="
+	mkdir -p "$(dirname "$MOBILE_ROOT/$XCFRAMEWORK_DIR")"
+	rm -rf "$MOBILE_ROOT/$XCFRAMEWORK_DIR"
+
+	local XCFW_LIBS=()
+
+	if [ "$BUILT_DEVICE" = true ]; then
+		# For device, also merge liblua5.4.a into liblivtet_ffi.a
+		local LUA_DEVICE
+		LUA_DEVICE=$(find "$ROOT_CARGO/target/aarch64-apple-ios/$CARGO_PROFILE_DIR/build/mlua-sys-"* -path "*/lib/liblua5.4.a" -o -path "*/lua-build/lib/liblua5.4.a" 2>/dev/null | head -1)
+		if [ -n "$LUA_DEVICE" ]; then
+			echo "--- Merging device ffi + lua ---"
+			local DEV_MERGE_DIR="/tmp/lua_merge_$$"
+			mkdir -p "$DEV_MERGE_DIR"
+			(cd "$DEV_MERGE_DIR" && ar x "$ROOT_CARGO/target/aarch64-apple-ios/$CARGO_PROFILE_DIR/liblivtet_ffi.a")
+			(cd "$DEV_MERGE_DIR" && ar x "$LUA_DEVICE")
+			(cd "$DEV_MERGE_DIR" && ar rcs "$ROOT_CARGO/target/aarch64-apple-ios/$CARGO_PROFILE_DIR/liblivtet_ffi.a" *.o)
+			rm -rf "$DEV_MERGE_DIR"
+		fi
+		XCFW_LIBS+=(-library "$ROOT_CARGO/target/aarch64-apple-ios/$CARGO_PROFILE_DIR/liblivtet_ffi.a")
+	elif [ "$BUILT_SIM_ARM" = true ] && [ "$BUILT_SIM_X86" = true ]; then
+		# Fat sim already merged with lua above
+		XCFW_LIBS+=(-library "$SIM_FAT_DIR/liblivtet_ffi.a")
+	elif [ "$BUILT_SIM_ARM" = true ]; then
+		XCFW_LIBS+=(-library "$ROOT_CARGO/target/aarch64-apple-ios-sim/$CARGO_PROFILE_DIR/liblivtet_ffi.a")
+	elif [ "$BUILT_SIM_X86" = true ]; then
+		XCFW_LIBS+=(-library "$ROOT_CARGO/target/x86_64-apple-ios/$CARGO_PROFILE_DIR/liblivtet_ffi.a")
+	fi
+
+	xcodebuild -create-xcframework "${XCFW_LIBS[@]}" -output "$MOBILE_ROOT/$XCFRAMEWORK_DIR" | xcbeautify
+
+	echo "XCFramework created: $XCFRAMEWORK_DIR"
+}
+
+#######################################
+# Check prerequisites
+#######################################
+# Note: We no longer use CocoaPods (disabled in project.yml)
+# Check for the Xcode project instead of workspace
+if [[ ! -d "$PROJECT_DIR/Livtet.xcodeproj" ]]; then
+	echo "ERROR: Xcode project not found at $PROJECT_DIR/Livtet.xcodeproj" >&2
+	echo "       Run 'mise run ios-dev-init' first to set up the iOS environment." >&2
+	exit 1
+fi
+
+#######################################
+# Build native libraries if needed
+#######################################
+if [ "${usage_clean:-false}" = "true" ] && [ -d "$XCFRAMEWORK_DIR" ]; then
+	echo "=== --clean: Removing $XCFRAMEWORK_DIR ==="
+	rm -rf "$XCFRAMEWORK_DIR"
+fi
+
+if [[ ! -d "$XCFRAMEWORK_DIR" ]]; then
+	echo "=== XCFramework not found, building native libraries ==="
+	build_native
+else
+	echo "=== XCFramework exists, skipping native build ==="
+	echo "    (delete $XCFRAMEWORK_DIR to force rebuild)"
+fi
+
+#######################################
+# Generate Swift UniFFI bindings
+#
+# Mirrors the Android pipeline in `.mise/tasks/android-build`: the
+# generated Swift package source files in
+# `ios/LivtetKit/Sources/` are derived artefacts of the
+# compiled Rust library, so we (re)generate them every run instead
+# of relying on a stale checked-in copy. The regeneration is
+# cheap (text only) and prevents the iOS build from breaking
+# when a new record type is added to `livtet-ffi`.
+#
+# `uniffi-bindgen generate` dumps all output into a single
+# directory using a fixed naming convention (`livtet_ffi.swift`,
+# the `*FFI.h` headers, etc.) that doesn't know about the
+# existing per-target subdirectories in the Swift package.
+# Stage the output to a temp dir, verify each expected file is
+# present, then `mv` each file into the per-target subdirectory
+# that owns it (see `Package.swift`).
+#######################################
+generate_swift_bindings() {
+	local LIB_PATH=""
+	if [ "${usage_device:-false}" = "true" ]; then
+		LIB_PATH="$ROOT_CARGO/target/aarch64-apple-ios/$CARGO_PROFILE_DIR/liblivtet_ffi.a"
+	elif [ "${usage_sim:-false}" = "true" ]; then
+		# Single arch arm64 simulator build
+		LIB_PATH="$ROOT_CARGO/target/aarch64-apple-ios-sim/$CARGO_PROFILE_DIR/liblivtet_ffi.a"
+	elif [ "${usage_sim_x86:-false}" = "true" ]; then
+		# Single arch x86_64 simulator build
+		LIB_PATH="$ROOT_CARGO/target/x86_64-apple-ios/$CARGO_PROFILE_DIR/liblivtet_ffi.a"
+	else
+		# Fat simulator library (both arm64 + x86_64)
+		LIB_PATH="$ROOT_CARGO/target/ios-sim-fat/liblivtet_ffi.a"
+	fi
+
+	if [ ! -f "$LIB_PATH" ]; then
+		echo "ERROR: liblivtet_ffi.a not found at $LIB_PATH (expected from --device=${usage_device:-false} --sim=${usage_sim:-false} --sim-x86=${usage_sim_x86:-false} build)" >&2
+		exit 1
+	fi
+
+	echo "=== ios-build: Generating Swift UniFFI bindings from $LIB_PATH ==="
+
+	local STAGING
+	STAGING="$(mktemp -d)"
+
+	uniffi-bindgen generate \
+		--library "$LIB_PATH" \
+		--language swift \
+		--out-dir "$STAGING"
+
+	local SWIFT_PKG="$MOBILE_ROOT/ios/LivtetKit/Sources"
+
+	# Ensure target directories exist for generated bindings
+	mkdir -p "$SWIFT_PKG/LivtetKitFFI"
+	mkdir -p "$SWIFT_PKG/livtet_ffiFFI"
+	# Move a required file from staging to its per-target subdirectory.
+	# Aborts the build if bindgen did not produce the file (the build
+	# would otherwise link against stale generated content).
+	#
+	# After moving, strip trailing whitespace — uniffi-bindgen emits
+	# lines with trailing spaces and tabs in its Swift and C header
+	# output, which trips hk's trailing-whitespace step and produces
+	# noisy diffs against the checked-in copies. Normalising at this
+	# boundary keeps the canonical Swift package sources clean.
+	move_required() {
+		local src="$1" dst="$2"
+		if [ ! -f "$src" ]; then
+			echo "ERROR: bindgen did not produce $src (expected destination: $dst)" >&2
+			exit 1
+		fi
+		mv "$src" "$dst"
+		sed -i '' 's/[[:space:]]\+$//' "$dst"
+	}
+
+	# Per-target destinations, mapped from bindgen's flat output names.
+	# The destination subdirectories are owned by Swift targets defined
+	# in `ios/LivtetKit/Package.swift`.
+	move_required "$STAGING/livtet_ffi.swift" \
+		"$SWIFT_PKG/LivtetKitFFI/livtet_ffi.swift"
+	move_required "$STAGING/livtet_ffiFFI.h" \
+		"$SWIFT_PKG/livtet_ffiFFI/livtet_ffiFFI.h"
+	move_required "$STAGING/livtet_ffiFFI.modulemap" \
+		"$SWIFT_PKG/livtet_ffiFFI/module.modulemap"
+
+	# Note: `uniffi-bindgen` 0.31 no longer emits per-language
+	# `anchor.c` files; the `module.modulemap` it produces is
+	# self-contained. Any pre-existing `anchor.c` under each
+	# per-target subdirectory is a leftover from an older
+	# bindgen and is no longer needed by the build.
+}
+
+if [ "${usage_only_swift:-false}" != "true" ]; then
+    generate_swift_bindings
+fi
+
+#######################################
+# Set up simulator destination
+#######################################
+if [ "${usage_device:-false}" = "true" ]; then
+	PLATFORM="device"
+	DESTINATION="generic/platform=iOS"
+else
+	PLATFORM="simulator"
+	if [ "${usage_ipad:-false}" = "true" ]; then
+		SIM_NAME="$TABLET_SIM_NAME"
+	else
+		SIM_NAME="$PHONE_SIM_NAME"
+	fi
+
+	SIM_UDID=$(xcrun simctl list devices available 2>/dev/null |
+		grep -E "^\s+$SIM_NAME \([a-fA-F0-9-]+\)" |
+		awk -F'[()]' '{print $2}')
+
+	if [[ -z "${SIM_UDID:-}" ]]; then
+		echo "ERROR: No '$SIM_NAME' simulator found. Run 'mise run ios-dev-init'." >&2
+		exit 1
+	fi
+
+	DESTINATION="platform=iOS Simulator,id=${SIM_UDID}"
+fi
+
+#######################################
+# Build the iOS app
+#######################################
+echo "=== Building iOS app ($PLATFORM, profile=$PROFILE) ==="
+
+if [ "$PLATFORM" = "device" ]; then
+	env -u CC -u CXX xcodebuild \
+		-project "$PROJECT_DIR/Livtet.xcodeproj" \
+		-scheme Livtet \
+		-configuration "$PROFILE" \
+		-sdk iphoneos \
+		-destination "$DESTINATION" \
+		-derivedDataPath "$DERIVED_DATA" \
+		build | xcbeautify
+else
+	env -u CC -u CXX xcodebuild \
+		-project "$PROJECT_DIR/Livtet.xcodeproj" \
+		-scheme Livtet \
+		-configuration "$PROFILE" \
+		-destination "$DESTINATION" \
+		-sdk iphonesimulator \
+		-derivedDataPath "$DERIVED_DATA" \
+		build | xcbeautify
+fi
+
+echo ""
+echo "=== ios-build complete ==="

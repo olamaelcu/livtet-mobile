@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+#MISE description="Incremental Kotlin-only install: compile + install APK without cargo/uniffi. Use during active Kotlin development for a fast feedback loop."
+#MISE sources=["android/**/*.kt", "android/**/*.kts"]
+#USAGE flag "--flavor <flavor>" help="Android product flavor" default="generic" {
+#USAGE   choices "generic" "playstore" "fdroid"
+#USAGE }
+#USAGE flag "--profile <profile>" help="Build profile" default="debug" {
+#USAGE   choices "debug" "release"
+#USAGE }
+
+set -e
+# shellcheck disable=SC1091
+source "$(dirname "${BASH_SOURCE[0]}")/_os-check" && require_os linux
+
+FLAVOR="${usage_flavor:-generic}"
+FLAVOR_CAP="${FLAVOR^}"
+PROFILE="${usage_profile:-debug}"
+PROFILE_CAP="${PROFILE^}"
+
+echo "=== android-install-incremental: flavor=$FLAVOR profile=$PROFILE ==="
+echo "  Skipping cargo build and UniFFI bindgen — Kotlin-only compile + install."
+echo "  If you changed Rust code, run 'mise run android-build' instead."
+
+cd android
+gradle ":app:install${FLAVOR_CAP}${PROFILE_CAP}"
+
+# Launch the splash activity after install
+PKG="net.olamaelcu.livtet"
+if [ "$FLAVOR" != "playstore" ]; then
+	PKG="net.olamaelcu.livtet.${FLAVOR}"
+fi
+ACTIVITY="net.olamaelcu.livtet.SplashActivity"
+SERIAL=$(adb devices 2>/dev/null | grep 'device$' | head -1 | awk '{print $1}')
+if [ -n "$SERIAL" ]; then
+	adb -s "$SERIAL" shell am start -n "${PKG}/${ACTIVITY}"
+fi

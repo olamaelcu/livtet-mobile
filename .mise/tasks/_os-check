@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+# Source this at the top of platform-specific file tasks:
+#   source "$(dirname "$0")/_os-check" && require_os macos
+#   source "$(dirname "$0")/_os-check" && require_os linux
+
+require_os() {
+	local expected="$1"
+	local detected
+	detected="$(/usr/bin/uname -s)"
+	case "$detected" in
+	Darwin) detected="macos" ;;
+	Linux) detected="linux" ;;
+	*) detected="unknown" ;;
+	esac
+	if [ "$detected" != "$expected" ]; then
+		echo "ERROR: This task requires $expected, but the current OS is $detected." >&2
+		echo "       Platform-specific tools are not available on $detected." >&2
+		exit 1
+	fi
+}

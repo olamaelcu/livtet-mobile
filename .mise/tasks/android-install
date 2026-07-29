@@ -1,0 +1,69 @@
+#!/usr/bin/env bash
+#MISE description="Install the Android APK on a connected device or emulator"
+#USAGE flag "--flavor <flavor>" help="Android product flavor" default="generic" {
+#USAGE   choices "generic" "playstore" "fdroid"
+#USAGE }
+#USAGE flag "--profile <profile>" help="Build profile" default="debug" {
+#USAGE   choices "debug" "release"
+#USAGE }
+#USAGE flag "--device <serial>" help="Target device serial (auto-detect if omitted)" default=""
+#USAGE flag "--select [phone|tablet]" help="Pick a running emulator by name" default=""
+
+set -e
+
+FLAVOR="${usage_flavor:-generic}"
+PROFILE="${usage_profile:-debug}"
+DEVICE="${usage_device:-}"
+SELECT="${usage_select:-}"
+
+APK_PATH="android/app/build/outputs/apk/$FLAVOR/$PROFILE/app-$FLAVOR-$PROFILE.apk"
+
+if [ ! -f "$APK_PATH" ]; then
+	echo "Error: APK not found at $APK_PATH" >&2
+	echo "       Run 'mise run android-build' first" >&2
+	exit 1
+fi
+
+if [ -n "$SELECT" ]; then
+	SCRIPT_DIR="$(dirname "$(readlink -f "$0")")"
+	DEVICE_SERIAL=$("$SCRIPT_DIR/android-emulator" --select "$SELECT")
+	echo "  Using emulator: $SELECT ($DEVICE_SERIAL)"
+elif [ -z "$DEVICE" ]; then
+	DEVICE_COUNT=$(adb devices 2>/dev/null | grep -c 'device$' || true)
+	if [ "$DEVICE_COUNT" -eq 0 ]; then
+		echo "Error: No device or emulator found" >&2
+		echo "       Connect a device or run the emulator first" >&2
+		exit 1
+	elif [ "$DEVICE_COUNT" -eq 1 ]; then
+		DEVICE_SERIAL=$(adb devices 2>/dev/null | grep 'device$' | awk '{print $1}')
+		echo "  Using device: $DEVICE_SERIAL"
+	else
+		echo "Error: Multiple devices connected" >&2
+		echo "       Use --device <serial> to specify one:" >&2
+		adb devices 2>/dev/null | grep 'device$' | awk '{print "         " $1}' >&2
+		exit 1
+	fi
+else
+	DEVICE_SERIAL="$DEVICE"
+fi
+
+echo "=== android-install: flavor=$FLAVOR profile=$PROFILE device=$DEVICE_SERIAL ==="
+adb -s "$DEVICE_SERIAL" install -r "$APK_PATH"
+
+# Launch the splash activity after install.
+# Application IDs differ per flavor (see android/app/build.gradle.kts).
+# `playstore` has no applicationIdSuffix, so its package is identical to the
+# base namespace; appending the flavor naively (as we used to) yields
+# `net.olamaelcu.livtet.playstore` which doesn't exist on the device and
+# surfaces as `am start` Error type 3 (ACTIVITY_CLASS_NOT_FOUND).
+case "$FLAVOR" in
+playstore) PKG="net.olamaelcu.livtet" ;;
+fdroid) PKG="net.olamaelcu.livtet.fdroid" ;;
+generic) PKG="net.olamaelcu.livtet.generic" ;;
+*)
+	echo "Error: unknown flavor '$FLAVOR'" >&2
+	exit 1
+	;;
+esac
+ACTIVITY="net.olamaelcu.livtet.SplashActivity"
+adb -s "$DEVICE_SERIAL" shell am start -n "${PKG}/${ACTIVITY}"

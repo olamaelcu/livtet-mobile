@@ -1,0 +1,42 @@
+#!/usr/bin/env bash
+#MISE description="Union task: boot simulator + build + install (one-command iOS dev loop)"
+#USAGE flag "--profile <profile>" help="Build profile" default="debug" {
+#USAGE   choices "debug" "release"
+#USAGE }
+#USAGE flag "--sim" help="Build only for arm64 simulator (fast, skip x86_64). Use for Apple Silicon Macs."
+#USAGE flag "--sim-x86" help="Build only for x86_64 simulator (fast, skip arm64). Use for Intel Macs."
+#USAGE flag "--ipad" help="Use iPad simulator instead of iPhone"
+#USAGE flag "--clean" help="Delete the XCFramework before building (forces native rebuild)"
+#USAGE flag "--device" help="Build for physical device (aarch64-apple-ios). For simulators, builds fat lib for both arm64 and x86_64."
+
+set -euo pipefail
+# shellcheck disable=SC1091
+source "$(dirname "${BASH_SOURCE[0]}")/_os-check" && require_os macos
+
+# shellcheck source=/dev/null
+source "$(dirname "${BASH_SOURCE[0]}")/_build_profile.sh"
+
+SCRIPT_DIR="$(dirname "${BASH_SOURCE[0]}")"
+
+if [ "${usage_ipad:-false}" = "true" ]; then
+	TARGET="tablet"
+else
+	TARGET="phone"
+fi
+
+echo "=== ios-run-simulator: profile=$PROFILE target=$TARGET ==="
+
+# Step 2: Build (native libs + app) - ios-build uses --sim --sim-x86 --ipad --clean --device flags
+IOS_BUILD_FLAGS=("--profile" "$PROFILE")
+[ "${usage_sim:-false}" = "true" ] && IOS_BUILD_FLAGS+=(--sim)
+[ "${usage_sim_x86:-false}" = "true" ] && IOS_BUILD_FLAGS+=(--sim-x86)
+[ "${usage_clean:-false}" = "true" ] && IOS_BUILD_FLAGS+=(--clean)
+[ "${usage_device:-false}" = "true" ] && IOS_BUILD_FLAGS+=(--device)
+[ "$TARGET" = "tablet" ] && IOS_BUILD_FLAGS+=(--ipad)
+"$SCRIPT_DIR/ios-build" "${IOS_BUILD_FLAGS[@]}"
+
+# Step 1: Boot simulator
+"$SCRIPT_DIR/ios-simulator" --start "$TARGET"
+
+# Step 3: Install and launch
+"$SCRIPT_DIR/ios-install" --profile "$PROFILE" "$([ "$TARGET" = "tablet" ] && echo --ipad)"

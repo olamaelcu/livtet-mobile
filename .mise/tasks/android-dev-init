@@ -1,0 +1,119 @@
+#!/bin/bash
+#MISE description="Provision Android NDK/SDK cargo config and targets for cross-compilation"
+# Runs automatically after android-sdk installation/update via mise.
+# Usage: mise run android-dev-init
+# Override SDK root with ANDROID_SDK_ROOT env var if needed.
+
+set -e
+# shellcheck disable=SC1091  # _os-check is a sibling script, not an input file
+source "$(dirname "${BASH_SOURCE[0]}")/_os-check" && require_os linux
+
+if [ -z "$ANDROID_SDK_ROOT" ]; then
+	cmdline_path=$(mise exec -- which sdkmanager)
+	sdk_root=$(dirname "$cmdline_path")
+	sdk_root=$(dirname "$sdk_root")
+	sdk_root=$(dirname "$sdk_root")
+	sdk_root=$(dirname "$sdk_root")
+	ANDROID_SDK_ROOT="$sdk_root"
+fi
+
+export ANDROID_SDK_ROOT
+NDK_VERSION=$(find "$ANDROID_SDK_ROOT/ndk" -mindepth 1 -maxdepth 1 -type d -printf '%f\n' 2>/dev/null | head -1)
+export ANDROID_NDK_HOME="${ANDROID_NDK_HOME:-$ANDROID_SDK_ROOT/ndk/$NDK_VERSION}"
+
+echo "=== Android Dev Init ==="
+echo "SDK root: $ANDROID_SDK_ROOT"
+echo "NDK home: $ANDROID_NDK_HOME"
+
+yes 2>/dev/null | mise exec -- sdkmanager --sdk_root="$ANDROID_SDK_ROOT" --licenses 2>&1 | grep -v "^Warning" || true
+
+PACKAGES=(
+	"platforms;android-36"
+	"build-tools;36.0.0"
+	"ndk;27.1.12297006"
+)
+
+echo "Installing SDK packages..."
+mise exec -- sdkmanager --sdk_root="$ANDROID_SDK_ROOT" "${PACKAGES[@]}"
+
+echo ""
+echo "=== Android SDK Ready ==="
+echo "SDK root: $ANDROID_SDK_ROOT"
+echo "NDK home: $ANDROID_NDK_HOME"
+
+NDK_CLANG_AARCH64=$(find "$ANDROID_SDK_ROOT" -name "aarch64-linux-android28-clang" -type f 2>/dev/null | head -1)
+NDK_CLANG_I686=$(find "$ANDROID_SDK_ROOT" -name "i686-linux-android28-clang" -type f 2>/dev/null | head -1)
+NDK_CLANG_X86_64=$(find "$ANDROID_SDK_ROOT" -name "x86_64-linux-android28-clang" -type f 2>/dev/null | head -1)
+
+if [ -z "$NDK_CLANG_AARCH64" ]; then
+	echo "ERROR: aarch64-linux-android28-clang not found in $ANDROID_SDK_ROOT" >&2
+	exit 1
+fi
+
+NDK_TOOLCHAIN_BIN="$(dirname "$NDK_CLANG_AARCH64")"
+# shellcheck disable=SC2034  # used in config.toml [env] generation below
+NDK_LLVM_AR="$NDK_TOOLCHAIN_BIN/llvm-ar"
+
+echo "NDK toolchain bin: $NDK_TOOLCHAIN_BIN"
+echo "NDK clang (aarch64): $NDK_CLANG_AARCH64"
+echo "NDK clang (i686): $NDK_CLANG_I686"
+echo "NDK clang (x86_64): $NDK_CLANG_X86_64"
+
+# The Cargo workspace root lives at core/ (git submodule). Cargo searches for
+# `.cargo/config.toml` upward from the workspace root, so a file at the mobile
+# repo root is picked up when `cargo` runs from inside core/. Anchor on the
+# mise task script location — always at the mobile repo's .mise/tasks/ — and
+# walk up two parents to reach the repo root.
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+MOBILE_REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
+CARGO_DIR="$MOBILE_REPO_ROOT/.cargo"
+MARKER_SCRIPT="$SCRIPT_DIR/_cargo_marker.py"
+mkdir -p "$CARGO_DIR"
+
+# Generate regions for config.toml: target blocks under Android marker,
+# [env] table under AndroidENV marker (matches dev-setup skeleton layout).
+python3 "$MARKER_SCRIPT" \
+	--file "$CARGO_DIR/config.toml" \
+	--marker Android \
+	--content "[target.aarch64-linux-android]
+linker = \"$NDK_CLANG_AARCH64\"
+runner = \"cargo ndk-runner\"
+
+[target.i686-linux-android]
+linker = \"$NDK_CLANG_I686\"
+runner = \"cargo ndk-runner\"
+
+[target.x86_64-linux-android]
+linker = \"$NDK_CLANG_X86_64\"
+runner = \"cargo ndk-runner\"
+"
+
+grep -q "^\[env\]$" "$CARGO_DIR/config.toml" 2>/dev/null || printf '\n[env]\n' >>"$CARGO_DIR/config.toml"
+
+python3 "$MARKER_SCRIPT" \
+	--file "$CARGO_DIR/config.toml" \
+	--marker AndroidENV \
+	--content "CC_aarch64_linux_android = \"$NDK_CLANG_AARCH64\"
+CC_i686_linux_android = \"$NDK_CLANG_I686\"
+CC_x86_64_linux_android = \"$NDK_CLANG_X86_64\"
+AR_aarch64_linux_android = \"$NDK_LLVM_AR\"
+AR_i686_linux_android = \"$NDK_LLVM_AR\"
+AR_x86_64_linux_android = \"$NDK_LLVM_AR\"
+CARGO_TARGET_AARCH64_LINUX_ANDROID_LINKER = \"$NDK_CLANG_AARCH64\"
+CARGO_TARGET_I686_LINUX_ANDROID_LINKER = \"$NDK_CLANG_I686\"
+CARGO_TARGET_X86_64_LINUX_ANDROID_LINKER = \"$NDK_CLANG_X86_64\"
+"
+
+# Idempotently generate Android local.properties
+mkdir -p android
+if [ ! -f android/local.properties ]; then
+	printf 'sdk.dir=%s\n' "$ANDROID_SDK_ROOT" >android/local.properties
+fi
+
+rustup target add \
+	aarch64-linux-android \
+	i686-linux-android \
+	x86_64-linux-android
+
+echo ""
+echo "Generated Android sections in .cargo/config.toml (Android target + AndroidENV env)"

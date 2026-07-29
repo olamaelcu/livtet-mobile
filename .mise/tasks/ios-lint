@@ -1,0 +1,50 @@
+#!/usr/bin/env bash
+#MISE description="Run swift-format and SwiftLint against every iOS Swift target"
+#MISE sources=["ios/**/*.swift"]
+#MISE outputs=[]
+#USAGE flag "--fix" help="Auto-fix via swift-format + SwiftLint --fix"
+
+set -euo pipefail
+# shellcheck disable=SC1091
+source "$(dirname "${BASH_SOURCE[0]}")/_os-check" && require_os macos
+
+echo "=== ios-lint${usage_fix:+ --fix} ==="
+
+cd ios
+
+# Pick the formatter binary. Xcode 16+ ships swift-format inside the
+# toolchain; older installs may have it on PATH via Homebrew. Fall back
+# gracefully so the script works either way.
+SF="xcrun swift-format"
+if ! xcrun --find swift-format >/dev/null 2>&1; then
+	SF="swift-format"
+fi
+
+# Collect every Swift file under ios/, excluding the directories
+# SwiftLint already excludes (Pods, .derivedData, .build) so we don't
+# fight the IDE / CocoaPods generated output.
+SWIFT_FILES=$(find . \
+	\( -path ./Pods -o -path ./.derivedData -o -path ./.build -o -path ./.swiftpm \) -prune -o \
+	-type f -name '*.swift' -print)
+
+if [ -n "$SWIFT_FILES" ]; then
+	echo "Running swift-format..."
+	if [ "${usage_fix:-false}" = "true" ]; then
+		# shellcheck disable=SC2086
+		"$SF" format -i $SWIFT_FILES
+	else
+		# shellcheck disable=SC2086
+		"$SF" lint $SWIFT_FILES
+	fi
+fi
+
+# SwiftLint is a linter only — `--fix` is a no-op for non-fixable
+# rules but still the documented handoff for auto-corrections.
+echo "Running SwiftLint..."
+if [ "${usage_fix:-false}" = "true" ]; then
+	swiftlint --fix
+else
+	swiftlint
+fi
+
+echo "=== ios-lint: done ==="

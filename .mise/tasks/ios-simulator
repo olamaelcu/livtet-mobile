@@ -1,0 +1,241 @@
+#!/usr/bin/env bash
+#MISE description="Create / launch iOS simulator(s) for tablet and phone"
+#USAGE flag "--create" help="Create the simulators if they don't exist"
+#USAGE flag "--start [phone|tablet]" help="Launch simulator(s); defaults to phone if no arg"
+#USAGE flag "--select [phone|tablet]" help="Print the UDID of the target simulator; defaults to phone if no arg"
+#USAGE flag "--list" help="List all created simulators with running/stopped status"
+#USAGE flag "--foreground [phone|tablet]" help="Launch simulator(s) with GUI; requires Xcode 16+ on macOS 15.x"
+
+set -euo pipefail
+# shellcheck disable=SC1091
+source "$(dirname "${BASH_SOURCE[0]}")/_os-check" && require_os macos
+
+PHONE_SIM_NAME="Livtet iPhone"
+TABLET_SIM_NAME="Livtet iPad"
+IOS_18_RUNTIME="com.apple.CoreSimulator.SimRuntime.iOS-18-0"
+
+CREATE="${usage_create:-false}"
+START="${usage_start:-}"
+SELECT="${usage_select:-}"
+LIST="${usage_list:-false}"
+FOREGROUND="${usage_foreground:-}"
+
+# Default target when no explicit target provided
+DEFAULT_TARGET="phone"
+
+# Resolve actual target for start/foreground/select
+resolve_target() {
+	local arg="$1"
+	# Empty arg defaults to phone
+	if [ -z "$arg" ]; then
+		echo "phone"
+	elif [ "$arg" = "phone" ] || [ "$arg" = "tablet" ]; then
+		echo "$arg"
+	else
+		echo "ERROR: Unknown target '$arg'. Use: phone or tablet" >&2
+		exit 1
+	fi
+}
+
+# Validate mutually exclusive flags
+if [ -n "$FOREGROUND" ] && [ "$CREATE" = true ]; then
+	echo "ERROR: --foreground and --create are mutually exclusive" >&2
+	exit 1
+fi
+if [ -n "$FOREGROUND" ] && [ -n "$SELECT" ]; then
+	echo "ERROR: --foreground and --select are mutually exclusive" >&2
+	exit 1
+fi
+
+#######################################
+# List simulators with status
+#######################################
+list_sims() {
+	echo "=== Listing Livtet simulators ==="
+	tmpfile=$(mktemp)
+	xcrun simctl list devices 2>/dev/null >"$tmpfile" || true
+	trap 'rm -f "$tmpfile"' EXIT
+
+	running_output=""
+	stopped_output=""
+
+	for sim_name in "$PHONE_SIM_NAME" "$TABLET_SIM_NAME"; do
+		if grep -q "  $sim_name (" "$tmpfile" 2>/dev/null; then
+			# Extract runtime version for this simulator
+			runtime=$(grep "  $sim_name (" "$tmpfile" | head -1 | grep -oE 'iOS [0-9]+' || echo "iOS unknown")
+
+			# Check if running
+			udid=$(grep "  $sim_name (" "$tmpfile" | awk -F'[()]' '{print $2}')
+			if [ -n "$udid" ]; then
+				# Check boot status via JSON output
+				booted=$(xcrun simctl list devices booted 2>/dev/null | grep -c "$udid" || true)
+				if [ "$booted" -gt 0 ]; then
+					running_output="$running_output  $sim_name   $udid   $runtime (booted)"$'\n'
+				else
+					stopped_output="$stopped_output  $sim_name   $udid   $runtime (stopped)"$'\n'
+				fi
+			fi
+		else
+			stopped_output="$stopped_output  $sim_name   (not created)"$'\n'
+		fi
+	done
+
+	if [ -n "$running_output" ]; then
+		echo "Running:"
+		echo -n "$running_output"
+	fi
+
+	if [ -n "$stopped_output" ]; then
+		echo "Stopped:"
+		echo -n "$stopped_output"
+	fi
+}
+
+#######################################
+# Select simulator UDID
+#######################################
+select_sim() {
+	local target="$1"
+	local sim_name
+
+	case "$target" in
+	phone) sim_name="$PHONE_SIM_NAME" ;;
+	tablet) sim_name="$TABLET_SIM_NAME" ;;
+	esac
+
+	udid=$(xcrun simctl list devices available 2>/dev/null |
+		grep -E "^\s+$sim_name \([a-fA-F0-9-]+\)" |
+		awk -F'[()]' '{print $2}')
+
+	if [ -z "$udid" ]; then
+		echo "ERROR: $sim_name not found. Run 'mise run ios-dev-init --create'." >&2
+		exit 1
+	fi
+	echo "$udid"
+}
+
+#######################################
+# Create simulators
+#######################################
+create_sims() {
+	for sim_name in "$PHONE_SIM_NAME" "$TABLET_SIM_NAME"; do
+		if ! xcrun simctl list devices available 2>/dev/null | grep -q "  $sim_name ("; then
+			echo "Creating $sim_name on iOS 18..."
+			case "$sim_name" in
+			"$PHONE_SIM_NAME")
+				xcrun simctl create "$sim_name" "com.apple.CoreSimulator.SimDeviceType.iPhone-15" "$IOS_18_RUNTIME" ||
+					echo "ERROR: Failed to create $sim_name" >&2
+				;;
+			"$TABLET_SIM_NAME")
+				xcrun simctl create "$sim_name" "com.apple.CoreSimulator.SimDeviceType.iPad-10th-generation" "$IOS_18_RUNTIME" ||
+					echo "ERROR: Failed to create $sim_name" >&2
+				;;
+			esac
+		else
+			echo "$sim_name already exists — skipping."
+		fi
+	done
+}
+
+#######################################
+# Boot simulator(s)
+#######################################
+boot_sim() {
+	local target="$1"
+	local gui="$2"
+	local sim_name
+
+	case "$target" in
+	phone) sim_name="$PHONE_SIM_NAME" ;;
+	tablet) sim_name="$TABLET_SIM_NAME" ;;
+	esac
+
+	udid=$(xcrun simctl list devices available 2>/dev/null |
+		grep -E "^\s+$sim_name \([a-fA-F0-9-]+\)" |
+		awk -F'[()]' '{print $2}')
+
+	if [ -z "$udid" ]; then
+		echo "ERROR: $sim_name not found. Run 'mise run ios-dev-init' first." >&2
+		exit 1
+	fi
+
+	# Check if already booted
+	booted=$(xcrun simctl list devices booted 2>/dev/null | grep -c "$udid" || true)
+	if [ "$booted" -gt 0 ]; then
+		echo "$sim_name already booted ($udid)"
+		echo "$udid" >".$sim_name.udid"
+		return 0
+	fi
+
+	echo "Booting $sim_name ($udid)..."
+	xcrun simctl boot "$udid"
+
+	# Wait for boot completion
+	for _ in $(seq 1 120); do
+		if xcrun simctl list devices booted 2>/dev/null | grep -q "$udid"; then
+			echo "$sim_name ready ($udid)"
+			echo "$udid" >".$sim_name.udid"
+			break
+		fi
+		sleep 1
+	done
+
+	# Open Simulator app GUI if requested
+	if [ "$gui" = "true" ]; then
+		# Xcode 16+ Simulator.app works on macOS 15.x; Xcode 15.4 crashes (dyld missing _OBJC_CLASS_$__GCControllerManager)
+		# which Apple removed from GameController.framework in macOS 15.x
+		local os_version
+		os_version=$(sw_vers -productVersion | cut -d. -f1)
+		local xcode_major
+		xcode_major=$(xcodebuild -version 2>/dev/null | head -1 | grep -oE '[0-9]+' | head -1)
+
+		if [ "${os_version:-0}" -ge 15 ] && [ "${xcode_major:-99}" -lt 16 ]; then
+			echo "WARNING: Skipping Simulator GUI launch (Xcode $xcode_major on macOS $os_version is incompatible)." >&2
+			echo "         The Simulator.app dyld-crashes on this combination. Headless boot succeeded." >&2
+			echo "         To use Simulator GUI, upgrade to Xcode 16+ or launch Xcode's Simulator manually." >&2
+		else
+			open -a Simulator
+		fi
+	fi
+}
+
+#######################################
+# Main logic
+#######################################
+if [ "$LIST" = "true" ]; then
+	list_sims
+	exit 0
+fi
+
+if [ -n "$SELECT" ]; then
+	TARGET=$(resolve_target "$SELECT")
+	select_sim "$TARGET"
+	exit 0
+fi
+
+if [ "$CREATE" = "true" ]; then
+	create_sims
+fi
+
+# Handle --foreground and --start
+if [ -n "$FOREGROUND" ]; then
+	# --foreground defaults to phone if no arg
+	TARGETS_TO_BOOT=()
+	if [ "$FOREGROUND" = "both" ]; then
+		TARGETS_TO_BOOT=("phone" "tablet")
+	else
+		TARGET=$(resolve_target "$FOREGROUND")
+		TARGETS_TO_BOOT+=("$TARGET")
+	fi
+	for t in "${TARGETS_TO_BOOT[@]}"; do
+		boot_sim "$t" "true"
+	done
+elif [ -n "$START" ]; then
+	TARGET=$(resolve_target "$START")
+	boot_sim "$TARGET" "false"
+else
+	# Default: boot phone simulator
+	boot_sim "$DEFAULT_TARGET" "false"
+fi
+
+echo "Done."

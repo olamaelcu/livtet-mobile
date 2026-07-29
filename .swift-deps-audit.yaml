@@ -1,0 +1,73 @@
+# Audit config for scripts/check-swift-deps.sh.
+#
+# Format (subset of YAML, parsed by Python's `yaml.safe_load`):
+#
+#   packageModuleMap:
+#     <packageName>: <moduleName>     # overrides for non-default mappings
+#   ignoreTargets:
+#     - <targetName>                  # targets whose imports are skipped
+#   ignoreModules:
+#     - <ModuleName>                  # well-known stdlib modules to ignore
+#   strict: true                      # if false, skips MISSING detection
+#   extraSources:
+#     - <relativePath>                # additional source roots (recursive)
+#
+# Default ignoreModules covers the Swift + Apple SDK surface. Add any
+# modules you rely on but don't declare (e.g., a vendored local SwiftPM
+# package whose product isn't reached via .product() from your targets).
+
+packageModuleMap:
+  # FastULID's swift package name is the trailing component of the URL
+  # ("FastULID.git" → "FastULID") and its module name is also "FastULID",
+  # so no override is required. Listed here as documentation:
+  FastULID: FastULID
+
+ignoreTargets:
+  - LivtetKitTests
+
+ignoreModules:
+  - Foundation
+  - Swift
+  - SwiftUI
+  - UIKit
+  - AppKit
+  - WatchKit
+  - Combine
+  - ObjectiveC
+  - CoreFoundation
+  - CoreGraphics
+  - CoreLocation
+  - CoreData
+  - CryptoKit
+  - SwiftData
+  - Charts
+  - MapKit
+  - WebKit
+  - AVFoundation
+  - AVFAudio
+  - SceneKit
+  - MetalKit
+  - Metal
+  - GameplayKit
+  - SpriteKit
+  - QuartzCore
+  - Accelerate
+  - Security
+  - SystemConfiguration
+  - CFNetwork
+  - SafariServices
+  - BackgroundTasks
+  - PushKit
+  - CallKit
+  - VisionKit
+  - Vision
+  - PDFKit
+  - PencilKit
+  - os
+  - os.log
+  - os.signpost
+  - Darwin
+  - Dispatch
+  - Network
+
+strict: true

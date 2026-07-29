@@ -1,0 +1,69 @@
+#!/usr/bin/env bash
+#MISE description="Install the iOS app on a booted simulator"
+#USAGE flag "--profile <profile>" help="Build profile" default="debug" {
+#USAGE   choices "debug" "release"
+#USAGE }
+#USAGE flag "--ipad" help="Target iPad simulator instead of iPhone"
+
+set -euo pipefail
+# shellcheck disable=SC1091
+source "$(dirname "${BASH_SOURCE[0]}")/_os-check" && require_os macos
+
+# shellcheck source=/dev/null
+source "$(dirname "${BASH_SOURCE[0]}")/_build_profile.sh"
+
+if [ "${usage_ipad:-false}" = "true" ]; then
+	SELECT="tablet"
+else
+	SELECT="phone"
+fi
+BUNDLE_ID="net.olamaelcu.livtet"
+DERIVED_DATA="ios/.derivedData"
+
+# Build search pattern for app based on profile.
+# Xcode's derived-data directory uses Titlecase configuration names
+# (Debug, Release) regardless of the case passed to `-configuration`,
+# so match case-insensitively to handle both `debug`/`Debug` profiles.
+APP_PATH=$(find "$DERIVED_DATA" -iname "Livtet.app" -ipath "*${PROFILE}-iphonesimulator*" 2>/dev/null | head -1)
+
+if [ -z "$APP_PATH" ]; then
+	echo "ERROR: Could not find Livtet.app in $DERIVED_DATA" >&2
+	echo "       Run 'mise run ios-build' first to build the app." >&2
+	exit 1
+fi
+
+echo "Found app: $APP_PATH"
+
+#######################################
+# Resolve target simulator
+#######################################
+# Call via mise so usage flags are passed through correctly to the
+# sub-task. Invoking the script directly loses the `usage_*` env vars
+# that mise injects, so `--select phone` falls through to the boot
+# branch and the captured stdout is a "already booted" message rather
+# than the bare UDID.
+SIM_UDID=$(mise ios-simulator --select "$SELECT" 2>/dev/null)
+
+if [ -z "$SIM_UDID" ]; then
+	echo "ERROR: No booted simulator found for target $SELECT" >&2
+	echo "       Run 'mise run ios-simulator --start $SELECT' first." >&2
+	exit 1
+fi
+
+case "$SELECT" in
+tablet) SIM_NAME="Livtet iPad" ;;
+*) SIM_NAME="Livtet iPhone" ;;
+esac
+
+echo "=== ios-install: profile=$PROFILE select=$SELECT ($SIM_NAME) ==="
+
+#######################################
+# Install and launch
+#######################################
+echo "Installing app on simulator $SIM_UDID..."
+xcrun simctl install "$SIM_UDID" "$APP_PATH"
+
+echo "Launching app (bundle: $BUNDLE_ID)..."
+xcrun simctl launch "$SIM_UDID" "$BUNDLE_ID"
+
+echo "Done."
