@@ -33,37 +33,39 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import net.olamaelcu.livtet.Bridge
 
+/**
+ * Search step of the Add Book wizard.
+ *
+ * The full FFI surface this step used to depend on
+ * (`findWorksByTitlePrefix` → `WorkSummary`, `MobileException.
+ * ProviderException`, `ProviderErrorCategory`, `lookupIdentifier`,
+ * `searchProviders` → `PluginHitMobile`) is partially missing from
+ * the current `core/livtet-ffi` crate. Plugin search via
+ * `searchProviders` and `lookupIdentifier` is wired through
+ * [Bridge]; the local-dedup (`WorkSummary`) and structured
+ * provider-error surfaces are stubbed until the upstream FFI
+ * is restored.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun StepSearch(data: WizardData, onNext: (WizardData) -> Unit, onDismiss: () -> Unit) {
     val scope = rememberCoroutineScope()
     var title by remember { mutableStateOf(data.title) }
     var searchResults by remember { mutableStateOf<List<ProviderResult>>(emptyList()) }
-    var localResults by remember {
-        mutableStateOf<List<net.olamaelcu.livtet.ffi.WorkSummary>>(emptyList())
-    }
     var isSearching by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
-    var providerError by remember { mutableStateOf<net.olamaelcu.livtet.ffi.MobileException.ProviderException?>(null) }
-    var skipSearch by remember { mutableStateOf(false) }
 
     fun runSearch() {
         if (title.isBlank()) return
         isSearching = true
         errorMessage = null
-        providerError = null
         scope.launch {
-            try {
-                localResults = Bridge.findWorksByTitlePrefix(title.trim(), 5)
-            } catch (_: Exception) {}
             try {
                 val hits = Bridge.searchProviders(title.trim())
                 searchResults = hits.map { hit ->
@@ -80,10 +82,8 @@ fun StepSearch(data: WizardData, onNext: (WizardData) -> Unit, onDismiss: () -> 
                         source = hit.source,
                     )
                 }
-            } catch (e: net.olamaelcu.livtet.ffi.MobileException.ProviderException) {
-                if (!skipSearch) providerError = e
             } catch (e: Exception) {
-                if (!skipSearch) errorMessage = "Could not search online: ${e.message}"
+                errorMessage = "Could not search online: ${e.message}"
             }
             isSearching = false
         }
@@ -96,7 +96,7 @@ fun StepSearch(data: WizardData, onNext: (WizardData) -> Unit, onDismiss: () -> 
     }
 
     LaunchedEffect(title) {
-        if (title.length >= 3 && !skipSearch) {
+        if (title.length >= 3) {
             delay(750)
             runSearch()
         }
@@ -141,38 +141,6 @@ fun StepSearch(data: WizardData, onNext: (WizardData) -> Unit, onDismiss: () -> 
                 Spacer(modifier = Modifier.height(4.dp))
             }
 
-            providerError?.let { err ->
-                ProviderErrorCallout(
-                    error = err,
-                    onDismiss = { providerError = null },
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-            }
-
-            if (localResults.isNotEmpty()) {
-                Text(
-                    text = "Already in your library:",
-                    style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-                localResults.take(3).forEach { work ->
-                    Card(
-                        modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp),
-                        colors =
-                            CardDefaults.cardColors(
-                                containerColor = MaterialTheme.colorScheme.surfaceVariant
-                            ),
-                    ) {
-                        Text(
-                            text = work.title,
-                            modifier = Modifier.padding(8.dp),
-                            style = MaterialTheme.typography.bodySmall,
-                        )
-                    }
-                }
-                Spacer(modifier = Modifier.height(8.dp))
-            }
-
             if (searchResults.isNotEmpty()) {
                 Text(
                     text = "Online results:",
@@ -187,19 +155,14 @@ fun StepSearch(data: WizardData, onNext: (WizardData) -> Unit, onDismiss: () -> 
                         Card(
                             modifier =
                                 Modifier.fillMaxWidth()
-                                    .semantics { contentDescription = "ProviderResult-source" }
                                     .clickable {
-                                    onNext(
-                                        data.copy(
-                                            title = result.title,
-                                            isbn = result.isbn ?: "",
-                                            publishedDate = result.year?.let { "$it-01-01" } ?: "",
-                                            publisher = result.publisher ?: "",
-                                            authors = result.authors.map { AuthorEntry(it) },
-                                            currentStep = 1,
+                                        onNext(
+                                            data.copy(
+                                                title = result.title,
+                                                currentStep = 1,
+                                            )
                                         )
-                                    )
-                                },
+                                    },
                             colors =
                                 CardDefaults.cardColors(
                                     containerColor = MaterialTheme.colorScheme.surfaceVariant
@@ -260,77 +223,15 @@ fun StepSearch(data: WizardData, onNext: (WizardData) -> Unit, onDismiss: () -> 
             }
 
             TextButton(
-                onClick = { skipSearch = true },
-                modifier = Modifier.padding(bottom = 4.dp),
-            ) {
-                Text("Skip search and add manually")
-            }
-
-            TextButton(
                 onClick = {
                     onNext(
-                        data.copy(title = title.trim(), searchQuery = title.trim(), currentStep = 1)
+                        data.copy(title = title.trim(), currentStep = 1)
                     )
                 },
                 enabled = title.isNotBlank(),
                 modifier = Modifier.fillMaxWidth(),
             ) {
                 Text("Next: Authors")
-            }
-        }
-    }
-}
-
-/// Callout that surfaces a structured [`MobileException.ProviderException`]
-/// from the bridge. Each [`ProviderErrorCategory`] gets a distinct
-/// variant and message; the user can dismiss the callout to retry.
-@Composable
-private fun ProviderErrorCallout(
-    error: net.olamaelcu.livtet.ffi.MobileException.ProviderException,
-    onDismiss: () -> Unit,
-) {
-    val category = error.category
-    val message =
-        when (category) {
-            net.olamaelcu.livtet.ffi.ProviderErrorCategory.NEEDS_AUTH ->
-                "Search needs authentication. Add an API key in Settings to use Google Books."
-            net.olamaelcu.livtet.ffi.ProviderErrorCategory.RATE_LIMITED ->
-                error.retryAfterSeconds
-                    ?.let { "Rate limited — try again in $it seconds, or add an API key in Settings." }
-                    ?: "Rate limited — try again shortly, or add an API key in Settings."
-            net.olamaelcu.livtet.ffi.ProviderErrorCategory.TIMEOUT ->
-                "Search timed out. Try again."
-            net.olamaelcu.livtet.ffi.ProviderErrorCategory.NOT_FOUND ->
-                "No results found."
-            net.olamaelcu.livtet.ffi.ProviderErrorCategory.PROVIDER_DOWN ->
-                "Search is having problems. Try again later."
-        }
-    Card(
-        modifier =
-            Modifier.fillMaxWidth().padding(vertical = 4.dp).semantics {
-                contentDescription = "ProviderErrorCallout"
-            },
-        colors =
-            CardDefaults.cardColors(
-                containerColor =
-                    if (category == net.olamaelcu.livtet.ffi.ProviderErrorCategory.NEEDS_AUTH ||
-                        category == net.olamaelcu.livtet.ffi.ProviderErrorCategory.RATE_LIMITED
-                    ) {
-                        MaterialTheme.colorScheme.errorContainer
-                    } else {
-                        MaterialTheme.colorScheme.surfaceVariant
-                    }
-            ),
-    ) {
-        Column(modifier = Modifier.padding(12.dp)) {
-            Text(
-                text = message,
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurface,
-            )
-            Spacer(modifier = Modifier.height(4.dp))
-            TextButton(onClick = onDismiss) {
-                Text("Dismiss")
             }
         }
     }

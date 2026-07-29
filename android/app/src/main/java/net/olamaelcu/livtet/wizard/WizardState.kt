@@ -1,30 +1,19 @@
 package net.olamaelcu.livtet.wizard
 
-import net.olamaelcu.livtet.ffi.Book
-import net.olamaelcu.livtet.ffi.DbId
-import net.olamaelcu.livtet.ffi.WorkSummary
-
+/**
+ * Wizard state model. The full wizard (search → authors → review)
+ * previously depended on UniFFI types that are not yet present in
+ * the `core/livtet-ffi` crate (`Book`, `WorkSummary`, `DbId`,
+ * `AuthorInfo`, etc.). The wizard is non-functional until those
+ * FFI calls land upstream; in the meantime this class is
+ * intentionally minimal so the surrounding composables still
+ * compile and the screen renders an "Add Book coming soon"
+ * placeholder.
+ */
 data class WizardData(
     val currentStep: Int = 0,
     val title: String = "",
-    val description: String = "",
-    val isbn: String = "",
-    val publishedDate: String = "",
-    val languageId: DbId? = null,
-    val formatId: DbId? = null,
-    val publisher: String = "",
-    val status: String? = null,
-    val authors: List<AuthorEntry> = emptyList(),
-    val tags: List<DbId> = emptyList(),
-    val genres: List<DbId> = emptyList(),
-    val subjects: List<DbId> = emptyList(),
-    val searchQuery: String = "",
-    val localDedupResults: List<WorkSummary> = emptyList(),
-    val searchResults: List<ProviderResult> = emptyList(),
-    val createdBook: Book? = null,
 )
-
-data class AuthorEntry(val name: String = "", val role: String = "author")
 
 data class ProviderResult(
     val title: String,

@@ -1,6 +1,7 @@
 package net.olamaelcu.livtet.wizard
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -31,25 +32,22 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import kotlinx.coroutines.launch
-import net.olamaelcu.livtet.Bridge
 
 private val ROLES = listOf("author", "illustrator", "translator", "narrator")
+
+private data class AuthorEntry(val name: String, val role: String)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun StepAuthors(data: WizardData, onBack: () -> Unit, onNext: (WizardData) -> Unit) {
-    val scope = rememberCoroutineScope()
-    var authors by remember { mutableStateOf(data.authors) }
+    var authors by remember { mutableStateOf(listOf<AuthorEntry>()) }
     var newName by remember { mutableStateOf("") }
     var newRole by remember { mutableStateOf("author") }
     var roleExpanded by remember { mutableStateOf(false) }
-    var errorMessage by remember { mutableStateOf<String?>(null) }
 
     Column(modifier = Modifier.fillMaxSize()) {
         TopAppBar(
@@ -60,14 +58,6 @@ fun StepAuthors(data: WizardData, onBack: () -> Unit, onNext: (WizardData) -> Un
         )
 
         Column(modifier = Modifier.padding(horizontal = 16.dp)) {
-            if (errorMessage != null) {
-                Text(
-                    text = errorMessage!!,
-                    color = MaterialTheme.colorScheme.error,
-                    style = MaterialTheme.typography.bodySmall,
-                )
-            }
-
             if (authors.isNotEmpty()) {
                 Text(
                     text = "Added authors",
@@ -154,17 +144,9 @@ fun StepAuthors(data: WizardData, onBack: () -> Unit, onNext: (WizardData) -> Un
                 FilledTonalButton(
                     onClick = {
                         if (newName.isBlank()) return@FilledTonalButton
-                        scope.launch {
-                            try {
-                                Bridge.findOrCreateAuthor(newName.trim())
-                                authors = authors + AuthorEntry(newName.trim(), newRole)
-                                newName = ""
-                                newRole = "author"
-                                errorMessage = null
-                            } catch (e: Exception) {
-                                errorMessage = "Failed to add author: ${e.message}"
-                            }
-                        }
+                        authors = authors + AuthorEntry(newName.trim(), newRole)
+                        newName = ""
+                        newRole = "author"
                     }
                 ) {
                     Icon(Icons.Default.Add, "Add")
@@ -178,7 +160,7 @@ fun StepAuthors(data: WizardData, onBack: () -> Unit, onNext: (WizardData) -> Un
                 horizontalArrangement = Arrangement.SpaceBetween,
             ) {
                 TextButton(onClick = onBack) { Text("Back") }
-                TextButton(onClick = { onNext(data.copy(authors = authors, currentStep = 2)) }) {
+                TextButton(onClick = { onNext(data.copy(currentStep = 2)) }) {
                     Text("Next: Review")
                 }
             }
