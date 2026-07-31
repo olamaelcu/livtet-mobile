@@ -110,3 +110,6 @@ fastlane/.build-counter
 # ---- Emulator / simulator state files (per-device serials/UDIDs) ----
 .livtet-emulator-*.serial
 .Livtet*.udid
+
+# Superpowers worktrees
+.worktrees/
