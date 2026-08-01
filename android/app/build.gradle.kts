@@ -70,6 +70,8 @@ android {
             (project.findProperty("LIVTET_GOOGLE_API_KEY_ANDROID") as String?) ?: ""
         buildConfigField("String", "GOOGLE_API_KEY", "\"$googleApiKey\"")
         buildConfigField("String", "SENTRY_DSN", "\"\"")
+        buildConfigField("boolean", "GOOGLE_SIGN_IN_ENABLED", "false")
+        buildConfigField("boolean", "APPLE_SIGN_IN_ENABLED", "false")
 
         // Labs feature-flag build-time gates. Emitted as
         // `BuildConfig.LABS_BUILD_TIME_DEFAULTS_JSON`, a map of
@@ -130,6 +132,8 @@ android {
             val sentryDsn: String =
                 (project.findProperty("LIVTET_SENTRY_DSN_MOBILE") as String?) ?: ""
             buildConfigField("String", "SENTRY_DSN", "\"$sentryDsn\"")
+            buildConfigField("boolean", "GOOGLE_SIGN_IN_ENABLED", "true")
+            buildConfigField("boolean", "APPLE_SIGN_IN_ENABLED", "true")
 
             // Play Store canary-style rollout: the duplicates-badge
             // Labs flag is unlocked so users (and Test Flight /
@@ -205,6 +209,7 @@ dependencies {
     implementation(libs.ulid.kotlin)
     implementation(libs.androidx.datastore.preferences)
     implementation(project(":core:designsystem"))
+    implementation(project(":core:auth"))
 
     val composeBom = platform("androidx.compose:compose-bom:2026.03.00")
     implementation(composeBom)
