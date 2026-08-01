@@ -32,6 +32,9 @@ packages:
   Inject:
     url: https://github.com/krzysztofzablocki/Inject.git
     revision: "1.2.4"  # latest stable
+  LivtetBranding:
+    url: https://github.com/olamaelcu/livtet-branding
+    from: "0.1.0"
 
 targets:
   Livtet:
@@ -52,6 +55,8 @@ targets:
         product: Sentry
       - package: Inject
         product: Inject
+      - package: LivtetBranding
+        product: LivtetBranding
     settings:
       base:
         TARGETED_DEVICE_FAMILY: "1,2"
@@ -74,7 +79,6 @@ targets:
     deploymentTarget: "17.0"
     sources:
       - path: LivtetUnitTests
-      - path: Livtet/Utilities/BrandColor+Extension.swift
     dependencies:
       - target: Livtet
       - package: ViewInspector

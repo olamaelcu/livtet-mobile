@@ -33,9 +33,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import net.olamaelcu.livtet.core.designsystem.BodyFamily
-import net.olamaelcu.livtet.core.designsystem.HeadingFamily
-import net.olamaelcu.livtet.core.designsystem.LivtetColors
+import net.olamaelcu.livtet.branding.BodyFamily
+import net.olamaelcu.livtet.branding.HeadingFamily
+import net.olamaelcu.livtet.branding.LivtetColors
 import net.olamaelcu.livtet.core.designsystem.LivtetRadius
 import net.olamaelcu.livtet.ffi.DashboardStats
 import net.olamaelcu.livtet.ffi.Greeting

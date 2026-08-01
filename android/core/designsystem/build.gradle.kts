@@ -23,6 +23,10 @@ android {
 kotlin { compilerOptions { jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17) } }
 
 dependencies {
+    // Brand colors, font families, and color schemes —
+    // sourced from the livtet-branding composite build.
+    api("net.olamaelcu:livtet-branding")
+
     val composeBom = platform("androidx.compose:compose-bom:2026.03.00")
     implementation(composeBom)
     implementation("androidx.compose.ui:ui")

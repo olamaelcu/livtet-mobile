@@ -1,1 +1,0 @@
-/home/vrgl/Code/olamaelcu/livtet/packages/livtet-design-tokens/generated/android/kotlin/net/olamaelcu/livtet/core/designsystem/Brand.kt

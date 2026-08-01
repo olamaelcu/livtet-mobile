@@ -24,3 +24,13 @@ dependencyResolutionManagement {
 include(":app")
 include(":core:designsystem")
 include(":core:auth")
+
+// Composite build that substitutes the branding library so
+// `net.olamaelcu:livtet-branding` resolves from the checked-out
+// livtet-branding repo instead of a remote repository.
+includeBuild("../../branding/android") {
+    dependencySubstitution {
+        substitute(module("net.olamaelcu:livtet-branding"))
+            .using(project(":library"))
+    }
+}
