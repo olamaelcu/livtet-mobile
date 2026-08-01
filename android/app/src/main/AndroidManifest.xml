@@ -24,6 +24,13 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".DashboardActivity" android:exported="false" android:theme="@style/Theme.Livtet" />
+        <activity android:name=".DashboardActivity" android:exported="false" android:theme="@style/Theme.Livtet">
+            <intent-filter android:label="ATProto OAuth">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="livtet" android:host="atproto-callback" />
+            </intent-filter>
+        </activity>
     </application>
 </manifest>

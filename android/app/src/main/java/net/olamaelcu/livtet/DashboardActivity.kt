@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.MenuBook
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -32,6 +33,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import net.olamaelcu.livtet.account.AccountScreen
 import net.olamaelcu.livtet.core.designsystem.LivtetTheme
 import net.olamaelcu.livtet.settings.SettingsScreen
 import net.olamaelcu.livtet.settings.ThemeManager
@@ -64,7 +66,7 @@ private val bottomNavItems =
     listOf(
         BottomNavItem("dashboard", "Dashboard", null, Icons.Default.Home),
         BottomNavItem("library", "Library", null, Icons.Default.MenuBook),
-        BottomNavItem("feed", "Feed", null, Icons.Default.Home),
+        BottomNavItem("account", "Account", null, Icons.Default.Person),
     )
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -138,7 +140,7 @@ private fun DashboardNavHost() {
                 )
             }
             composable("library") { LibraryScreen() }
-            composable("feed") { FeedScreen() }
+            composable("account") { AccountScreen() }
             composable("settings") { SettingsScreen() }
         }
     }
