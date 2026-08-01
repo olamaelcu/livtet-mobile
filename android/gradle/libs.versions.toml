@@ -155,6 +155,15 @@ kover = "0.9.8"
 # swallows coroutine cancellation; see :core:data ResultUtils).
 kotlinResult = "2.0.1"
 
+# Credential Manager (Google Sign-In)
+credentials = "1.3.0"
+# Google ID token companion
+googleid = "1.1.1"
+# AndroidX Security Crypto
+securityCrypto = "1.1.0"
+# Apple Sign-In for Android
+appleSignIn = "1.0.0"
+
 # Misc
 ulid = "1.6.0"
 
@@ -366,6 +375,16 @@ androidx-profileinstaller = { group = "androidx.profileinstaller", name = "profi
 # detekt-formatting plugin (bridges KtLint rules into detekt's report).
 detekt-formatting = { group = "io.gitlab.arturbosch.detekt", name = "detekt-formatting", version.ref = "detektFormatting" }
 
+
+# Credential Manager
+androidx-credentials = { group = "androidx.credentials", name = "credentials", version.ref = "credentials" }
+# Google ID token parsing
+google-id = { group = "com.google.android.libraries.identity.googleid", name = "googleid", version.ref = "googleid" }
+# AndroidX Security Crypto
+androidx-security-crypto = { group = "androidx.security", name = "security-crypto", version.ref = "securityCrypto" }
+# Apple Sign-In for Android — not yet published on Maven Central; uncomment
+# when Apple releases the artifact.
+# apple-signin = { group = "com.apple", name = "apple-sign-in", version.ref = "appleSignIn" }
 
 [bundles]
 ktor-client = [
