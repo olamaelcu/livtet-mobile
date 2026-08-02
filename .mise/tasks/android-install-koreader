@@ -1,0 +1,46 @@
+#!/usr/bin/env bash
+#MISE description="Download and install KOReader APK from GitHub releases"
+#USAGE flag "--device <serial>" help="ADB device serial (auto-detected from running emulator if omitted)"
+
+set -e
+
+SCRIPT_DIR="$(dirname "$(readlink -f "$0")")"
+source "$SCRIPT_DIR/_os-check" && require_os linux
+
+DEVICE_SERIAL="${usage_device:-}"
+
+if [ -z "$DEVICE_SERIAL" ]; then
+	for f in .livtet-emulator-*.serial; do
+		if [ -f "$f" ]; then
+			DEVICE_SERIAL=$(cat "$f")
+			break
+		fi
+	done
+fi
+
+if [ -z "$DEVICE_SERIAL" ]; then
+	echo "Error: No emulator serial found and --device not specified" >&2
+	echo "       Start the emulator first: mise run android-emulator --start phone" >&2
+	exit 1
+fi
+
+if adb -s "$DEVICE_SERIAL" shell pm list packages 2>/dev/null | grep -q "org.koreader.launcher"; then
+	echo "KOReader already installed on $DEVICE_SERIAL"
+	exit 0
+fi
+
+KOReader_REPO="koreader/koreader"
+APK_CACHE="$HOME/.cache/livtet/koreader"
+TAG=$(gh release list --repo "$KOReader_REPO" -L 1 --json tagName -q '.[0].tagName')
+APK_NAME="koreader-android-x86-${TAG}.apk"
+APK_PATH="$APK_CACHE/$APK_NAME"
+
+if [ ! -f "$APK_PATH" ]; then
+	echo "Downloading KOReader $TAG for x86..."
+	mkdir -p "$APK_CACHE"
+	gh release download --repo "$KOReader_REPO" --pattern "koreader-android-x86-*.apk" --dir "$APK_CACHE"
+fi
+
+echo "Installing KOReader $TAG on $DEVICE_SERIAL..."
+adb -s "$DEVICE_SERIAL" install -r "$APK_PATH"
+echo "KOReader $TAG installed"

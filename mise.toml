@@ -29,6 +29,7 @@ gradle = { version = "8.14.5", os = ["linux"] }
 kotlin = { version = "2.3.21", os = ["linux"] }
 java = { version = "20", os = ["linux"] }
 "aqua:ktlint" = { version = "1.8.0", os = ["linux"] }
+"github:cli/cli" = { version = "latest", os = ["linux"] }
 
 # macOS: iOS toolchain
 ruby = { version = "3.3.6", os = ["macos"] }
@@ -57,6 +58,7 @@ run = "mise watch android-install-incremental --on-busy-update=queue --exts kt,k
 description = "Union task: boot emulator + build + install (one-command Android dev loop)"
 run = [
   "mise run android-emulator --start phone",
+  "mise run android-install-koreader",
   "mise run android-build --profile debug --flavor generic --target emulator",
   "mise run android-install --profile debug --flavor generic",
 ]
