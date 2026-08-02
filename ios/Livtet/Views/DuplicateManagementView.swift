@@ -352,7 +352,7 @@ private struct EmptyStateView: View {
     var body: some View {
         VStack(spacing: 8) {
             Image(systemName: "checkmark.circle")
-                .font(.system(size: 36))
+                .font(.livtetHeading(size: 36))
                 .foregroundStyle(Color("textQuiet").opacity(0.5))
             Text(message)
                 .font(.livtetBody(size: 14))

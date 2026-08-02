@@ -25,21 +25,21 @@ object AccountManager {
 
     fun isInitialized(): Boolean = tokenStore != null
 
-    suspend fun signIn(
-        context: Context,
-        provider: AuthProvider,
-    ): ProviderAccount {
+    suspend fun signIn(context: Context, provider: AuthProvider): ProviderAccount {
         val store = tokenStore ?: throw IllegalStateException("AccountManager not initialized")
         Timber.tag(TAG).d("signIn called for provider: $provider")
-        val account = when (provider) {
-            AuthProvider.Google -> GoogleAuthProvider.signIn(context)
-            AuthProvider.Apple -> AppleAuthProvider.signIn(context)
-            is AuthProvider.Atproto -> throw UnsupportedOperationException(
-                "ATProto sign-in requires beginOAuth + handleCallback flow"
-            )
-        }
+        val account =
+            when (provider) {
+                AuthProvider.Google -> GoogleAuthProvider.signIn(context)
+                AuthProvider.Apple -> AppleAuthProvider.signIn(context)
+                is AuthProvider.Atproto ->
+                    throw UnsupportedOperationException(
+                        "ATProto sign-in requires beginOAuth + handleCallback flow"
+                    )
+            }
         store.putToken("token:${providerKey(provider)}:signed_in_at", account.signedInAt.toString())
-        if (account.email != null) store.putToken("token:${providerKey(provider)}:email", account.email)
+        if (account.email != null)
+            store.putToken("token:${providerKey(provider)}:email", account.email)
         store.putToken("token:${providerKey(provider)}:display_name", account.displayName)
         val newProviders = _accountState.value.providers + (provider to account)
         _accountState.value = AccountState(newProviders)
@@ -56,9 +56,10 @@ object AccountManager {
         Timber.tag(TAG).d("signOut complete: provider=${providerKey(provider)}")
     }
 
-    private fun providerKey(provider: AuthProvider): String = when (provider) {
-        AuthProvider.Google -> "google"
-        AuthProvider.Apple -> "apple"
-        is AuthProvider.Atproto -> "atproto"
-    }
+    private fun providerKey(provider: AuthProvider): String =
+        when (provider) {
+            AuthProvider.Google -> "google"
+            AuthProvider.Apple -> "apple"
+            is AuthProvider.Atproto -> "atproto"
+        }
 }

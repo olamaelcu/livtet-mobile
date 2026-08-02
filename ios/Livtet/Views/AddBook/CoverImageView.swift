@@ -28,7 +28,7 @@ struct CoverImageView: View {
         ZStack {
             Color("surfaceHighlighted")
             Image(systemName: "book.closed")
-                .font(.system(size: min(width, height) * 0.4))
+                .font(.livtetHeading(size: min(width, height) * 0.4))
                 .foregroundStyle(Color("textQuiet").opacity(0.4))
         }
     }

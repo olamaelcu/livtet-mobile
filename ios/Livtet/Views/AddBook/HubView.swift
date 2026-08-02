@@ -129,7 +129,7 @@ private enum HubRowStatus {
     }
     var color: Color {
         switch self {
-        case .filled: return .green
+        case .filled: return Color("semanticSuccessForeground")
         case .empty: return Color("textQuiet").opacity(0.4)
         case .required: return Color("semanticDangerForeground")
         }

@@ -7,9 +7,7 @@ import org.junit.Rule
 import org.junit.Test
 
 class AccountScreenTest {
-
-    @get:Rule
-    val composeTestRule = createAndroidComposeRule<DashboardActivity>()
+    @get:Rule val composeTestRule = createAndroidComposeRule<DashboardActivity>()
 
     @Test
     fun `account screen shows sign-in prompt when signed out`() {

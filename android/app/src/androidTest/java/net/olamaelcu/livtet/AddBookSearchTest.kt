@@ -17,12 +17,10 @@ import org.junit.runners.JUnit4
  * This test reproduces the user flow that surfaced the original failure — open the app, navigate to
  * the Library tab, open the Add-Book wizard, type a search query — and asserts that the process
  * does NOT crash. The test deliberately does not assert that any particular search result is shown,
- * because on this emulator the search providers can't be reached
- * (the test environment has no public-CA trust for `openlibrary.org`
- * and the `webpki-roots` Mozilla bundle may not include the
- * intermediate chain the emulator's DNS/network returns), and the
- * wizard degrades to a "No results found" or "Could not search
- * online" banner.
+ * because on this emulator the search providers can't be reached (the test environment has no
+ * public-CA trust for `openlibrary.org` and the `webpki-roots` Mozilla bundle may not include the
+ * intermediate chain the emulator's DNS/network returns), and the wizard degrades to a "No results
+ * found" or "Could not search online" banner.
  *
  * Three orthogonal assertions, each catching a different failure mode:
  *
@@ -109,13 +107,13 @@ class AddBookSearchTest {
         //      empty list, and the (b) pass-through already accepts
         //      that outcome.
         if (hasResults) {
-            val hasGooglebooksRow = composeTestRule
-                .onAllNodesWithText("via googlebooks", substring = true)
-                .fetchSemanticsNodes()
-                .isNotEmpty()
+            val hasGooglebooksRow =
+                composeTestRule
+                    .onAllNodesWithText("via googlebooks", substring = true)
+                    .fetchSemanticsNodes()
+                    .isNotEmpty()
             check(hasGooglebooksRow) {
-                "expected ≥1 ProviderResult-source row mentioning " +
-                    "'googlebooks', got none"
+                "expected ≥1 ProviderResult-source row mentioning " + "'googlebooks', got none"
             }
         }
 

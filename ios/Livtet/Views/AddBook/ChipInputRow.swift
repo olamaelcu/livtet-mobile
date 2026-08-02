@@ -41,7 +41,7 @@ private struct ChipPill: View {
             Text(label).font(.livtetBody(size: 13))
             Button(action: onRemove) {
                 Image(systemName: "xmark.circle.fill")
-                    .font(.system(size: 14))
+                    .font(.livtetBody(size: 14))
                     .foregroundStyle(Color("textQuiet"))
             }
             .buttonStyle(.plain)

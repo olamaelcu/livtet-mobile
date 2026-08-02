@@ -33,8 +33,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import net.olamaelcu.livtet.branding.BodyFamily
-import net.olamaelcu.livtet.branding.HeadingFamily
 import net.olamaelcu.livtet.branding.LivtetColors
 import net.olamaelcu.livtet.core.designsystem.LivtetRadius
 import net.olamaelcu.livtet.ffi.DashboardStats
@@ -84,11 +82,7 @@ fun DashboardScreen(onNavigateToLibrary: () -> Unit = {}) {
 
             Text(
                 text = "${g.author} - ${g.material}",
-                style =
-                    MaterialTheme.typography.bodySmall.copy(
-                        fontFamily = BodyFamily,
-                        fontStyle = FontStyle.Italic,
-                    ),
+                style = MaterialTheme.typography.bodySmall.copy(fontStyle = FontStyle.Italic),
                 color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f),
                 modifier = Modifier.fillMaxWidth(),
                 textAlign = TextAlign.End,
@@ -113,7 +107,9 @@ fun DashboardScreen(onNavigateToLibrary: () -> Unit = {}) {
                 val daysSinceFirst =
                     if (firstReadingAt != null) {
                         (now - firstReadingAt) / (1000L * 60 * 60 * 24)
-                    } else 0L
+                    } else {
+                        0L
+                    }
 
                 val showAddBook = s.totalBooks < 10L
                 val showRecordReading = firstReadingAt == null || daysSinceFirst < 14L
@@ -139,8 +135,11 @@ fun DashboardScreen(onNavigateToLibrary: () -> Unit = {}) {
                         emoji = "\uD83D\uDCD6",
                         title = "Record Your Reading",
                         description =
-                            if (firstReadingAt == null) "Log your first reading session"
-                            else "Keep your reading streak going",
+                            if (firstReadingAt == null) {
+                                "Log your first reading session"
+                            } else {
+                                "Keep your reading streak going"
+                            },
                         progress = (daysSinceFirst.toFloat() / 14f).coerceIn(0f, 1f),
                         progressLabel = "$daysSinceFirst/14 days",
                         onClick = onNavigateToLibrary,
@@ -251,7 +250,7 @@ private fun StatsRow(stats: DashboardStats) {
         Column(modifier = Modifier.fillMaxWidth().padding(12.dp)) {
             Text(
                 text = "Reading Stats",
-                style = MaterialTheme.typography.labelMedium.copy(fontFamily = BodyFamily),
+                style = MaterialTheme.typography.labelMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
 
@@ -283,19 +282,14 @@ private fun RowScope.StatItem(value: String, label: String) {
     Column(modifier = Modifier.weight(1f), horizontalAlignment = Alignment.CenterHorizontally) {
         Text(
             text = value,
-            style =
-                MaterialTheme.typography.titleLarge.copy(
-                    fontFamily = HeadingFamily,
-                    fontWeight = FontWeight.Medium,
-                ),
+            style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Medium),
             color = LivtetColors.Brand,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
         )
         Text(
             text = label,
-            style =
-                MaterialTheme.typography.labelSmall.copy(fontFamily = BodyFamily, fontSize = 11.sp),
+            style = MaterialTheme.typography.labelSmall.copy(fontSize = 11.sp),
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
     }
@@ -406,7 +400,7 @@ private fun FeedPlaceholderCard() {
 
             Text(
                 text = "Feed",
-                style = MaterialTheme.typography.titleMedium.copy(fontFamily = HeadingFamily),
+                style = MaterialTheme.typography.titleMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
 
@@ -424,7 +418,7 @@ private fun FeedPlaceholderCard() {
 
             Text(
                 text = "Coming Soon",
-                style = MaterialTheme.typography.labelMedium.copy(fontFamily = BodyFamily),
+                style = MaterialTheme.typography.labelMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
             )
         }

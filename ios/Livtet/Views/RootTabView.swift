@@ -97,7 +97,7 @@ private struct FeedPlaceholderTabView: View {
             ScrollView {
                 VStack(spacing: 12) {
                     Text("\u{1F4F0}")
-                        .font(.system(size: 48))
+                        .font(.livtetHeading(size: 48))
                     Text("Feed")
                         .font(.livtetHeading(size: 24, weight: .semibold))
                         .foregroundStyle(Color("textQuiet"))

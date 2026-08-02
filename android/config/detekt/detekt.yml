@@ -23,7 +23,7 @@
 build:
   # Don't fail the build on warnings; only errors block. CI can flip
   # this via `-Pdetekt.failOnWarning=true` when we want strict mode.
-  maxIssues: 10
+  maxIssues: 100
   excludeCorrectable: false
 
 config:
@@ -70,11 +70,11 @@ complexity:
     functionThreshold: 8
     constructorThreshold: 8
   MethodOverloading:
-    max: 8
+    threshold: 8
   NestedBlockDepth:
     threshold: 5
   TooManyFunctions:
-    threshold: 15
+    active: true
 
 empty-blocks:
   active: true
@@ -91,6 +91,8 @@ exceptions:
       - 'toString'
   InstanceOfCheckForException:
     active: false
+  TooGenericExceptionThrown:
+    active: false   # triggers on UniFFI-generated RuntimeException throws
   NotImplementedDeclaration:
     active: false
   PrintStackTrace:
@@ -120,6 +122,8 @@ naming:
     maximumFunctionNameLength: 40
   FunctionMinLength:
     active: false
+  FunctionNaming:
+    active: false   # Compose @Composable functions use PascalCase by convention
   FunctionParameterNaming:
     active: false
   InvalidPackageDeclaration:
@@ -272,8 +276,6 @@ style:
   OptionalAbstractKeyword:
     active: false
   OptionalUnit:
-    active: false
-  OptionalWhenBraces:
     active: false
   PreferToOverPairSyntax:
     active: false

@@ -34,12 +34,15 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import net.olamaelcu.livtet.BuildConfig
-import net.olamaelcu.livtet.core.auth.ProviderAccount
-import net.olamaelcu.livtet.core.auth.provider.AuthProvider
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import net.olamaelcu.livtet.BuildConfig
+import net.olamaelcu.livtet.core.auth.ProviderAccount
+import net.olamaelcu.livtet.core.auth.provider.AuthProvider
+
+private val GoogleBlue = Color(0xFF4285F4)
+private val AtProtocolBlue = Color(0xFF1185FE)
 
 @Composable
 fun AccountScreen(viewModel: AccountViewModel = viewModel()) {
@@ -52,7 +55,9 @@ fun AccountScreen(viewModel: AccountViewModel = viewModel()) {
             when (event) {
                 is AccountEvent.SignInSucceeded -> {
                     isSigningIn = false
-                    snackbarHostState.showSnackbar("Signed in with ${providerLabel(event.provider)}")
+                    snackbarHostState.showSnackbar(
+                        "Signed in with ${providerLabel(event.provider)}"
+                    )
                 }
                 is AccountEvent.SignInFailed -> {
                     isSigningIn = false
@@ -75,8 +80,14 @@ fun AccountScreen(viewModel: AccountViewModel = viewModel()) {
                 item {
                     SignedOutContent(
                         isSigningIn = isSigningIn,
-                        onGoogleClick = { isSigningIn = true; viewModel.signIn(AuthProvider.Google) },
-                        onAppleClick = { isSigningIn = true; viewModel.signIn(AuthProvider.Apple) },
+                        onGoogleClick = {
+                            isSigningIn = true
+                            viewModel.signIn(AuthProvider.Google)
+                        },
+                        onAppleClick = {
+                            isSigningIn = true
+                            viewModel.signIn(AuthProvider.Apple)
+                        },
                     )
                 }
             } else {
@@ -85,7 +96,7 @@ fun AccountScreen(viewModel: AccountViewModel = viewModel()) {
                         "Your Accounts",
                         fontWeight = FontWeight.SemiBold,
                         color = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.padding(vertical = 8.dp)
+                        modifier = Modifier.padding(vertical = 8.dp),
                     )
                 }
                 items(state.providers.size) { i ->
@@ -96,8 +107,14 @@ fun AccountScreen(viewModel: AccountViewModel = viewModel()) {
                     SignedOutContent(
                         isSigningIn = isSigningIn,
                         compact = true,
-                        onGoogleClick = { isSigningIn = true; viewModel.signIn(AuthProvider.Google) },
-                        onAppleClick = { isSigningIn = true; viewModel.signIn(AuthProvider.Apple) },
+                        onGoogleClick = {
+                            isSigningIn = true
+                            viewModel.signIn(AuthProvider.Google)
+                        },
+                        onAppleClick = {
+                            isSigningIn = true
+                            viewModel.signIn(AuthProvider.Apple)
+                        },
                     )
                 }
             }
@@ -121,7 +138,7 @@ private fun SignedOutContent(
     }
 
     if (BuildConfig.GOOGLE_SIGN_IN_ENABLED) {
-        ProviderButton("Continue with Google", Color(0xFF4285F4), isSigningIn, onGoogleClick)
+        ProviderButton("Continue with Google", GoogleBlue, isSigningIn, onGoogleClick)
         Spacer(Modifier.height(8.dp))
     }
 
@@ -130,11 +147,16 @@ private fun SignedOutContent(
         Spacer(Modifier.height(8.dp))
     }
 
-    ProviderButton("Sign in with AT Protocol", Color(0xFF1185FE), isSigningIn, {})
+    ProviderButton("Sign in with AT Protocol", AtProtocolBlue, isSigningIn, {})
 }
 
 @Composable
-private fun ProviderButton(label: String, backgroundColor: Color, isLoading: Boolean, onClick: () -> Unit) {
+private fun ProviderButton(
+    label: String,
+    backgroundColor: Color,
+    isLoading: Boolean,
+    onClick: () -> Unit,
+) {
     Button(
         onClick = onClick,
         modifier = Modifier.fillMaxWidth().height(48.dp),
@@ -142,7 +164,11 @@ private fun ProviderButton(label: String, backgroundColor: Color, isLoading: Boo
         enabled = !isLoading,
     ) {
         if (isLoading) {
-            CircularProgressIndicator(modifier = Modifier.size(24.dp), color = Color.White, strokeWidth = 2.dp)
+            CircularProgressIndicator(
+                modifier = Modifier.size(24.dp),
+                color = Color.White,
+                strokeWidth = 2.dp,
+            )
         } else {
             Text(label, color = Color.White)
         }
@@ -162,17 +188,22 @@ private fun SignedInCard(account: ProviderAccount, onSignOut: () -> Unit) {
             if (email != null) {
                 Text(email, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
-            val dateStr = remember(account.signedInAt) {
-                SimpleDateFormat("MMM d, yyyy", Locale.getDefault()).format(Date(account.signedInAt))
-            }
+            val dateStr =
+                remember(account.signedInAt) {
+                    SimpleDateFormat("MMM d, yyyy", Locale.getDefault())
+                        .format(Date(account.signedInAt))
+                }
             Text("Signed in since $dateStr", color = MaterialTheme.colorScheme.outline)
-            TextButton(onClick = onSignOut, modifier = Modifier.align(Alignment.End)) { Text("Sign out") }
+            TextButton(onClick = onSignOut, modifier = Modifier.align(Alignment.End)) {
+                Text("Sign out")
+            }
         }
     }
 }
 
-private fun providerLabel(provider: AuthProvider): String = when (provider) {
-    AuthProvider.Google -> "Google"
-    AuthProvider.Apple -> "Apple"
-    is AuthProvider.Atproto -> "AT Protocol"
-}
+private fun providerLabel(provider: AuthProvider): String =
+    when (provider) {
+        AuthProvider.Google -> "Google"
+        AuthProvider.Apple -> "Apple"
+        is AuthProvider.Atproto -> "AT Protocol"
+    }

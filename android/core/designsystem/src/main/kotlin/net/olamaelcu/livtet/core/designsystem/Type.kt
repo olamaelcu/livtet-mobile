@@ -5,8 +5,8 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 import net.olamaelcu.livtet.branding.BodyFamily
-import net.olamaelcu.livtet.branding.HeadingFamily
 import net.olamaelcu.livtet.branding.CodeFamily
+import net.olamaelcu.livtet.branding.HeadingFamily
 
 /**
  * Livtet typography. Tightens the letter spacing and bumps the line height for body / title styles

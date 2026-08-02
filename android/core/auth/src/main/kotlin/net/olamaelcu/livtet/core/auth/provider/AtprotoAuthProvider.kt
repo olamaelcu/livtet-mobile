@@ -54,7 +54,12 @@ object AtprotoAuthProvider {
         return """{"kty":"EC","crv":"P-256","x":"$xEncoded","y":"$yEncoded","d":"$dEncoded"}"""
     }
 
-    fun createDpopProof(keypair: String, httpMethod: String, httpUri: String, nonce: String): String {
+    fun createDpopProof(
+        keypair: String,
+        httpMethod: String,
+        httpUri: String,
+        nonce: String,
+    ): String {
         val xStart = keypair.indexOf("\"x\":\"") + 5
         val xEnd = keypair.indexOf("\"", xStart)
         val yStart = keypair.indexOf("\"y\":\"") + 5
@@ -79,9 +84,10 @@ object AtprotoAuthProvider {
         val signingInput = "$headerB64.$payloadB64"
 
         val keyFactory = KeyFactory.getInstance("EC")
-        val ecParams = AlgorithmParameters.getInstance("EC").apply {
-            init(ECGenParameterSpec("secp256r1"))
-        }.getParameterSpec(ECParameterSpec::class.java)
+        val ecParams =
+            AlgorithmParameters.getInstance("EC")
+                .apply { init(ECGenParameterSpec("secp256r1")) }
+                .getParameterSpec(ECParameterSpec::class.java)
 
         val dBytes = base64Decoder.decode(d)
         val dBigInt = BigInteger(1, dBytes)
@@ -100,7 +106,8 @@ object AtprotoAuthProvider {
     private fun toFixedUnsignedBytes(value: BigInteger, length: Int): ByteArray {
         val bytes = value.toByteArray()
         if (bytes.size == length) return bytes
-        if (bytes.size == length + 1 && bytes[0] == 0.toByte()) return bytes.copyOfRange(1, bytes.size)
+        if (bytes.size == length + 1 && bytes[0] == 0.toByte())
+            return bytes.copyOfRange(1, bytes.size)
         val padded = ByteArray(length)
         val offset = if (bytes.size > length) bytes.size - length else 0
         val destOffset = if (bytes.size > length) 0 else length - bytes.size

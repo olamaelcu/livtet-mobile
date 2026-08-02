@@ -22,9 +22,9 @@ struct OverdriveLibraryPicker: View {
                             HStack {
                                 VStack(alignment: .leading, spacing: 2) {
                                     Text(library.name)
-                                        .font(.system(size: 14, weight: .medium))
+                                        .font(.livtetBody(size: 14, weight: .medium))
                                     Text(library.code)
-                                        .font(.system(size: 12))
+                                        .font(.livtetBody(size: 12))
                                         .foregroundStyle(Color("textQuiet"))
                                 }
                                 Spacer()

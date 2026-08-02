@@ -28,11 +28,7 @@ android {
     // Returning the Java-source-ready string directly keeps
     // the call sites simple and avoids a second layer of wrapping.
     fun labsDefaultsJson(flags: Map<String, Boolean>): String =
-        "\"{" +
-            flags.entries.joinToString(separator = ",") { (k, v) ->
-                "\\\"$k\\\":$v"
-            } +
-            "}\""
+        "\"{" + flags.entries.joinToString(separator = ",") { (k, v) -> "\\\"$k\\\":$v" } + "}\""
 
     defaultConfig {
         applicationId = "net.olamaelcu.livtet"
@@ -104,7 +100,7 @@ android {
             storeFile =
                 file(
                     project.findProperty("LIVTET_STORE_FILE") as String?
-                        ?: "keystore/livtet-release.jks",
+                        ?: "keystore/livtet-release.jks"
                 )
             storePassword = project.findProperty("LIVTET_STORE_PASSWORD") as String?
             keyAlias = project.findProperty("LIVTET_KEY_ALIAS") as String?

@@ -44,8 +44,7 @@ enum class LabsFlag(
         defaultEnabled = false,
         titleRes = R.string.labs_flag_instant_local_file_import_title,
         descriptionRes = R.string.labs_flag_instant_local_file_import_description,
-    ),
-    ;
+    );
 
     companion object {
         /**

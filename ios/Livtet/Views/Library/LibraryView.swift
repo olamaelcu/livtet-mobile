@@ -29,7 +29,7 @@ struct EditionDetailView: View {
                         .frame(width: 200, height: 300)
                         .overlay {
                             Image(systemName: "book.closed")
-                                .font(.system(size: 60))
+                                .font(.livtetHeading(size: 60))
                                 .foregroundStyle(Color("textQuiet").opacity(0.6))
                         }
                 }
@@ -177,7 +177,7 @@ struct LibraryView: View {
                     addBookCTA
                 } else if !viewModel.isLoading {
                     Image(systemName: "books.vertical")
-                        .font(.system(size: 48))
+                        .font(.livtetHeading(size: 48))
                         .foregroundStyle(Color("textQuiet").opacity(0.6))
                         .accessibilityHidden(true)
                     Text("No books yet")
@@ -266,7 +266,7 @@ struct LibraryView: View {
                                     .frame(width: maxCoverWidth, height: coverHeight)
                                     .overlay {
                                         Image(systemName: "book.closed")
-                                            .font(.system(size: maxCoverWidth * 0.35))
+                                            .font(.livtetHeading(size: maxCoverWidth * 0.35))
                                             .foregroundStyle(Color("textQuiet").opacity(0.4))
                                     }
                                     .clipShape(RoundedRectangle(cornerRadius: LivtetRadius.m, style: .continuous))

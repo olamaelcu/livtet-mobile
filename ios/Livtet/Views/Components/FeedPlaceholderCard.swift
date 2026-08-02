@@ -7,7 +7,7 @@ struct FeedPlaceholderCard: View {
     var body: some View {
         VStack(spacing: 8) {
             Text("\u{1F4F0}")
-                .font(.system(size: 32))
+                .font(.livtetHeading(size: 32))
                 .accessibilityHidden(true)
 
             Text("Feed")

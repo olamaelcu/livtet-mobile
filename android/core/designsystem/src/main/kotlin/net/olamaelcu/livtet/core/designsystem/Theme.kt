@@ -3,8 +3,8 @@ package net.olamaelcu.livtet.core.designsystem
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
-import net.olamaelcu.livtet.branding.livtetLightColorScheme
 import net.olamaelcu.livtet.branding.livtetDarkColorScheme
+import net.olamaelcu.livtet.branding.livtetLightColorScheme
 
 /**
  * Livtet theme. Wires the design-token color schemes ([livtetLightColorScheme] /

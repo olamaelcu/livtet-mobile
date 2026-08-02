@@ -10,8 +10,7 @@ data class ProviderAccount(
     val signedInAt: Long,
 )
 
-data class AccountState(
-    val providers: Map<AuthProvider, ProviderAccount>,
-) {
-    val isAnySignedIn: Boolean get() = providers.isNotEmpty()
+data class AccountState(val providers: Map<AuthProvider, ProviderAccount>) {
+    val isAnySignedIn: Boolean
+        get() = providers.isNotEmpty()
 }

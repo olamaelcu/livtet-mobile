@@ -15,17 +15,14 @@ import net.olamaelcu.livtet.DiscoveryService
 /**
  * State for the Settings screen.
  *
- * The Paired Devices, Discovered on this network, and Plugins
- * sections previously relied on `Bridge.getPairedDevices`,
- * `Bridge.listInstalledPlugins`, `Bridge.getNetworkAddresses`,
- * `Bridge.pairDevice`, `Bridge.unpairDevice`, and
- * `Bridge.setPluginEnabled` — none of which are present in the
- * current `core/livtet-ffi` crate. Those sections are dropped
- * from the screen until upstream catches up. Labs (DataStore)
- * and Appearance (DataStore) still work and remain.
+ * The Paired Devices, Discovered on this network, and Plugins sections previously relied on
+ * `Bridge.getPairedDevices`, `Bridge.listInstalledPlugins`, `Bridge.getNetworkAddresses`,
+ * `Bridge.pairDevice`, `Bridge.unpairDevice`, and `Bridge.setPluginEnabled` — none of which are
+ * present in the current `core/livtet-ffi` crate. Those sections are dropped from the screen until
+ * upstream catches up. Labs (DataStore) and Appearance (DataStore) still work and remain.
  *
- * `discoveredDevices` is kept so the mDNS DiscoveryService can
- * still populate state; it's just not surfaced in the UI yet.
+ * `discoveredDevices` is kept so the mDNS DiscoveryService can still populate state; it's just not
+ * surfaced in the UI yet.
  */
 data class SettingsUiState(
     val discoveredDevices: List<DiscoveredSyncDevice> = emptyList(),
@@ -36,12 +33,10 @@ data class SettingsUiState(
 )
 
 class SettingsViewModel : ViewModel() {
-
     private val _state = MutableStateFlow(SettingsUiState())
     val state: StateFlow<SettingsUiState> = _state.asStateFlow()
 
-    @Volatile
-    private var discoveryService: DiscoveryService? = null
+    @Volatile private var discoveryService: DiscoveryService? = null
     private var discoveryJob: Job? = null
     private var labsJob: Job? = null
     private var labsContext: Context? = null
@@ -59,9 +54,10 @@ class SettingsViewModel : ViewModel() {
         labsContext = context.applicationContext
         labsJob = viewModelScope.launch {
             FeatureFlagsManager.flow(labsContext!!).collect { effective ->
-                val buildTime = LabsFlag.ALL.associate { flag ->
-                    flag.key to FeatureFlagsManager.buildTimeDefault(flag)
-                }
+                val buildTime =
+                    LabsFlag.ALL.associate { flag ->
+                        flag.key to FeatureFlagsManager.buildTimeDefault(flag)
+                    }
                 _state.update {
                     it.copy(labsEffective = effective, labsBuildTimeDefaults = buildTime)
                 }

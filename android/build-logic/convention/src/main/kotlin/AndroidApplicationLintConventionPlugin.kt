@@ -46,6 +46,11 @@ class AndroidApplicationLintConventionPlugin : Plugin<Project> {
             // SAM type explicitly avoids Kotlin's lambda receiver
             // type inference falling back to `Any`.
             extensions.configure<KtlintExtension> {
+                // ktfmt is the primary formatter; ktlint's import,
+                // trailing-comma, and function-signature defaults
+                // conflict with KotlinLang style. Let ktlint report
+                // warnings without blocking the build.
+                ignoreFailures.set(true)
                 filter(
                     Action<PatternFilterable> { files ->
                         files.exclude("**/generated/**")

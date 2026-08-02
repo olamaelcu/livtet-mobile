@@ -1,7 +1,6 @@
 package net.olamaelcu.livtet.account
 
 import android.app.Application
-import android.net.Uri
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.CancellationException
@@ -20,7 +19,6 @@ import net.olamaelcu.livtet.core.auth.provider.GoogleAuthProvider
 import timber.log.Timber
 
 class AccountViewModel(application: Application) : AndroidViewModel(application) {
-
     private val _state = MutableStateFlow(AccountState(emptyMap()))
     val state: StateFlow<AccountState> = _state.asStateFlow()
 
@@ -29,9 +27,7 @@ class AccountViewModel(application: Application) : AndroidViewModel(application)
 
     init {
         AccountManager.init(application)
-        viewModelScope.launch {
-            AccountManager.accountState.collect { s -> _state.value = s }
-        }
+        viewModelScope.launch { AccountManager.accountState.collect { s -> _state.value = s } }
     }
 
     fun signIn(provider: AuthProvider) {
@@ -42,13 +38,22 @@ class AccountViewModel(application: Application) : AndroidViewModel(application)
                 _events.emit(AccountEvent.SignInSucceeded(provider))
             } catch (e: AppleAuthProvider.AppleAuthException) {
                 Timber.w(e, "Apple sign-in failed")
-                _events.emit(AccountEvent.SignInFailed(provider, e.message ?: "Apple sign-in is not available"))
+                _events.emit(
+                    AccountEvent.SignInFailed(
+                        provider,
+                        e.message ?: "Apple sign-in is not available",
+                    )
+                )
             } catch (e: GoogleAuthProvider.GoogleAuthException) {
                 Timber.w(e, "Google sign-in failed")
-                _events.emit(AccountEvent.SignInFailed(provider, "Could not sign in with Google. Try again."))
+                _events.emit(
+                    AccountEvent.SignInFailed(provider, "Could not sign in with Google. Try again.")
+                )
             } catch (e: UnsupportedOperationException) {
                 Timber.w(e, "ATProto requires OAuth flow")
-                _events.emit(AccountEvent.SignInFailed(provider, "ATProto sign-in requires the OAuth flow"))
+                _events.emit(
+                    AccountEvent.SignInFailed(provider, "ATProto sign-in requires the OAuth flow")
+                )
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
@@ -68,6 +73,8 @@ class AccountViewModel(application: Application) : AndroidViewModel(application)
 
 sealed interface AccountEvent {
     data class SignInSucceeded(val provider: AuthProvider) : AccountEvent
+
     data class SignInFailed(val provider: AuthProvider, val message: String) : AccountEvent
+
     data class SignOutComplete(val provider: AuthProvider) : AccountEvent
 }

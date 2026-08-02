@@ -20,7 +20,7 @@ struct EditionRow: View {
                     .frame(width: 48, height: 72)
                     .overlay {
                         Image(systemName: "book.closed")
-                            .font(.system(size: 20))
+                            .font(.livtetHeading(size: 20))
                             .foregroundStyle(Color("textQuiet").opacity(0.4))
                     }
                     .clipShape(RoundedRectangle(cornerRadius: LivtetRadius.s, style: .continuous))

@@ -7,8 +7,8 @@ import timber.log.Timber
 /**
  * Apple Sign-In provider for Android.
  *
- * Currently a stub — will be fully implemented once the team has an active
- * Apple Developer account with the bundle ID registered for SIWA.
+ * Currently a stub — will be fully implemented once the team has an active Apple Developer account
+ * with the bundle ID registered for SIWA.
  */
 object AppleAuthProvider {
     private const val TAG = "Auth/Apple"

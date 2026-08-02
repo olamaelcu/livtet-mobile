@@ -30,14 +30,11 @@ import androidx.compose.ui.unit.dp
 /**
  * Review step of the Add Book wizard.
  *
- * Previously this step called `Bridge.findWorkByIsbn`,
- * `Bridge.createBookComplete`, `Bridge.mergeReplaceWork`,
- * `Bridge.createEditionForWork`, `Bridge.linkIsbnToExistingEdition`,
- * and resolved a `MobileException` hierarchy against the
- * `ExistingWorkSummary` / `DbId` types. None of those FFI calls or
- * types are present in the current `core/livtet-ffi` crate, so
- * the step is reduced to a form-only preview until upstream
- * catches up.
+ * Previously this step called `Bridge.findWorkByIsbn`, `Bridge.createBookComplete`,
+ * `Bridge.mergeReplaceWork`, `Bridge.createEditionForWork`, `Bridge.linkIsbnToExistingEdition`, and
+ * resolved a `MobileException` hierarchy against the `ExistingWorkSummary` / `DbId` types. None of
+ * those FFI calls or types are present in the current `core/livtet-ffi` crate, so the step is
+ * reduced to a form-only preview until upstream catches up.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -52,11 +49,7 @@ fun StepReview(data: WizardData, onBack: () -> Unit, onComplete: (WizardData) ->
             },
         )
 
-        Column(
-            modifier =
-                Modifier.weight(1f)
-                    .padding(horizontal = 16.dp)
-        ) {
+        Column(modifier = Modifier.weight(1f).padding(horizontal = 16.dp)) {
             OutlinedTextField(
                 value = title,
                 onValueChange = { title = it },

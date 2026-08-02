@@ -60,12 +60,13 @@ class AtprotoOAuthTest {
     @Test
     fun `create DPoP proof JWT has correct structure`() {
         val keypair = AtprotoAuthProvider.generateDpopKeypair()
-        val proof = AtprotoAuthProvider.createDpopProof(
-            keypair = keypair,
-            httpMethod = "POST",
-            httpUri = "https://bsky.social/oauth/token",
-            nonce = "test-nonce-123",
-        )
+        val proof =
+            AtprotoAuthProvider.createDpopProof(
+                keypair = keypair,
+                httpMethod = "POST",
+                httpUri = "https://bsky.social/oauth/token",
+                nonce = "test-nonce-123",
+            )
         val parts = proof.split(".")
         assertEquals(3, parts.size)
         val header = String(java.util.Base64.getUrlDecoder().decode(parts[0]))

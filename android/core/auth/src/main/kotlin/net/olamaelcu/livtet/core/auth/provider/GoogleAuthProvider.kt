@@ -15,48 +15,49 @@ object GoogleAuthProvider {
 
     private val SERVER_CLIENT_ID: String? = null
 
-    private val googleIdOption: GetGoogleIdOption = GetGoogleIdOption.Builder()
-        .apply { SERVER_CLIENT_ID?.let { setServerClientId(it) } }
-        .setFilterByAuthorizedAccounts(false)
-        .setAutoSelectEnabled(false)
-        .build()
+    private val googleIdOption: GetGoogleIdOption =
+        GetGoogleIdOption.Builder()
+            .apply { SERVER_CLIENT_ID?.let { setServerClientId(it) } }
+            .setFilterByAuthorizedAccounts(false)
+            .setAutoSelectEnabled(false)
+            .build()
 
-    private val request: GetCredentialRequest = GetCredentialRequest.Builder()
-        .addCredentialOption(googleIdOption)
-        .build()
+    private val request: GetCredentialRequest =
+        GetCredentialRequest.Builder().addCredentialOption(googleIdOption).build()
 
     suspend fun signIn(context: Context): ProviderAccount {
         Timber.tag(TAG).d("starting Google sign-in")
         val credentialManager = CredentialManager.create(context)
-        val result: GetCredentialResponse = try {
-            credentialManager.getCredential(context, request)
-        } catch (e: GetCredentialException) {
-            Timber.tag(TAG).e(e, "credential retrieval failed")
-            throw GoogleAuthException("Could not sign in with Google", e)
-        }
+        val result: GetCredentialResponse =
+            try {
+                credentialManager.getCredential(context, request)
+            } catch (e: GetCredentialException) {
+                Timber.tag(TAG).e(e, "credential retrieval failed")
+                throw GoogleAuthException("Could not sign in with Google", e)
+            }
         val credential = result.credential
         val googleId = GoogleIdTokenCredential.createFrom(credential.data)
-        val account = ProviderAccount(
-            provider = AuthProvider.Google,
-            displayName = googleId.displayName ?: googleId.id,
-            email = googleId.id,
-            avatarUrl = googleId.profilePictureUri?.toString(),
-            signedInAt = System.currentTimeMillis(),
-        )
+        val account =
+            ProviderAccount(
+                provider = AuthProvider.Google,
+                displayName = googleId.displayName ?: googleId.id,
+                email = googleId.id,
+                avatarUrl = googleId.profilePictureUri?.toString(),
+                signedInAt = System.currentTimeMillis(),
+            )
         Timber.tag(TAG).d("sign-in succeeded: displayName=${account.displayName}")
         return account
     }
 
     suspend fun trySilentSignIn(context: Context): ProviderAccount? {
         Timber.tag(TAG).d("attempting silent sign-in")
-        val silentOption = GetGoogleIdOption.Builder()
-            .apply { SERVER_CLIENT_ID?.let { setServerClientId(it) } }
-            .setFilterByAuthorizedAccounts(true)
-            .setAutoSelectEnabled(true)
-            .build()
-        val silentRequest = GetCredentialRequest.Builder()
-            .addCredentialOption(silentOption)
-            .build()
+        val silentOption =
+            GetGoogleIdOption.Builder()
+                .apply { SERVER_CLIENT_ID?.let { setServerClientId(it) } }
+                .setFilterByAuthorizedAccounts(true)
+                .setAutoSelectEnabled(true)
+                .build()
+        val silentRequest = GetCredentialRequest.Builder().addCredentialOption(silentOption).build()
         return try {
             val credentialManager = CredentialManager.create(context)
             val result = credentialManager.getCredential(context, silentRequest)

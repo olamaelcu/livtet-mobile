@@ -33,6 +33,7 @@ class AndroidLibraryLintConventionPlugin : Plugin<Project> {
             }
 
             extensions.configure<KtlintExtension> {
+                ignoreFailures.set(true)
                 filter(
                     Action<PatternFilterable> { files ->
                         files.exclude("**/generated/**")

@@ -37,7 +37,8 @@ class SecureTokenStoreTest {
     fun `clearProvider removes all tokens for a provider`() {
         every { prefs.edit() } returns editor
         every { editor.remove(any()) } returns editor
-        every { prefs.all } returns mapOf("token:google:id_token" to "x", "token:google:refresh" to "y")
+        every { prefs.all } returns
+            mapOf("token:google:id_token" to "x", "token:google:refresh" to "y")
         store.clearProvider("token:google")
         verify { prefs.edit() }
     }

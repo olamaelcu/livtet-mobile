@@ -9,6 +9,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -18,7 +19,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -29,10 +29,8 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import java.io.File
-import net.olamaelcu.livtet.core.designsystem.LivtetTheme
-import net.olamaelcu.livtet.branding.BodyFamily
-import net.olamaelcu.livtet.branding.HeadingFamily
 import net.olamaelcu.livtet.branding.LivtetColors
+import net.olamaelcu.livtet.core.designsystem.LivtetTheme
 import net.olamaelcu.livtet.settings.ThemeManager
 
 class SplashActivity : ComponentActivity() {
@@ -43,13 +41,14 @@ class SplashActivity : ComponentActivity() {
             navigationBarStyle = SystemBarStyle.auto(Color.TRANSPARENT, Color.TRANSPARENT),
         )
         setContent {
-            val themeMode by ThemeManager.mode(this)
-                .collectAsState(initial = ThemeManager.Mode.SYSTEM)
-            val isDark = when (themeMode) {
-                ThemeManager.Mode.SYSTEM -> isSystemInDarkTheme()
-                ThemeManager.Mode.LIGHT -> false
-                ThemeManager.Mode.DARK -> true
-            }
+            val themeMode by
+                ThemeManager.mode(this).collectAsState(initial = ThemeManager.Mode.SYSTEM)
+            val isDark =
+                when (themeMode) {
+                    ThemeManager.Mode.SYSTEM -> isSystemInDarkTheme()
+                    ThemeManager.Mode.LIGHT -> false
+                    ThemeManager.Mode.DARK -> true
+                }
             LivtetTheme(darkTheme = isDark) {
                 SplashContent(
                     context = this,
@@ -90,7 +89,7 @@ private fun SplashContent(
 
         Text(
             text = "Livtet",
-            style = MaterialTheme.typography.headlineLarge.copy(fontFamily = HeadingFamily),
+            style = MaterialTheme.typography.headlineLarge,
             color = MaterialTheme.colorScheme.onBackground,
         )
 
@@ -102,8 +101,7 @@ private fun SplashContent(
 
         Text(
             text = "Loading your library\u2026",
-            style =
-                MaterialTheme.typography.bodyMedium.copy(fontFamily = BodyFamily, fontSize = 14.sp),
+            style = MaterialTheme.typography.bodyMedium.copy(fontSize = 14.sp),
             color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
         )
     }

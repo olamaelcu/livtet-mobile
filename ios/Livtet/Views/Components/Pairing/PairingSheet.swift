@@ -25,7 +25,7 @@ struct PairingSheet: View {
         NavigationStack {
             VStack(spacing: 24) {
                 Image(systemName: "link.badge.plus")
-                    .font(.system(size: 48))
+                    .font(.livtetHeading(size: 48))
                     .foregroundColor(Color("brand"))
 
                 Text("Pair with Desktop")
@@ -89,7 +89,7 @@ struct PairingSheet: View {
         case .paired(let desktop):
             VStack(spacing: 16) {
                 Image(systemName: "checkmark.circle.fill")
-                    .font(.system(size: 48))
+                    .font(.livtetHeading(size: 48))
                     .foregroundColor(Color("semanticSuccessForeground"))
                     .accessibilityHidden(true)
 
@@ -125,7 +125,7 @@ struct PairingSheet: View {
         case .error(let message):
             VStack(spacing: 16) {
                 Image(systemName: "exclamationmark.triangle.fill")
-                    .font(.system(size: 40))
+                    .font(.livtetHeading(size: 40))
                     .foregroundColor(Color("semanticDangerForeground"))
                     .accessibilityHidden(true)
 

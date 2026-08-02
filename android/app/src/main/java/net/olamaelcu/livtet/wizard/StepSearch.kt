@@ -42,15 +42,12 @@ import net.olamaelcu.livtet.Bridge
 /**
  * Search step of the Add Book wizard.
  *
- * The full FFI surface this step used to depend on
- * (`findWorksByTitlePrefix` → `WorkSummary`, `MobileException.
- * ProviderException`, `ProviderErrorCategory`, `lookupIdentifier`,
- * `searchProviders` → `PluginHitMobile`) is partially missing from
- * the current `core/livtet-ffi` crate. Plugin search via
- * `searchProviders` and `lookupIdentifier` is wired through
- * [Bridge]; the local-dedup (`WorkSummary`) and structured
- * provider-error surfaces are stubbed until the upstream FFI
- * is restored.
+ * The full FFI surface this step used to depend on (`findWorksByTitlePrefix` → `WorkSummary`,
+ * `MobileException. ProviderException`, `ProviderErrorCategory`, `lookupIdentifier`,
+ * `searchProviders` → `PluginHitMobile`) is partially missing from the current `core/livtet-ffi`
+ * crate. Plugin search via `searchProviders` and `lookupIdentifier` is wired through [Bridge]; the
+ * local-dedup (`WorkSummary`) and structured provider-error surfaces are stubbed until the upstream
+ * FFI is restored.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -154,15 +151,9 @@ fun StepSearch(data: WizardData, onNext: (WizardData) -> Unit, onDismiss: () -> 
                     items(searchResults) { result ->
                         Card(
                             modifier =
-                                Modifier.fillMaxWidth()
-                                    .clickable {
-                                        onNext(
-                                            data.copy(
-                                                title = result.title,
-                                                currentStep = 1,
-                                            )
-                                        )
-                                    },
+                                Modifier.fillMaxWidth().clickable {
+                                    onNext(data.copy(title = result.title, currentStep = 1))
+                                },
                             colors =
                                 CardDefaults.cardColors(
                                     containerColor = MaterialTheme.colorScheme.surfaceVariant
@@ -206,7 +197,10 @@ fun StepSearch(data: WizardData, onNext: (WizardData) -> Unit, onDismiss: () -> 
                                     Text(
                                         text = "via ${result.source}",
                                         style = MaterialTheme.typography.labelSmall,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
+                                        color =
+                                            MaterialTheme.colorScheme.onSurfaceVariant.copy(
+                                                alpha = 0.5f
+                                            ),
                                     )
                                 }
                             }
@@ -223,11 +217,7 @@ fun StepSearch(data: WizardData, onNext: (WizardData) -> Unit, onDismiss: () -> 
             }
 
             TextButton(
-                onClick = {
-                    onNext(
-                        data.copy(title = title.trim(), currentStep = 1)
-                    )
-                },
+                onClick = { onNext(data.copy(title = title.trim(), currentStep = 1)) },
                 enabled = title.isNotBlank(),
                 modifier = Modifier.fillMaxWidth(),
             ) {

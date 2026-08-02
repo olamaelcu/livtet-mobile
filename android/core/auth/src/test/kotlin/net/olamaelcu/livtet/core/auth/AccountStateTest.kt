@@ -17,26 +17,28 @@ class AccountStateTest {
 
     @Test
     fun `state with one provider is signed in`() {
-        val account = ProviderAccount(
-            provider = AuthProvider.Google,
-            displayName = "Test User",
-            email = "test@example.com",
-            avatarUrl = null,
-            signedInAt = 0L,
-        )
+        val account =
+            ProviderAccount(
+                provider = AuthProvider.Google,
+                displayName = "Test User",
+                email = "test@example.com",
+                avatarUrl = null,
+                signedInAt = 0L,
+            )
         val state = AccountState(mapOf(AuthProvider.Google to account))
         assertTrue(state.isAnySignedIn)
     }
 
     @Test
     fun `sign out removes provider from state`() {
-        val account = ProviderAccount(
-            provider = AuthProvider.Google,
-            displayName = "Test User",
-            email = "test@example.com",
-            avatarUrl = null,
-            signedInAt = 0L,
-        )
+        val account =
+            ProviderAccount(
+                provider = AuthProvider.Google,
+                displayName = "Test User",
+                email = "test@example.com",
+                avatarUrl = null,
+                signedInAt = 0L,
+            )
         val state = AccountState(mapOf(AuthProvider.Google to account))
         val afterSignOut = state.copy(providers = state.providers - AuthProvider.Google)
         assertEquals(0, afterSignOut.providers.size)
@@ -45,21 +47,29 @@ class AccountStateTest {
 
     @Test
     fun `multiple providers can coexist`() {
-        val google = ProviderAccount(
-            provider = AuthProvider.Google,
-            displayName = "A",
-            email = "a@x.com",
-            avatarUrl = null,
-            signedInAt = 0L,
-        )
-        val atproto = ProviderAccount(
-            provider = AuthProvider.Atproto(did = "did:plc:abc", handle = "test.bsky.social"),
-            displayName = "B",
-            email = null,
-            avatarUrl = null,
-            signedInAt = 0L,
-        )
-        val state = AccountState(mapOf(AuthProvider.Google to google, AuthProvider.Atproto("did:plc:abc", "test.bsky.social") to atproto))
+        val google =
+            ProviderAccount(
+                provider = AuthProvider.Google,
+                displayName = "A",
+                email = "a@x.com",
+                avatarUrl = null,
+                signedInAt = 0L,
+            )
+        val atproto =
+            ProviderAccount(
+                provider = AuthProvider.Atproto(did = "did:plc:abc", handle = "test.bsky.social"),
+                displayName = "B",
+                email = null,
+                avatarUrl = null,
+                signedInAt = 0L,
+            )
+        val state =
+            AccountState(
+                mapOf(
+                    AuthProvider.Google to google,
+                    AuthProvider.Atproto("did:plc:abc", "test.bsky.social") to atproto,
+                )
+            )
         assertTrue(state.isAnySignedIn)
         assertEquals(2, state.providers.size)
     }

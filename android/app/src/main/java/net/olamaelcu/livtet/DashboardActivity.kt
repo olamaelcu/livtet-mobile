@@ -4,6 +4,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
@@ -22,7 +23,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -43,13 +43,14 @@ class DashboardActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            val themeMode by ThemeManager.mode(this)
-                .collectAsState(initial = ThemeManager.Mode.SYSTEM)
-            val isDark = when (themeMode) {
-                ThemeManager.Mode.SYSTEM -> isSystemInDarkTheme()
-                ThemeManager.Mode.LIGHT -> false
-                ThemeManager.Mode.DARK -> true
-            }
+            val themeMode by
+                ThemeManager.mode(this).collectAsState(initial = ThemeManager.Mode.SYSTEM)
+            val isDark =
+                when (themeMode) {
+                    ThemeManager.Mode.SYSTEM -> isSystemInDarkTheme()
+                    ThemeManager.Mode.LIGHT -> false
+                    ThemeManager.Mode.DARK -> true
+                }
             LivtetTheme(darkTheme = isDark) { DashboardNavHost() }
         }
     }
@@ -85,15 +86,13 @@ private fun DashboardNavHost() {
                 title = { Text("Livtet") },
                 actions = {
                     IconButton(onClick = { navController.navigate("settings") }) {
-                        Icon(
-                            imageVector = Icons.Default.Settings,
-                            contentDescription = "Settings"
-                        )
+                        Icon(imageVector = Icons.Default.Settings, contentDescription = "Settings")
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surface
-                ),
+                colors =
+                    TopAppBarDefaults.topAppBarColors(
+                        containerColor = MaterialTheme.colorScheme.surface
+                    ),
             )
         },
         bottomBar = {
@@ -119,7 +118,7 @@ private fun DashboardNavHost() {
                     )
                 }
             }
-        }
+        },
     ) { innerPadding ->
         NavHost(
             navController = navController,

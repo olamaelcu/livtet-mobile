@@ -71,7 +71,7 @@ struct SplashScreenView: View {
                     VStack(spacing: 16) {
                         Image.lucideInfo
                             .font(.largeTitle)
-                            .foregroundStyle(.orange)
+                            .foregroundStyle(Color.brand)
                             .accessibilityHidden(true)
                         Text(errorMessage ?? "Unknown error")
                             .multilineTextAlignment(.center)
