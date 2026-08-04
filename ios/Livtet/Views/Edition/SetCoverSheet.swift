@@ -87,7 +87,7 @@ struct SetCoverSheet: View {
             if let error = viewModel.searchError {
                 Text(error)
                     .font(.livtetBody(size: 12))
-                    .foregroundStyle(Color("semanticDangerForeground"))
+                    .foregroundStyle(Color("dangerOnNormal"))
             }
 
             if viewModel.searchSource == .openLibrary {
@@ -97,7 +97,7 @@ struct SetCoverSheet: View {
                         .foregroundStyle(Color("textQuiet"))
                         .padding(.horizontal, 8)
                         .padding(.vertical, 3)
-                        .background(Capsule().fill(Color("surfaceHighlighted")))
+                        .background(Capsule().fill(Color("surfaceDefault")))
                     Spacer()
                 }
             }
@@ -113,7 +113,7 @@ struct SetCoverSheet: View {
                         if let url = result.coverUrl {
                             CoverImageView(url: url, width: 40, height: 56)
                         } else {
-                            Color("surfaceHighlighted")
+                            Color("surfaceDefault")
                                 .frame(width: 40, height: 56)
                                 .clipShape(RoundedRectangle(cornerRadius: LivtetRadius.s, style: .continuous))
                         }
@@ -170,7 +170,7 @@ struct SetCoverSheet: View {
             if let error = viewModel.urlError {
                 Text(error)
                     .font(.livtetBody(size: 12))
-                    .foregroundStyle(Color("semanticDangerForeground"))
+                    .foregroundStyle(Color("dangerOnNormal"))
             }
         }
         .padding(.horizontal, 16)
@@ -228,7 +228,7 @@ struct SetCoverSheet: View {
             if let error = viewModel.galleryError {
                 Text(error)
                     .font(.livtetBody(size: 12))
-                    .foregroundStyle(Color("semanticDangerForeground"))
+                    .foregroundStyle(Color("dangerOnNormal"))
             }
         }
         .padding(.horizontal, 16)

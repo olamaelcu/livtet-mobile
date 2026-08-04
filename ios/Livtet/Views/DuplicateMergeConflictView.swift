@@ -383,7 +383,7 @@ struct DuplicateMergeConflictView: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .background(
                         RoundedRectangle(cornerRadius: LivtetRadius.l, style: .continuous)
-                            .fill(Color("surfaceHighlighted"))
+                            .fill(Color("surfaceDefault"))
                     )
                 }
                 .padding(.horizontal, 16)
@@ -442,7 +442,7 @@ struct DuplicateMergeConflictView: View {
         .padding(12)
         .background(
             RoundedRectangle(cornerRadius: LivtetRadius.l, style: .continuous)
-                .fill(Color("surfaceHighlighted"))
+                .fill(Color("surfaceDefault"))
         )
     }
 }
@@ -478,7 +478,7 @@ struct WorkFieldRow: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(
             RoundedRectangle(cornerRadius: LivtetRadius.l, style: .continuous)
-                .fill(Color("surfaceHighlighted"))
+                .fill(Color("surfaceDefault"))
         )
     }
 }

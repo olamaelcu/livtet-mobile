@@ -49,7 +49,7 @@ private struct ChipPill: View {
             .accessibilityHint("Double tap to remove this item")
         }
         .padding(.horizontal, 10).padding(.vertical, 4)
-        .background(RoundedRectangle(cornerRadius: LivtetRadius.l).fill(Color("surfaceHighlighted")))
+        .background(RoundedRectangle(cornerRadius: LivtetRadius.l).fill(Color("surfaceDefault")))
         .accessibilityElement(children: .combine)
         .accessibilityLabel(label)
     }

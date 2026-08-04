@@ -157,7 +157,7 @@ private struct FilterChip: View {
                 .foregroundStyle(isSelected ? Color("surfaceDefault") : Color("textNormal"))
                 .background(
                     RoundedRectangle(cornerRadius: LivtetRadius.l, style: .continuous)
-                        .fill(isSelected ? Color.brand : Color("surfaceHighlighted"))
+                        .fill(isSelected ? Color.brand : Color("surfaceDefault"))
                 )
         }
         .buttonStyle(.plain)

@@ -77,7 +77,7 @@ struct QuickActionCard: View {
             description: "Build your library to get started",
             progress: 0.3,
             progressLabel: "3/10 books",
-            tintColor: Color("semanticSuccessForeground"),
+            tintColor: Color("successOnNormal"),
             onTap: {}
         )
         QuickActionCard(
@@ -86,7 +86,7 @@ struct QuickActionCard: View {
             description: "Keep your reading streak going",
             progress: 0.5,
             progressLabel: "7/14 days",
-            tintColor: Color("semanticWarningForeground"),
+            tintColor: Color("warningOnNormal"),
             onTap: {}
         )
         QuickActionCard(
@@ -95,7 +95,7 @@ struct QuickActionCard: View {
             description: "Complete a book to make progress",
             progress: nil,
             progressLabel: nil,
-            tintColor: Color("semanticInformationalForeground"),
+            tintColor: Color("neutralOnNormal"),
             onTap: {}
         )
     }

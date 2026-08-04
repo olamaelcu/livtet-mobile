@@ -10,7 +10,8 @@ import SwiftUI
 /// Color and contrast notes (see the commit history for the
 /// change): the prior revision used `textQuiet` for the body and
 /// `textQuiet.opacity(0.85)` for the source on a
-/// `surfaceHighlighted` fill — all three colors in the same
+/// `surfaceHighlighted` fill (now `surfaceDefault` after the Web
+/// Awesome token alignment) — all three colors in the same
 /// low-contrast band, so the card nearly disappeared into the
 /// surrounding `surfaceDefault` and the body/source were visually
 /// indistinguishable. This revision:
@@ -22,7 +23,7 @@ import SwiftUI
 ///   attribution hierarchy reads top-down without fading the
 ///   source into illegibility.
 /// - the card fill is `surfaceRaised` (one step lighter than the
-///   previous `surfaceHighlighted`) so the card has a defined
+///   merged `surfaceDefault`) so the card has a defined
 ///   edge against the `surfaceDefault` background.
 /// - a 1 pt `surfaceBorder` outline is applied **only in light
 ///   mode** to give the card a hard silhouette in the appearance

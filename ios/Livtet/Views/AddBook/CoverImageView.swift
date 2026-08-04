@@ -26,7 +26,7 @@ struct CoverImageView: View {
 
     private var placeholder: some View {
         ZStack {
-            Color("surfaceHighlighted")
+            Color("surfaceDefault")
             Image(systemName: "book.closed")
                 .font(.livtetHeading(size: min(width, height) * 0.4))
                 .foregroundStyle(Color("textQuiet").opacity(0.4))

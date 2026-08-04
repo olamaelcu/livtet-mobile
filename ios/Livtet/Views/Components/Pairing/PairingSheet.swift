@@ -90,12 +90,12 @@ struct PairingSheet: View {
             VStack(spacing: 16) {
                 Image(systemName: "checkmark.circle.fill")
                     .font(.livtetHeading(size: 48))
-                    .foregroundColor(Color("semanticSuccessForeground"))
+                    .foregroundColor(Color("successOnNormal"))
                     .accessibilityHidden(true)
 
                 Text("Paired successfully!")
                     .font(.livtetHeading(size: 18, weight: .semibold))
-                    .foregroundColor(Color("semanticSuccessForeground"))
+                    .foregroundColor(Color("successOnNormal"))
                     .accessibilityLabel("Paired successfully")
 
                 Text("Connected to \(desktop.name)")
@@ -126,7 +126,7 @@ struct PairingSheet: View {
             VStack(spacing: 16) {
                 Image(systemName: "exclamationmark.triangle.fill")
                     .font(.livtetHeading(size: 40))
-                    .foregroundColor(Color("semanticDangerForeground"))
+                    .foregroundColor(Color("dangerOnNormal"))
                     .accessibilityHidden(true)
 
                 Text("Pairing Failed")
@@ -136,7 +136,7 @@ struct PairingSheet: View {
 
                 Text(message)
                     .font(.livtetBody(size: 13))
-                    .foregroundColor(Color("semanticDangerForeground"))
+                    .foregroundColor(Color("dangerOnNormal"))
                     .multilineTextAlignment(.center)
                     .accessibilityLabel("Error message")
 

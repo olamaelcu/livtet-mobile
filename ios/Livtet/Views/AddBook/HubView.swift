@@ -112,7 +112,7 @@ struct HubView: View {
                 Image(systemName: "chevron.right").font(.livtetBody(size: 12)).foregroundStyle(Color("textQuiet").opacity(0.5))
             }
             .padding(12)
-            .background(RoundedRectangle(cornerRadius: LivtetRadius.l).fill(Color("surfaceHighlighted")))
+            .background(RoundedRectangle(cornerRadius: LivtetRadius.l).fill(Color("surfaceDefault")))
         }
         .buttonStyle(.plain)
     }
@@ -129,9 +129,9 @@ private enum HubRowStatus {
     }
     var color: Color {
         switch self {
-        case .filled: return Color("semanticSuccessForeground")
+        case .filled: return Color("successOnNormal")
         case .empty: return Color("textQuiet").opacity(0.4)
-        case .required: return Color("semanticDangerForeground")
+        case .required: return Color("dangerOnNormal")
         }
     }
 }

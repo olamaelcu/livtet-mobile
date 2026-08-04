@@ -173,7 +173,7 @@ struct SettingsView: View {
                 Button("Disconnect", role: .destructive) {
                     syncManager.disconnect()
                 }
-                .foregroundColor(Color("semanticDangerForeground"))
+                .foregroundColor(Color("dangerOnNormal"))
                 .accessibilityLabel("Disconnect")
                 .accessibilityHint("Disconnect from the paired desktop device")
             }
@@ -225,7 +225,7 @@ struct SettingsView: View {
             if let error = pairedDevicesError {
                 Text(error)
                     .font(.livtetBody(size: 12))
-                    .foregroundColor(Color("semanticDangerForeground"))
+                    .foregroundColor(Color("dangerOnNormal"))
                     .listRowBackground(Color("surfaceRaised"))
                     .accessibilityLabel("Error")
             } else if pairedDevices.isEmpty {
@@ -273,7 +273,7 @@ struct SettingsView: View {
                     unpair(device)
                 }
                 .font(.livtetBody(size: 12))
-                .foregroundColor(Color("semanticDangerForeground"))
+                .foregroundColor(Color("dangerOnNormal"))
                 .accessibilityLabel("Unpair \(device.name ?? device.id)")
                 .accessibilityHint("Remove this device from your paired devices list")
             }

@@ -7,7 +7,7 @@ struct ProviderErrorCallout: View {
     var body: some View {
         HStack(alignment: .top, spacing: 8) {
             Image(systemName: iconName)
-                .foregroundStyle(isAuthOrRate ? Color("semanticDangerForeground") : Color("textQuiet"))
+                .foregroundStyle(isAuthOrRate ? Color("dangerOnNormal") : Color("textQuiet"))
             VStack(alignment: .leading, spacing: 4) {
                 Text(error.userMessage)
                     .font(.livtetBody(size: 13))
@@ -19,7 +19,7 @@ struct ProviderErrorCallout: View {
         }
         .padding(12)
         .background(RoundedRectangle(cornerRadius: LivtetRadius.l)
-            .fill(isAuthOrRate ? Color("semanticDangerBackground") : Color("surfaceHighlighted")))
+            .fill(isAuthOrRate ? Color("dangerFillNormal") : Color("surfaceDefault")))
     }
 
     private var isAuthOrRate: Bool {

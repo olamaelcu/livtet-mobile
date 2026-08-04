@@ -8,7 +8,7 @@ struct DescriptionDetailView: View {
             onSkip: { viewModel.clearItem(.description); dismiss() }) {
             VStack(alignment: .leading, spacing: 8) {
                 TextEditor(text: $draft).frame(minHeight: 200).padding(8)
-                    .background(RoundedRectangle(cornerRadius: LivtetRadius.l).fill(Color("surfaceHighlighted")))
+                    .background(RoundedRectangle(cornerRadius: LivtetRadius.l).fill(Color("surfaceDefault")))
                 Button("Save") { viewModel.data.description = draft; dismiss() }
                     .buttonStyle(.borderedProminent).tint(.brand).frame(maxWidth: .infinity)
             }

@@ -81,7 +81,7 @@ final class DashboardSnapshotTests: XCTestCase {
             description: "Build your library to get started",
             progress: 0.3,
             progressLabel: "3/10 books",
-            tintColor: Color("semanticSuccessForeground"),
+            tintColor: Color("successOnNormal"),
             onTap: {}
         )
         .padding()
@@ -103,7 +103,7 @@ final class DashboardSnapshotTests: XCTestCase {
             description: "Complete a book to make progress",
             progress: nil,
             progressLabel: nil,
-            tintColor: Color("semanticInformationalForeground"),
+            tintColor: Color("neutralOnNormal"),
             onTap: {}
         )
         .padding()

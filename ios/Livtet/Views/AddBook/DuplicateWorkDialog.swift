@@ -25,7 +25,7 @@ struct DuplicateWorkDialog: View {
     private func mainDialog(summary: ExistingWorkSummary) -> some View {
         VStack(spacing: 16) {
             Image(systemName: "exclamationmark.triangle.fill")
-                .font(.livtetHeading(size: 36)).foregroundStyle(Color("semanticDangerForeground"))
+                .font(.livtetHeading(size: 36)).foregroundStyle(Color("dangerOnNormal"))
                 .accessibilityHidden(true)
             Text("Duplicate Found").font(.livtetHeading(size: 18, weight: .semibold))
                 .accessibilityLabel("Duplicate Found")

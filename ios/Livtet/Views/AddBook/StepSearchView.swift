@@ -31,7 +31,7 @@ struct StepSearchView: View {
                 if viewModel.isSearching { ProgressView().scaleEffect(0.8) }
             }
             .padding(12)
-            .background(RoundedRectangle(cornerRadius: LivtetRadius.l).fill(Color("surfaceHighlighted")))
+            .background(RoundedRectangle(cornerRadius: LivtetRadius.l).fill(Color("surfaceDefault")))
             .padding(.horizontal, 16)
 
             ScrollView {
@@ -64,7 +64,7 @@ struct StepSearchView: View {
             ForEach(viewModel.data.localDedupResults.prefix(3), id: \.id) { work in
                 Text(work.title).font(.livtetBody(size: 14))
                     .padding(12).frame(maxWidth: .infinity, alignment: .leading)
-                    .background(RoundedRectangle(cornerRadius: LivtetRadius.l).fill(Color("surfaceHighlighted")))
+                    .background(RoundedRectangle(cornerRadius: LivtetRadius.l).fill(Color("surfaceDefault")))
             }
         }
     }
@@ -79,7 +79,7 @@ struct StepSearchView: View {
                         .foregroundStyle(Color("textQuiet"))
                         .padding(.horizontal, 8)
                         .padding(.vertical, 3)
-                        .background(Capsule().fill(Color("surfaceHighlighted")))
+                        .background(Capsule().fill(Color("surfaceDefault")))
                 }
             }
             ForEach(viewModel.data.searchResults) { result in
@@ -99,7 +99,7 @@ struct StepSearchView: View {
                         Image(systemName: "chevron.right").foregroundStyle(Color("textQuiet").opacity(0.4))
                     }
                     .padding(12)
-                    .background(RoundedRectangle(cornerRadius: LivtetRadius.l).fill(Color("surfaceHighlighted")))
+                    .background(RoundedRectangle(cornerRadius: LivtetRadius.l).fill(Color("surfaceDefault")))
                 }
                 .buttonStyle(.plain)
             }

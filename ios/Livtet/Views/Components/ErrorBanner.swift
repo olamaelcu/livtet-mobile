@@ -16,16 +16,16 @@ struct ErrorBanner: View {
                 .resizable()
                 .scaledToFit()
                 .frame(width: 20, height: 20)
-                .foregroundStyle(Color("semanticDangerForeground"))
+                .foregroundStyle(Color("dangerOnNormal"))
                 .accessibilityHidden(true)
 
             VStack(alignment: .leading, spacing: 4) {
                 Text("Could not load dashboard")
                     .font(.livtetBody(size: 12, weight: .semibold))
-                    .foregroundStyle(Color("semanticDangerForeground"))
+                    .foregroundStyle(Color("dangerOnNormal"))
                 Text(message)
                     .font(.livtetBody(size: 11))
-                    .foregroundStyle(Color("semanticDangerForeground").opacity(0.85))
+                    .foregroundStyle(Color("dangerOnNormal").opacity(0.85))
                     .lineLimit(3)
             }
 
@@ -33,12 +33,12 @@ struct ErrorBanner: View {
 
             Button("Retry", action: onRetry)
                 .font(.livtetBody(size: 12, weight: .semibold))
-                .foregroundStyle(Color("semanticDangerForeground"))
+                .foregroundStyle(Color("dangerOnNormal"))
                 .accessibilityLabel("Retry")
                 .accessibilityHint("Attempt to load the dashboard again")
         }
         .padding(12)
-        .background(Color("semanticDangerBackground"))
+        .background(Color("dangerFillNormal"))
         .clipShape(RoundedRectangle(cornerRadius: LivtetRadius.l, style: .continuous))
         .accessibilityElement(children: .combine)
         .accessibilityLabel("Error: Could not load dashboard")

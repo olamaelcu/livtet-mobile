@@ -272,7 +272,7 @@ private struct WorkCandidateRow: View {
         .padding(12)
         .background(
             RoundedRectangle(cornerRadius: LivtetRadius.l, style: .continuous)
-                .fill(Color("surfaceHighlighted"))
+                .fill(Color("surfaceDefault"))
         )
         .accessibilityElement(children: .combine)
         .accessibilityLabel("\(candidate.primaryTitle) and \(candidate.duplicateTitle)")
@@ -303,7 +303,7 @@ private struct EditionInWorkRow: View {
         .padding(12)
         .background(
             RoundedRectangle(cornerRadius: LivtetRadius.l, style: .continuous)
-                .fill(Color("surfaceHighlighted"))
+                .fill(Color("surfaceDefault"))
         )
         .accessibilityElement(children: .combine)
         .accessibilityLabel("Duplicate editions in the same work")
@@ -338,7 +338,7 @@ private struct CrossWorkEditionRow: View {
         .padding(12)
         .background(
             RoundedRectangle(cornerRadius: LivtetRadius.l, style: .continuous)
-                .fill(Color("surfaceHighlighted"))
+                .fill(Color("surfaceDefault"))
         )
         .accessibilityElement(children: .combine)
         .accessibilityLabel("Cross-work edition duplicate")

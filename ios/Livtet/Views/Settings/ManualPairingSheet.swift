@@ -81,7 +81,7 @@ struct ManualPairingSheet: View {
                     if let err = addressError {
                         Text(err)
                             .font(.caption)
-                            .foregroundColor(Color("semanticDangerForeground"))
+                            .foregroundColor(Color("dangerOnNormal"))
                     }
                     TextField("Port", text: $portText)
                         .keyboardType(.numberPad)

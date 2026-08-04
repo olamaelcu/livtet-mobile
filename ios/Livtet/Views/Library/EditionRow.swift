@@ -16,7 +16,7 @@ struct EditionRow: View {
                 CoverImageView(url: url, width: 48, height: 72)
                     .accessibilityHidden(true)
             } else {
-                Color("surfaceHighlighted")
+                Color("surfaceDefault")
                     .frame(width: 48, height: 72)
                     .overlay {
                         Image(systemName: "book.closed")
@@ -37,12 +37,12 @@ struct EditionRow: View {
                     if edition.coverSource == "manual" {
                         Text("manual")
                             .font(.livtetBody(size: 9))
-                            .foregroundStyle(Color("semanticWarningForeground"))
+                            .foregroundStyle(Color("warningOnNormal"))
                             .padding(.horizontal, 6)
                             .padding(.vertical, 2)
                             .background(
                                 RoundedRectangle(cornerRadius: 4, style: .continuous)
-                                    .fill(Color("semanticWarningBackground"))
+                                    .fill(Color("warningFillNormal"))
                             )
                     }
                 }
@@ -82,7 +82,7 @@ struct EditionRow: View {
         .padding(12)
         .background(
             RoundedRectangle(cornerRadius: LivtetRadius.l, style: .continuous)
-                .fill(Color("surfaceHighlighted"))
+                .fill(Color("surfaceDefault"))
         )
         .accessibilityLabel(edition.workTitle.nilIfEmpty ?? edition.editionTitle.nilIfEmpty ?? "Edition")
         .accessibilityHint("Tap to view edition details")

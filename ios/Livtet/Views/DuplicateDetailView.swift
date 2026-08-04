@@ -322,7 +322,7 @@ struct DuplicateDetailView: View {
             .padding(12)
             .background(
                 RoundedRectangle(cornerRadius: LivtetRadius.l, style: .continuous)
-                    .fill(Color("surfaceHighlighted"))
+                    .fill(Color("surfaceDefault"))
             )
 
             VStack(alignment: .leading, spacing: 4) {
@@ -337,7 +337,7 @@ struct DuplicateDetailView: View {
             .padding(12)
             .background(
                 RoundedRectangle(cornerRadius: LivtetRadius.l, style: .continuous)
-                    .fill(Color("surfaceHighlighted"))
+                    .fill(Color("surfaceDefault"))
             )
         }
     }
@@ -351,7 +351,7 @@ struct DuplicateDetailView: View {
             .padding(12)
             .background(
                 RoundedRectangle(cornerRadius: LivtetRadius.l, style: .continuous)
-                    .fill(Color("surfaceHighlighted"))
+                    .fill(Color("surfaceDefault"))
             )
     }
 
@@ -371,7 +371,7 @@ struct DuplicateDetailView: View {
         .padding(12)
         .background(
             RoundedRectangle(cornerRadius: LivtetRadius.l, style: .continuous)
-                .fill(Color("surfaceHighlighted"))
+                .fill(Color("surfaceDefault"))
         )
     }
 }

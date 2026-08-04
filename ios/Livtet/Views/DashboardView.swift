@@ -125,7 +125,7 @@ private struct QuickActions: View {
                     description: "Build your library to get started",
                     progress: progressFraction(current: stats.totalBooks, total: 10),
                     progressLabel: "\(stats.totalBooks)/10 books",
-                    tintColor: Color("semanticSuccessForeground"),
+                    tintColor: Color("successOnNormal"),
                     onTap: onAddBook
                 )
             }
@@ -140,7 +140,7 @@ private struct QuickActions: View {
                     description: description,
                     progress: progressFraction(current: daysSinceFirst, total: 14),
                     progressLabel: "\(daysSinceFirst)/14 days",
-                    tintColor: Color("semanticWarningForeground"),
+                    tintColor: Color("warningOnNormal"),
                     onTap: onNavigateToLibrary
                 )
             }
@@ -152,7 +152,7 @@ private struct QuickActions: View {
                     description: "Complete a book to make progress",
                     progress: nil,
                     progressLabel: nil,
-                    tintColor: Color("semanticInformationalForeground"),
+                    tintColor: Color("neutralOnNormal"),
                     onTap: onNavigateToLibrary
                 )
             }

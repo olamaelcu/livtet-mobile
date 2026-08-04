@@ -48,7 +48,7 @@ struct StepTitleAndAuthorsView: View {
                                     }.buttonStyle(.plain)
                                 }
                                 .padding(8)
-                                .background(RoundedRectangle(cornerRadius: LivtetRadius.s).fill(Color("surfaceHighlighted")))
+                                .background(RoundedRectangle(cornerRadius: LivtetRadius.s).fill(Color("surfaceDefault")))
                             }
                         }
                     }

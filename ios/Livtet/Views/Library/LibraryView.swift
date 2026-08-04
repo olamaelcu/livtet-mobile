@@ -25,7 +25,7 @@ struct EditionDetailView: View {
                     CoverImageView(url: url, width: 200, height: 300)
                         .accessibilityHidden(true)
                 } else {
-                    Color("surfaceHighlighted")
+                    Color("surfaceDefault")
                         .frame(width: 200, height: 300)
                         .overlay {
                             Image(systemName: "book.closed")
@@ -262,7 +262,7 @@ struct LibraryView: View {
                                 CoverImageView(url: url, width: maxCoverWidth, height: coverHeight)
                                     .clipShape(RoundedRectangle(cornerRadius: LivtetRadius.m, style: .continuous))
                             } else {
-                                Color("surfaceHighlighted")
+                                Color("surfaceDefault")
                                     .frame(width: maxCoverWidth, height: coverHeight)
                                     .overlay {
                                         Image(systemName: "book.closed")
