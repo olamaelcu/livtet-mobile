@@ -2,7 +2,7 @@ import Inject
 import SwiftUI
 
 enum AppTab: Hashable, Identifiable {
-    case dashboard, library, feed, settings
+    case dashboard, library, puzzle, feed, settings
     var id: Self { self }
 }
 
@@ -43,6 +43,9 @@ struct RootTabView: View {
             Tab("Library", systemImage: "books.vertical.fill", value: AppTab.library) {
                 LibraryView()
             }
+            Tab("Puzzle", systemImage: "puzzlepiece.extension.fill", value: AppTab.puzzle) {
+                PuzzleTabView()
+            }
             Tab("Feed", systemImage: "newspaper.fill", value: AppTab.feed) {
                 FeedPlaceholderTabView()
             }
@@ -68,6 +71,12 @@ struct RootTabView: View {
                     Label("Library", systemImage: "books.vertical.fill")
                 }
                 .tag(AppTab.library)
+
+            PuzzleTabView()
+                .tabItem {
+                    Label("Puzzle", systemImage: "puzzlepiece.extension.fill")
+                }
+                .tag(AppTab.puzzle)
 
             FeedPlaceholderTabView()
                 .tabItem {
