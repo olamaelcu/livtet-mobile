@@ -8,6 +8,8 @@ options:
 packages:
   LivtetKit:
     path: ./LivtetKit
+  LivtetJigsaw:
+    path: ./LivtetJigsaw
   CasePaths:
     url: https://github.com/pointfreeco/swift-case-paths
     revision: "a9c1e05518b6d95cf5844d823020376f2b6ff842"
@@ -57,6 +59,8 @@ targets:
         product: Inject
       - package: LivtetBranding
         product: LivtetBranding
+      - package: LivtetJigsaw
+        product: LivtetJigsaw
     settings:
       base:
         TARGETED_DEVICE_FAMILY: "1,2"
