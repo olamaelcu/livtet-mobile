@@ -8,7 +8,7 @@ class StructureTest {
         assertEquals("TTTT", serialize(Structure(Insert.Tab, Insert.Tab, Insert.Tab, Insert.Tab)))
     }
     @Test fun `serialize mixed`() {
-        assertEquals("TST-", serialize(Structure(Insert.Tab, Insert.Slot, Insert.None, Insert.Tab)))
+        assertEquals("TS-T", serialize(Structure(Insert.Tab, Insert.Slot, Insert.None, Insert.Tab)))
     }
     @Test fun `serialize deserialize round-trip`() {
         val original = Structure(Insert.Tab, Insert.Slot, Insert.None, Insert.Tab)
