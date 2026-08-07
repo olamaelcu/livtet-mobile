@@ -3,6 +3,7 @@
 #USAGE flag "--create" help="Create the AVDs if they don't exist"
 #USAGE flag "--start [phone|tablet]" help="Launch emulator(s); defaults to phone if no arg"
 #USAGE flag "--select [phone|tablet]" help="Print the ADB serial of the target emulator"
+#USAGE flag "--recreate [phone|tablet|both]" help="Delete and recreate existing AVDs"
 #USAGE flag "--list" help="List all created AVDs with running/stopped status"
 #USAGE flag "--foreground [phone|tablet]" help="Launch emulator(s) with visible GUI; defaults to phone if no arg"
 
@@ -11,201 +12,229 @@ set -e
 SDK_ROOT="${ANDROID_SDK_ROOT:-${ANDROID_HOME:-$HOME/.local/share/mise/installs/android-sdk/1.0}}"
 AVD_MGR="$SDK_ROOT/cmdline-tools/1.0/bin/avdmanager"
 EMULATOR="$SDK_ROOT/emulator/emulator"
-SYS_IMAGE="system-images;android-36;google_apis;x86_64"
+SYS_IMAGE="system-images;android-30;google_apis;x86"
 
 PHONE_AVD="livtet-emulator-phone"
-PHONE_DEVICE="medium_phone"
+PHONE_DEVICE="Nexus 5X"
 TABLET_AVD="livtet-emulator-tablet"
-TABLET_DEVICE="7in WSVGA (Tablet)"
+TABLET_DEVICE="Nexus 9"
 
 CREATE="${usage_create:-false}"
 START="${usage_start:-}"
 SELECT="${usage_select:-}"
 LIST="${usage_list:-false}"
 FOREGROUND="${usage_foreground:-}"
+RECREATE="${usage_recreate:-}"
 
 if [ -n "$FOREGROUND" ] && [ "$CREATE" = true ]; then
-	echo "ERROR: --foreground and --create are mutually exclusive" >&2
-	exit 1
+  echo "ERROR: --foreground and --create are mutually exclusive" >&2
+  exit 1
 fi
 if [ -n "$FOREGROUND" ] && [ -n "$SELECT" ]; then
-	echo "ERROR: --foreground and --select are mutually exclusive" >&2
-	exit 1
+  echo "ERROR: --foreground and --select are mutually exclusive" >&2
+  exit 1
+fi
+
+if [ -n "$RECREATE" ]; then
+  if [ "$RECREATE" = phone ] || [ "$RECREATE" = both ]; then
+    echo "Deleting $PHONE_AVD..."
+    "$AVD_MGR" delete avd -n "$PHONE_AVD" 2>/dev/null || true
+    rm -f ".${PHONE_AVD}.serial"
+  fi
+  if [ "$RECREATE" = tablet ] || [ "$RECREATE" = both ]; then
+    echo "Deleting $TABLET_AVD..."
+    "$AVD_MGR" delete avd -n "$TABLET_AVD" 2>/dev/null || true
+    rm -f ".${TABLET_AVD}.serial"
+  fi
 fi
 
 if [ "$LIST" = true ]; then
-	avd_list=$("$AVD_MGR" list avd 2>/dev/null || true)
-	if [ -z "$avd_list" ]; then
-		echo "No AVDs created yet."
-		exit 0
-	fi
+  avd_list=$("$AVD_MGR" list avd 2>/dev/null || true)
+  if [ -z "$avd_list" ]; then
+    echo "No AVDs created yet."
+    exit 0
+  fi
 
-	tmpfile=$(mktemp)
-	echo "$avd_list" >"$tmpfile"
-	trap 'rm -f "$tmpfile"' EXIT
+  tmpfile=$(mktemp)
+  echo "$avd_list" >"$tmpfile"
+  trap 'rm -f "$tmpfile"' EXIT
 
-	running_serials=$(adb devices 2>/dev/null | grep "emulator" | awk '{print $1}' || true)
+  running_serials=$(adb devices 2>/dev/null | grep "emulator" | awk '{print $1}' || true)
 
-	running_output=""
-	stopped_output=""
+  running_output=""
+  stopped_output=""
 
-	current_name=""
-	current_target=""
-	while IFS= read -r line; do
-		line="${line#"${line%%[![:space:]]*}"}"
-		name=$(echo "$line" | grep "^Name:" | awk '{print $2}')
-		if [ -n "$name" ]; then
-			current_name="$name"
-		fi
-		target=$(echo "$line" | grep "^Based on:" | sed 's/.*Android \([0-9.]\+\).*/\1/')
-		if [ -n "$target" ]; then
-			current_target="$target"
-		fi
-		if echo "$line" | grep -qE "^(========|--------)"; then
-			if [ -n "$current_name" ]; then
-				ctarget="${current_target:-unknown}"
-				is_running=false
-				rserial=""
-				for serial in $running_serials; do
-					serial_name=$("$EMULATOR" -avd-info "$serial" 2>/dev/null | grep -i "avd.name" | cut -d= -f2 | tr -d ' \r' || true)
-					if [ "$serial_name" = "$current_name" ]; then
-						is_running=true
-						rserial="$serial"
-						break
-					fi
-				done
-				if [ "$is_running" = true ]; then
-					running_output="$running_output  $current_name   $rserial   Android $ctarget"$'\n'
-				else
-					stopped_output="$stopped_output  $current_name   (not running)   Android $ctarget"$'\n'
-				fi
-				current_name=""
-				current_target=""
-			fi
-		fi
-	done <"$tmpfile"
+  current_name=""
+  current_target=""
+  while IFS= read -r line; do
+    line="${line#"${line%%[![:space:]]*}"}"
+    name=$(echo "$line" | grep "^Name:" | awk '{print $2}')
+    if [ -n "$name" ]; then
+      current_name="$name"
+    fi
+    target=$(echo "$line" | grep "^Based on:" | sed 's/.*Android \([0-9.]\+\).*/\1/')
+    if [ -n "$target" ]; then
+      current_target="$target"
+    fi
+    if echo "$line" | grep -qE "^(========|--------)"; then
+      if [ -n "$current_name" ]; then
+        ctarget="${current_target:-unknown}"
+        is_running=false
+        rserial=""
+        for serial in $running_serials; do
+          serial_name=$("$EMULATOR" -avd-info "$serial" 2>/dev/null | grep -i "avd.name" | cut -d= -f2 | tr -d ' \r' || true)
+          if [ "$serial_name" = "$current_name" ]; then
+            is_running=true
+            rserial="$serial"
+            break
+          fi
+        done
+        if [ "$is_running" = true ]; then
+          running_output="$running_output  $current_name   $rserial   Android $ctarget"$'\n'
+        else
+          stopped_output="$stopped_output  $current_name   (not running)   Android $ctarget"$'\n'
+        fi
+        current_name=""
+        current_target=""
+      fi
+    fi
+  done <"$tmpfile"
 
-	if [ -n "$running_output" ]; then
-		echo "Running:"
-		echo -n "$running_output"
-		echo ""
-	fi
+  if [ -n "$running_output" ]; then
+    echo "Running:"
+    echo -n "$running_output"
+    echo ""
+  fi
 
-	if [ -n "$stopped_output" ]; then
-		echo "Stopped:"
-		echo -n "$stopped_output"
-	fi
-	exit 0
+  if [ -n "$stopped_output" ]; then
+    echo "Stopped:"
+    echo -n "$stopped_output"
+  fi
+  exit 0
 fi
 
 if [ "$SELECT" = phone ]; then
-	serial=$(cat ".${PHONE_AVD}.serial" 2>/dev/null || true)
-	if [ -n "$serial" ]; then
-		echo "$serial"
-	else
-		echo "livtet-emulator-phone not running" >&2
-		exit 1
-	fi
-	exit 0
+  serial=$(cat ".${PHONE_AVD}.serial" 2>/dev/null || true)
+  if [ -n "$serial" ]; then
+    echo "$serial"
+  else
+    echo "livtet-emulator-phone not running" >&2
+    exit 1
+  fi
+  exit 0
 elif [ "$SELECT" = tablet ]; then
-	serial=$(cat ".${TABLET_AVD}.serial" 2>/dev/null || true)
-	if [ -n "$serial" ]; then
-		echo "$serial"
-	else
-		echo "livtet-emulator-tablet not running" >&2
-		exit 1
-	fi
-	exit 0
+  serial=$(cat ".${TABLET_AVD}.serial" 2>/dev/null || true)
+  if [ -n "$serial" ]; then
+    echo "$serial"
+  else
+    echo "livtet-emulator-tablet not running" >&2
+    exit 1
+  fi
+  exit 0
 fi
 
 if [ "$CREATE" = true ]; then
-	if ! "$AVD_MGR" list avd 2>/dev/null | grep -q "$PHONE_AVD"; then
-		echo "Creating $PHONE_AVD..."
-		"$AVD_MGR" create avd -n "$PHONE_AVD" -k "$SYS_IMAGE" -d "$PHONE_DEVICE" -f
-	else
-		echo "$PHONE_AVD already exists, skipping"
-	fi
-	if ! "$AVD_MGR" list avd 2>/dev/null | grep -q "$TABLET_AVD"; then
-		echo "Creating $TABLET_AVD..."
-		"$AVD_MGR" create avd -n "$TABLET_AVD" -k "$SYS_IMAGE" -d "$TABLET_DEVICE" -f
-	else
-		echo "$TABLET_AVD already exists, skipping"
-	fi
+  echo "Installing system image: $SYS_IMAGE"
+  SDK_MGR="$SDK_ROOT/cmdline-tools/1.0/bin/sdkmanager"
+  "$SDK_MGR" --sdk_root="$SDK_ROOT" "$SYS_IMAGE"
+
+  if ! "$AVD_MGR" list avd 2>/dev/null | grep -q "$PHONE_AVD"; then
+    echo "Creating $PHONE_AVD..."
+    "$AVD_MGR" create avd -n "$PHONE_AVD" -k "$SYS_IMAGE" -d "$PHONE_DEVICE" -f
+  else
+    echo "$PHONE_AVD already exists, skipping"
+  fi
+  if ! "$AVD_MGR" list avd 2>/dev/null | grep -q "$TABLET_AVD"; then
+    echo "Creating $TABLET_AVD..."
+    "$AVD_MGR" create avd -n "$TABLET_AVD" -k "$SYS_IMAGE" -d "$TABLET_DEVICE" -f
+  else
+    echo "$TABLET_AVD already exists, skipping"
+  fi
+fi
+
+if [ "$CREATE" = true ] && [ -z "$START" ] && [ -z "$FOREGROUND" ] && [ -z "$SELECT" ] && [ "$LIST" != true ]; then
+  echo "AVDs ready. Use --start or --foreground to launch."
+  exit 0
 fi
 
 LAUNCH_AVDS=()
 USE_GUI=false
 if [ -n "$FOREGROUND" ]; then
-	USE_GUI=true
-	if [ "$FOREGROUND" = phone ] || [ -z "$FOREGROUND" ]; then
-		LAUNCH_AVDS+=("$PHONE_AVD")
-	fi
-	if [ "$FOREGROUND" = tablet ] || [ "$FOREGROUND" = both ]; then
-		LAUNCH_AVDS+=("$TABLET_AVD")
-	fi
+  USE_GUI=true
+  if [ "$FOREGROUND" = phone ] || [ -z "$FOREGROUND" ]; then
+    LAUNCH_AVDS+=("$PHONE_AVD")
+  fi
+  if [ "$FOREGROUND" = tablet ] || [ "$FOREGROUND" = both ]; then
+    LAUNCH_AVDS+=("$TABLET_AVD")
+  fi
 elif [ -z "$START" ] || [ "$START" = phone ]; then
-	LAUNCH_AVDS+=("$PHONE_AVD")
+  LAUNCH_AVDS+=("$PHONE_AVD")
 fi
 if [ "$START" = tablet ] || [ "$START" = both ]; then
-	LAUNCH_AVDS+=("$TABLET_AVD")
+  LAUNCH_AVDS+=("$TABLET_AVD")
 fi
 
 for avd in "${LAUNCH_AVDS[@]}"; do
-	running=false
-	existing_pid=""
-	while IFS= read -r line; do
-		serial=$(echo "$line" | awk '{print $1}')
-		if echo "$line" | grep -q "emulator"; then
-			running=true
-			echo "$avd already running at $serial"
-			echo "$serial" >".${avd}.serial"
+  running=false
+  existing_pid=""
+  while IFS= read -r line; do
+    serial=$(echo "$line" | awk '{print $1}')
+    if echo "$line" | grep -q "emulator"; then
+      running=true
+      echo "$avd already running at $serial"
+      echo "$serial" >".${avd}.serial"
 
-			if [ "$USE_GUI" = true ]; then
-				existing_pid=$(pgrep -f "emulator.*-avd $avd" | head -1 || true)
-				if [ -n "$existing_pid" ]; then
-					echo "Stopping headless instance (PID $existing_pid) for GUI re-launch..."
-					kill "$existing_pid" 2>/dev/null || true
-					wait "$existing_pid" 2>/dev/null || true
-					sleep 2
-					running=false
-				fi
-			fi
-			break
-		fi
-	done < <(adb devices 2>/dev/null | tail -n +2 | grep -v "^$" || true)
+      if [ "$USE_GUI" = true ]; then
+        existing_pid=$(pgrep -f "emulator.*-avd $avd" | head -1 || true)
+        if [ -n "$existing_pid" ]; then
+          echo "Stopping headless instance (PID $existing_pid) for GUI re-launch..."
+          kill "$existing_pid" 2>/dev/null || true
+          wait "$existing_pid" 2>/dev/null || true
+          sleep 2
+          running=false
+        fi
+      fi
+      break
+    fi
+  done < <(adb devices 2>/dev/null | tail -n +2 | grep -v "^$" || true)
 
-	if [ "$running" = false ]; then
-		echo "Starting $avd..."
-		EMU_FLAGS=(-avd "$avd" -noaudio -no-boot-anim -gpu swiftshader_indirect)
-		if [ "$USE_GUI" != true ]; then
-			EMU_FLAGS+=(-no-window)
-		fi
-		"$EMULATOR" "${EMU_FLAGS[@]}" >/dev/null 2>&1 &
-		sleep 2
-	fi
+  if [ "$running" = false ]; then
+    EMU_FLAGS=(-avd "$avd" -noaudio -no-boot-anim -gpu swiftshader_indirect)
+    if [ "$USE_GUI" != true ]; then
+      EMU_FLAGS+=(-no-window)
+    fi
+    echo "Starting $avd (${EMULATOR} ${EMU_FLAGS[*]})..."
+    if [ "$USE_GUI" = true ]; then
+      "$EMULATOR" "${EMU_FLAGS[@]}" &
+    else
+      "$EMULATOR" "${EMU_FLAGS[@]}" >/dev/null 2>&1 &
+    fi
+    sleep 2
+  fi
 done
 
 echo "Waiting for emulator(s) to boot..."
 for avd in "${LAUNCH_AVDS[@]}"; do
-	serial=""
-	for _ in $(seq 1 120); do
-		current=$(adb devices 2>/dev/null | grep "emulator" | grep -v "offline" | head -1 | awk '{print $1}' || true)
-		if [ -n "$current" ]; then
-			status=$(adb -s "$current" shell getprop sys.boot_completed 2>/dev/null | tr -d '\r\n' || true)
-			if [ "$status" = "1" ]; then
-				serial="$current"
-				break
-			fi
-		fi
-		sleep 1
-	done
-	if [ -n "$serial" ]; then
-		echo "$serial" >".${avd}.serial"
-		echo "$avd ready at $serial"
-	else
-		echo "$avd failed to boot within 120s" >&2
-		exit 1
-	fi
+  serial=""
+  for _ in $(seq 1 360); do
+    current=$(adb devices 2>/dev/null | grep "emulator" | grep -v "offline" | head -1 | awk '{print $1}' || true)
+    if [ -n "$current" ]; then
+      status=$(adb -s "$current" shell getprop sys.boot_completed 2>/dev/null | tr -d '\r\n' || true)
+      if [ "$status" = "1" ]; then
+        serial="$current"
+        break
+      fi
+    fi
+    sleep 1
+  done
+  if [ -n "$serial" ]; then
+    echo "$serial" >".${avd}.serial"
+    echo "$avd ready at $serial"
+  else
+    echo "$avd failed to boot within 360s" >&2
+    exit 1
+  fi
 done
 
 echo "Done."
+

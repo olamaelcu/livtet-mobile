@@ -9,12 +9,12 @@ set -e
 source "$(dirname "${BASH_SOURCE[0]}")/_os-check" && require_os linux
 
 if [ -z "$ANDROID_SDK_ROOT" ]; then
-	cmdline_path=$(mise exec -- which sdkmanager)
-	sdk_root=$(dirname "$cmdline_path")
-	sdk_root=$(dirname "$sdk_root")
-	sdk_root=$(dirname "$sdk_root")
-	sdk_root=$(dirname "$sdk_root")
-	ANDROID_SDK_ROOT="$sdk_root"
+  cmdline_path=$(mise exec -- which sdkmanager)
+  sdk_root=$(dirname "$cmdline_path")
+  sdk_root=$(dirname "$sdk_root")
+  sdk_root=$(dirname "$sdk_root")
+  sdk_root=$(dirname "$sdk_root")
+  ANDROID_SDK_ROOT="$sdk_root"
 fi
 
 export ANDROID_SDK_ROOT
@@ -28,9 +28,11 @@ echo "NDK home: $ANDROID_NDK_HOME"
 yes 2>/dev/null | mise exec -- sdkmanager --sdk_root="$ANDROID_SDK_ROOT" --licenses 2>&1 | grep -v "^Warning" || true
 
 PACKAGES=(
-	"platforms;android-36"
-	"build-tools;36.0.0"
-	"ndk;${ANDROID_NDK_VERSION:-27.1.12297006}"
+  "platforms;android-36"
+  "build-tools;36.0.0"
+  "emulator"
+  "system-images;android-30;google_apis;x86"
+  "ndk;${ANDROID_NDK_VERSION:-27.1.12297006}"
 )
 
 echo "Installing SDK packages..."
@@ -46,8 +48,8 @@ NDK_CLANG_I686=$(find "$ANDROID_SDK_ROOT" -name "i686-linux-android28-clang" -ty
 NDK_CLANG_X86_64=$(find "$ANDROID_SDK_ROOT" -name "x86_64-linux-android28-clang" -type f 2>/dev/null | head -1)
 
 if [ -z "$NDK_CLANG_AARCH64" ]; then
-	echo "ERROR: aarch64-linux-android28-clang not found in $ANDROID_SDK_ROOT" >&2
-	exit 1
+  echo "ERROR: aarch64-linux-android28-clang not found in $ANDROID_SDK_ROOT" >&2
+  exit 1
 fi
 
 NDK_TOOLCHAIN_BIN="$(dirname "$NDK_CLANG_AARCH64")"
@@ -73,9 +75,9 @@ mkdir -p "$CARGO_DIR"
 # Generate regions for config.toml: target blocks under Android marker,
 # [env] table under AndroidENV marker (matches dev-setup skeleton layout).
 python3 "$MARKER_SCRIPT" \
-	--file "$CARGO_DIR/config.toml" \
-	--marker Android \
-	--content "[target.aarch64-linux-android]
+  --file "$CARGO_DIR/config.toml" \
+  --marker Android \
+  --content "[target.aarch64-linux-android]
 linker = \"$NDK_CLANG_AARCH64\"
 runner = \"cargo ndk-runner\"
 
@@ -91,9 +93,9 @@ runner = \"cargo ndk-runner\"
 grep -q "^\[env\]$" "$CARGO_DIR/config.toml" 2>/dev/null || printf '\n[env]\n' >>"$CARGO_DIR/config.toml"
 
 python3 "$MARKER_SCRIPT" \
-	--file "$CARGO_DIR/config.toml" \
-	--marker AndroidENV \
-	--content "CC_aarch64_linux_android = \"$NDK_CLANG_AARCH64\"
+  --file "$CARGO_DIR/config.toml" \
+  --marker AndroidENV \
+  --content "CC_aarch64_linux_android = \"$NDK_CLANG_AARCH64\"
 CC_i686_linux_android = \"$NDK_CLANG_I686\"
 CC_x86_64_linux_android = \"$NDK_CLANG_X86_64\"
 AR_aarch64_linux_android = \"$NDK_LLVM_AR\"
@@ -107,13 +109,14 @@ CARGO_TARGET_X86_64_LINUX_ANDROID_LINKER = \"$NDK_CLANG_X86_64\"
 # Idempotently generate Android local.properties
 mkdir -p android
 if [ ! -f android/local.properties ]; then
-	printf 'sdk.dir=%s\n' "$ANDROID_SDK_ROOT" >android/local.properties
+  printf 'sdk.dir=%s\n' "$ANDROID_SDK_ROOT" >android/local.properties
 fi
 
 rustup target add \
-	aarch64-linux-android \
-	i686-linux-android \
-	x86_64-linux-android
+  aarch64-linux-android \
+  i686-linux-android \
+  x86_64-linux-android
 
 echo ""
 echo "Generated Android sections in .cargo/config.toml (Android target + AndroidENV env)"
+
