@@ -6,7 +6,7 @@ import android.media.SoundPool
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
-class PuzzleSoundPlayer(context: Context) {
+class PuzzleSoundPlayer(private val context: Context) {
 
     private val soundPool: SoundPool = SoundPool.Builder()
         .setMaxStreams(4)

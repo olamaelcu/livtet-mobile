@@ -31,7 +31,7 @@ class PieceTest {
         a.locateAt(0f, 0f); b.locateAt(95f, 0f)
         a.tryConnectWith(b); assertTrue(a.connected)
     }
-    @Test(expected = IllegalStateException::class)
+    @Test(expected = IllegalArgumentException::class)
     fun `centerAround twice throws`() { val p = Piece(); p.centerAround(Anchor(0f, 0f)); p.centerAround(Anchor(1f, 1f)) }
     @Test fun `recenterAround repositions piece`() {
         val p = Piece(); p.locateAt(0f, 0f); p.recenterAround(Anchor(50f, 50f))

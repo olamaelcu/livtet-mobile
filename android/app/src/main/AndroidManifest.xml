@@ -32,5 +32,9 @@
                 <data android:scheme="livtet" android:host="atproto-callback" />
             </intent-filter>
         </activity>
+        <activity
+            android:name="net.olamaelcu.livtet.jigsaw.ui.JigsawActivity"
+            android:exported="false"
+            android:label="Jigsaw Puzzle" />
     </application>
 </manifest>
