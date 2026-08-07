@@ -1,14 +1,5 @@
 import CoreFoundation
 
-public typealias ValidationListener = () -> Void
-
-public protocol Validator: AnyObject {
-    var valid: Bool { get set }
-    func isValid(_ puzzle: Puzzle) -> Bool
-    func validate(_ puzzle: Puzzle)
-    func onValid(_ f: @escaping ValidationListener)
-}
-
 public struct ExportOptions { public var compact: Bool = false; public init() {} }
 
 public enum DragMode { case forceConnection, forceDisconnection, tryDisconnection }
@@ -194,15 +185,4 @@ public final class Puzzle {
     }
 }
 
-public final class NullValidator: Validator {
-    public var valid: Bool = false
-    private var listeners: [ValidationListener] = []
 
-    public init() {}
-
-    public func isValid(_ puzzle: Puzzle) -> Bool { false }
-
-    public func validate(_ puzzle: Puzzle) {}
-
-    public func onValid(_ f: @escaping ValidationListener) { listeners.append(f) }
-}
