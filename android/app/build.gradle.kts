@@ -206,6 +206,7 @@ dependencies {
     implementation(libs.androidx.datastore.preferences)
     implementation(project(":core:designsystem"))
     implementation(project(":core:auth"))
+    implementation(project(":jigsaw"))
 
     val composeBom = platform("androidx.compose:compose-bom:2026.03.00")
     implementation(composeBom)

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="jigsaw_title">Jigsaw Puzzle</string>
+    <string name="jigsaw_empty_state">Add a book to your library first to start the jigsaw puzzle.</string>
+    <string name="jigsaw_hint_highlight">Highlight neighbors of this piece</string>
+    <string name="jigsaw_hint_reveal">Show puzzle solution briefly</string>
+    <string name="jigsaw_hint_count">%1$d hints remaining</string>
+    <string name="jigsaw_hint_no_hints">No hints remaining</string>
+    <string name="jigsaw_solved">Puzzle solved!</string>
+</resources>
