@@ -31,7 +31,7 @@ PACKAGES=(
   "platforms;android-36"
   "build-tools;36.0.0"
   "emulator"
-  "system-images;android-30;google_apis;x86"
+  "system-images;android-30;google_apis;x86_64"
   "ndk;${ANDROID_NDK_VERSION:-27.1.12297006}"
 )
 

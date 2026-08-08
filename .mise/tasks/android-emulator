@@ -12,7 +12,10 @@ set -e
 SDK_ROOT="${ANDROID_SDK_ROOT:-${ANDROID_HOME:-$HOME/.local/share/mise/installs/android-sdk/1.0}}"
 AVD_MGR="$SDK_ROOT/cmdline-tools/1.0/bin/avdmanager"
 EMULATOR="$SDK_ROOT/emulator/emulator"
-SYS_IMAGE="system-images;android-30;google_apis;x86"
+# Must match the ABIs the FFI is built for. `android-build --target emulator`
+# produces only x86_64; an AVD on android-x86 (32-bit) would dlopen-fail at
+# LivtetApp.onCreate. Keep these in lockstep.
+SYS_IMAGE="system-images;android-30;google_apis;x86_64"
 
 PHONE_AVD="livtet-emulator-phone"
 PHONE_DEVICE="Nexus 5X"
