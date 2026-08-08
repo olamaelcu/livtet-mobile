@@ -112,4 +112,5 @@ fastlane/.build-counter
 .Livtet*.udid
 
 # Superpowers worktrees
-.worktrees/
+.worktrees/android/docs
+android/docs/

@@ -4,6 +4,8 @@ import android.util.Log
 import java.io.File
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import net.olamaelcu.livtet.ffi.Book
+import net.olamaelcu.livtet.ffi.BookSearchSortOrder
 import net.olamaelcu.livtet.ffi.DashboardStats
 import net.olamaelcu.livtet.ffi.EmptyMessage
 import net.olamaelcu.livtet.ffi.Greeting
@@ -65,6 +67,21 @@ object Bridge {
 
     suspend fun searchProviders(query: String): List<PluginHitMobile> =
         withContext(Dispatchers.IO) { net.olamaelcu.livtet.ffi.searchProviders(query) }
+
+    // ── Library (book list) ─────────────────────────────────────────
+
+    suspend fun listBooks(
+        limit: Int = 50,
+        offset: Int = 0,
+        order: BookSearchSortOrder = BookSearchSortOrder.DESCENDING,
+    ): List<Book> =
+        withContext(Dispatchers.IO) {
+            net.olamaelcu.livtet.ffi.listBooks(
+                limit = limit.toInt(),
+                offset = offset.toInt(),
+                order = order,
+            )
+        }
 
     // ── Sync (pair-with-desktop, sync-once, cancel) ────────────────
 

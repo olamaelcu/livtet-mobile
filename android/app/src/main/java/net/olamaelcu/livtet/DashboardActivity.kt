@@ -27,6 +27,10 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.selected
+import androidx.compose.ui.semantics.semantics
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.NavHost
@@ -101,6 +105,11 @@ private fun DashboardNavHost() {
                     val selected =
                         currentDestination?.hierarchy?.any { it.route == item.route } == true
                     NavigationBarItem(
+                        modifier =
+                            Modifier.semantics(mergeDescendants = true) {
+                                role = Role.Tab
+                                this.selected = selected
+                            },
                         selected = selected,
                         onClick = {
                             navController.navigate(item.route) {
@@ -112,7 +121,10 @@ private fun DashboardNavHost() {
                             }
                         },
                         icon = {
-                            Icon(imageVector = item.vectorIcon!!, contentDescription = item.label)
+                            Icon(
+                                imageVector = item.vectorIcon!!,
+                                contentDescription = item.label,
+                            )
                         },
                         label = { Text(item.label) },
                     )

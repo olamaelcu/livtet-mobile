@@ -16,6 +16,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import net.olamaelcu.livtet.jigsaw.ui.JigsawActivity
@@ -30,7 +31,11 @@ fun FeedScreen() {
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center,
         ) {
-            Text(text = "\uD83D\uDCF0", fontSize = 48.sp)
+            Text(
+                text = "\uD83D\uDCF0",
+                fontSize = 48.sp,
+                modifier = Modifier.clearAndSetSemantics { },
+            )
             Text(
                 text = "Feed",
                 style = MaterialTheme.typography.headlineMedium,

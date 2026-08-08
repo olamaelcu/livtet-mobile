@@ -27,6 +27,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -80,13 +81,15 @@ fun DashboardScreen(onNavigateToLibrary: () -> Unit = {}) {
 
             Spacer(modifier = Modifier.height(4.dp))
 
-            Text(
-                text = "${g.author} - ${g.material}",
-                style = MaterialTheme.typography.bodySmall.copy(fontStyle = FontStyle.Italic),
-                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f),
-                modifier = Modifier.fillMaxWidth(),
-                textAlign = TextAlign.End,
-            )
+            if (g.author.isNotBlank() || g.material.isNotBlank()) {
+                Text(
+                    text = "${g.author} - ${g.material}",
+                    style = MaterialTheme.typography.bodySmall.copy(fontStyle = FontStyle.Italic),
+                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f),
+                    modifier = Modifier.fillMaxWidth(),
+                    textAlign = TextAlign.End,
+                )
+            }
         }
 
         Spacer(modifier = Modifier.height(24.dp))
@@ -195,7 +198,11 @@ private fun QuickActionCard(
             modifier = Modifier.fillMaxWidth().padding(12.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Text(text = emoji, fontSize = 24.sp)
+            Text(
+                text = emoji,
+                fontSize = 24.sp,
+                modifier = Modifier.clearAndSetSemantics { },
+            )
 
             Spacer(modifier = Modifier.size(12.dp))
 
@@ -394,7 +401,11 @@ private fun FeedPlaceholderCard() {
             modifier = Modifier.fillMaxWidth().padding(24.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            Text(text = "\uD83D\uDCF0", fontSize = 32.sp)
+            Text(
+                text = "\uD83D\uDCF0",
+                fontSize = 32.sp,
+                modifier = Modifier.clearAndSetSemantics { },
+            )
 
             Spacer(modifier = Modifier.height(8.dp))
 
