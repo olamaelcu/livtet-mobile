@@ -54,15 +54,6 @@ ANDROID_NDK_VERSION = "27.1.12297006"  # source of truth for the NDK; consumed b
 description = "Watch Kotlin files and auto-install on changes (hot reload loop)"
 run = "mise watch android-install-incremental --on-busy-update=queue --exts kt,kts"
 
-[tasks.android-run-emulator]
-description = "Union task: boot emulator + build + install (one-command Android dev loop)"
-run = [
-  "mise run android-emulator --start phone",
-  "mise run android-install-koreader",
-  "mise run android-build --profile debug --flavor generic --target emulator",
-  "mise run android-install --profile debug --flavor generic",
-]
-
 [tasks.ios-log-watch]
 description = "Stream iOS logs from the booted simulator (filter by Livtet)"
 run = "xcrun simctl spawn booted log stream --predicate 'subsystem == \"net.olamaelcu.livtet\"' --style compact"

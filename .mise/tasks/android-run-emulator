@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+#MISE description="Union task: boot emulator + build + install (one-command Android dev loop)"
+#USAGE flag "--flavor <flavor>" help="Android product flavor" default="generic" {
+#USAGE   choices "generic" "playstore" "fdroid"
+#USAGE }
+
+set -e
+# shellcheck disable=SC1091
+source "$(dirname "${BASH_SOURCE[0]}")/_os-check" && require_os linux
+
+FLAVOR="${usage_flavor:-generic}"
+
+echo "=== android-run-emulator: flavor=$FLAVOR ==="
+
+mise run android-emulator --start phone
+mise run android-install-koreader
+mise run android-build --profile debug --flavor "$FLAVOR" --target emulator
+mise run android-install --profile debug --flavor "$FLAVOR"

@@ -219,7 +219,7 @@ done
 echo "Waiting for emulator(s) to boot..."
 for avd in "${LAUNCH_AVDS[@]}"; do
   serial=""
-  for _ in $(seq 1 360); do
+  for _ in $(seq 1 45); do
     current=$(adb devices 2>/dev/null | grep "emulator" | grep -v "offline" | head -1 | awk '{print $1}' || true)
     if [ -n "$current" ]; then
       status=$(adb -s "$current" shell getprop sys.boot_completed 2>/dev/null | tr -d '\r\n' || true)
@@ -234,7 +234,7 @@ for avd in "${LAUNCH_AVDS[@]}"; do
     echo "$serial" >".${avd}.serial"
     echo "$avd ready at $serial"
   else
-    echo "$avd failed to boot within 360s" >&2
+    echo "$avd failed to boot within 45s" >&2
     exit 1
   fi
 done
