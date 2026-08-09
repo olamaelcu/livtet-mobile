@@ -114,3 +114,4 @@ fastlane/.build-counter
 # Superpowers worktrees
 .worktrees/android/docs
 android/docs/
+android/kls_database.db
