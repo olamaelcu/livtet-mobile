@@ -9,8 +9,10 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import net.olamaelcu.livtet.Bridge
 import net.olamaelcu.livtet.DiscoveredSyncDevice
 import net.olamaelcu.livtet.DiscoveryService
+import net.olamaelcu.livtet.ffi.SeedResultMobile
 
 /**
  * State for the Settings screen.
@@ -30,6 +32,8 @@ data class SettingsUiState(
     val labsBuildTimeDefaults: Map<String, Boolean> = emptyMap(),
     val isLoading: Boolean = false,
     val errorMessage: String? = null,
+    val seedRunning: Boolean = false,
+    val seedResult: SeedResultMobile? = null,
 )
 
 class SettingsViewModel : ViewModel() {
@@ -39,6 +43,7 @@ class SettingsViewModel : ViewModel() {
     @Volatile private var discoveryService: DiscoveryService? = null
     private var discoveryJob: Job? = null
     private var labsJob: Job? = null
+    private var seedJob: Job? = null
     private var labsContext: Context? = null
 
     fun attachDiscovery(context: Context) {
@@ -86,10 +91,45 @@ class SettingsViewModel : ViewModel() {
         viewModelScope.launch { FeatureFlagsManager.reset(ctx) }
     }
 
+    /**
+     * Wipes every user-data table in the local DB and re-seeds it with
+     * `numWorks` demo books. Debug-only action; the UI is gated by
+     * `BuildConfig.DEBUG` in `SettingsScreen`.
+     *
+     * Cancels any in-flight seed before starting a new one.
+     */
+    fun resetAndSeed(numWorks: Int) {
+        seedJob?.cancel()
+        _state.update { it.copy(seedRunning = true, seedResult = null, errorMessage = null) }
+        seedJob =
+            viewModelScope.launch {
+                runCatching { Bridge.resetAndSeed(numWorks) }
+                    .onSuccess { result ->
+                        _state.update {
+                            it.copy(seedRunning = false, seedResult = result, errorMessage = null)
+                        }
+                    }
+                    .onFailure { e ->
+                        _state.update {
+                            it.copy(
+                                seedRunning = false,
+                                seedResult = null,
+                                errorMessage = e.message ?: e::class.simpleName,
+                            )
+                        }
+                    }
+            }
+    }
+
+    fun dismissSeedResult() {
+        _state.update { it.copy(seedResult = null, errorMessage = null) }
+    }
+
     override fun onCleared() {
         super.onCleared()
         discoveryJob?.cancel()
         labsJob?.cancel()
+        seedJob?.cancel()
         discoveryService?.stop()
         discoveryService = null
     }
