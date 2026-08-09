@@ -10,13 +10,13 @@ class AccountScreenTest {
     @get:Rule val composeTestRule = createAndroidComposeRule<DashboardActivity>()
 
     @Test
-    fun `account screen shows sign-in prompt when signed out`() {
+    fun accountScreenShowsSignInPromptWhenSignedOut() {
         composeTestRule.onNodeWithText("Account").assertExists()
         composeTestRule.onNodeWithText("Sign in to unlock social features").assertExists()
     }
 
     @Test
-    fun `ATProto sign-in button is present`() {
+    fun atProtoSignInButtonIsPresent() {
         composeTestRule.onNodeWithText("Sign in with AT Protocol").assertExists()
     }
 }
