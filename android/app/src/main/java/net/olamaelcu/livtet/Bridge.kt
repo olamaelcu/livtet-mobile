@@ -114,5 +114,8 @@ object Bridge {
     suspend fun seedDatabase(works: Int): SeedResultMobile =
         withContext(Dispatchers.IO) { ffiSeedDatabase(works) }
 
+    suspend fun resetAndSeed(numWorks: Int): SeedResultMobile =
+        withContext(Dispatchers.IO) { net.olamaelcu.livtet.ffi.resetAndSeed(numWorks) }
+
     private const val TAG = "Bridge"
 }
