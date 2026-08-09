@@ -66,12 +66,16 @@ class DashboardA11yTest {
 
     @Test
     fun emptyGreetingDoesNotExposeBareSeparator() {
-        // get_greeting() in core/livtet-ffi returns all-empty fields on
-        // this emulator. The author-material line used to render as
-        // bare " - " and announce the separator. The conditional in
-        // DashboardScreen.kt now suppresses the line entirely when
-        // both fields are blank.
-        composeTestRule.onAllNodesWithText(" - ").assertCountEquals(0)
+        // Regression guard: when `get_greeting()` returns populated fields,
+        // the dashboard renders them as "Author - Material" and the
+        // substring " - " legitimately appears inside that node. The
+        // original bug was a stand-alone node whose entire text was
+        // " - " (i.e. the separator with no surrounding content) — that
+        // node was a11y-announced as the literal word "dash". We assert
+        // here that no such stand-alone node exists.
+        composeTestRule
+            .onAllNodesWithText(" - ", substring = false)
+            .assertCountEquals(0)
     }
 
     @Test
