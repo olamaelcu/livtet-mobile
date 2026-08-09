@@ -1,11 +1,13 @@
 package net.olamaelcu.livtet
 
 import androidx.compose.ui.test.assertCountEquals
+import androidx.compose.ui.test.assertDoesNotExist
 import androidx.compose.ui.test.assertHasClickAction
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
+import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import org.junit.Rule
@@ -87,5 +89,31 @@ class DashboardA11yTest {
             )
             .assertIsDisplayed()
         composeTestRule.onNodeWithText("Coming Soon").assertIsDisplayed()
+    }
+
+    @Test
+    fun tappingDashboardFromSettingsReturnsToDashboard() {
+        // Regression guard: opening Settings via the gear and then tapping
+        // the Dashboard tab in the bottom nav must pop Settings off the
+        // back stack and reveal Dashboard. The fix lives at
+        // `DashboardActivity.kt:94` — the gear's `navigate("settings")`
+        // call now uses the same `popUpTo(start) { saveState = true } /
+        // launchSingleTop = true / restoreState = true` option set as the
+        // bottom-nav handler, so the two transitions are symmetric.
+
+        // Open Settings via the gear icon.
+        composeTestRule.onNodeWithContentDescription("Settings").performClick()
+        composeTestRule.waitForIdle()
+        // The Settings screen has its own inner TopAppBar with the title
+        // "Settings" (SettingsScreen.kt:65).
+        composeTestRule.onNodeWithText("Settings").assertIsDisplayed()
+
+        // Tap the Dashboard tab.
+        composeTestRule.onNodeWithText("Dashboard").performClick()
+        composeTestRule.waitForIdle()
+
+        // Dashboard tab is selected and Settings is no longer visible.
+        composeTestRule.onNodeWithText("Dashboard").assertIsSelected()
+        composeTestRule.onNodeWithText("Settings").assertDoesNotExist()
     }
 }
