@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.MenuBook
+import androidx.compose.material.icons.filled.People
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -71,6 +72,7 @@ private val bottomNavItems =
     listOf(
         BottomNavItem("dashboard", "Dashboard", null, Icons.Default.Home),
         BottomNavItem("library", "Library", null, Icons.Default.MenuBook),
+        BottomNavItem("feed", "Social", null, Icons.Default.People),
         BottomNavItem("account", "Account", null, Icons.Default.Person),
     )
 
@@ -151,6 +153,7 @@ private fun DashboardNavHost() {
                 )
             }
             composable("library") { LibraryScreen() }
+            composable("feed") { FeedScreen() }
             composable("account") { AccountScreen() }
             composable("settings") { SettingsScreen() }
         }
