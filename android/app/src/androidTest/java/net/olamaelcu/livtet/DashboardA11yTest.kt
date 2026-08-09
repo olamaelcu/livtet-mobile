@@ -38,7 +38,18 @@ class DashboardA11yTest {
     fun everyBottomNavTabExposesAClickAction() {
         composeTestRule.onNodeWithText("Dashboard").assertHasClickAction()
         composeTestRule.onNodeWithText("Library").assertHasClickAction()
+        composeTestRule.onNodeWithText("Social").assertHasClickAction()
         composeTestRule.onNodeWithText("Account").assertHasClickAction()
+    }
+
+    @Test
+    fun tappingSocialTabShowsFeedScreen() {
+        composeTestRule.onNodeWithText("Social").performClick()
+        composeTestRule.waitForIdle()
+        composeTestRule.onNodeWithText("Social").assertIsSelected()
+        composeTestRule
+            .onNodeWithText("Social features and recommendations are on the way.")
+            .assertIsDisplayed()
     }
 
     @Test
