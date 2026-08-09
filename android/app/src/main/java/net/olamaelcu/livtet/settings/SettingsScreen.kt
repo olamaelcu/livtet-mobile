@@ -10,11 +10,14 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
@@ -24,13 +27,20 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import net.olamaelcu.livtet.BuildConfig
+import net.olamaelcu.livtet.ffi.SeedResultMobile
 
 /**
  * Settings screen. Three sections previously existed — Paired Devices, Plugins, and
@@ -82,6 +92,10 @@ fun SettingsScreen(viewModel: SettingsViewModel = viewModel()) {
                         buildTimeDefault = state.labsBuildTimeDefaults[flag.key] ?: true,
                         onToggle = { viewModel.setLabsFlag(flag, it) },
                     )
+                }
+
+                if (BuildConfig.DEBUG) {
+                    item { DeveloperToolsRow(viewModel = viewModel) }
                 }
                 item {
                     TextButton(
@@ -206,3 +220,112 @@ private fun ThemeOptionChip(label: String, selected: Boolean, onClick: () -> Uni
         Text(label, color = fg, modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp))
     }
 }
+
+/**
+ * Debug-only "Reset and seed" developer tool. Wipes every user-data table
+ * in the local SQLite database via the FFI and re-seeds it with N demo
+ * books. Two-tap confirmation matches Material guidance for destructive
+ * actions; the row also shows the latest SeedResultMobile so the user
+ * sees "Seeded 25 works / M editions…" feedback.
+ *
+ * Gated on `BuildConfig.DEBUG` at the call site in `SettingsScreen`.
+ */
+@Composable
+private fun DeveloperToolsRow(viewModel: SettingsViewModel) {
+    val state by viewModel.state.collectAsState()
+    var input by rememberSaveable { mutableStateOf("25") }
+    var confirming by rememberSaveable { mutableStateOf(false) }
+    val parsed = input.toIntOrNull()?.coerceIn(0, 1000) ?: 25
+    val running = state.seedRunning
+    val result = state.seedResult
+    val error = state.errorMessage
+
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors =
+            CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+    ) {
+        Column(modifier = Modifier.padding(12.dp)) {
+            Text("Developer tools", fontWeight = FontWeight.Medium)
+            Spacer(Modifier.size(4.dp))
+            Text(
+                "Wipe the local database and reseed it with demo books.",
+                fontSize = 12.sp,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Spacer(Modifier.size(8.dp))
+            OutlinedTextField(
+                value = input,
+                onValueChange = { v ->
+                    if (v.all { it.isDigit() } && v.length <= 4) input = v
+                },
+                singleLine = true,
+                label = { Text("Number of works") },
+                keyboardOptions =
+                    androidx.compose.foundation.text.KeyboardOptions(keyboardType = KeyboardType.Number),
+                enabled = !running,
+                modifier = Modifier.fillMaxWidth(),
+            )
+            Spacer(Modifier.size(8.dp))
+            if (confirming) {
+                Text(
+                    "This will delete every row in the local database and seed $parsed demo works.",
+                    fontSize = 12.sp,
+                    color = MaterialTheme.colorScheme.error,
+                )
+                Spacer(Modifier.size(4.dp))
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    TextButton(
+                        onClick = { confirming = false },
+                        enabled = !running,
+                    ) { Text("Cancel") }
+                    Spacer(Modifier.size(8.dp))
+                    FilledTonalButton(
+                        onClick = {
+                            confirming = false
+                            viewModel.resetAndSeed(parsed)
+                        },
+                        enabled = !running,
+                        colors =
+                            ButtonDefaults.filledTonalButtonColors(
+                                containerColor = MaterialTheme.colorScheme.errorContainer,
+                                contentColor = MaterialTheme.colorScheme.onErrorContainer,
+                            ),
+                    ) { Text("Confirm reset") }
+                }
+            } else {
+                FilledTonalButton(
+                    onClick = { confirming = true },
+                    enabled = !running,
+                    colors =
+                        ButtonDefaults.filledTonalButtonColors(
+                            containerColor = MaterialTheme.colorScheme.errorContainer,
+                            contentColor = MaterialTheme.colorScheme.onErrorContainer,
+                        ),
+                ) { Text(if (running) "Resetting…" else "Reset and seed library") }
+            }
+            if (error != null && !running) {
+                Spacer(Modifier.size(8.dp))
+                Text(
+                    text = "Error: $error",
+                    fontSize = 12.sp,
+                    color = MaterialTheme.colorScheme.error,
+                )
+            }
+            result?.let { r ->
+                Spacer(Modifier.size(8.dp))
+                Text(
+                    text = seedResultSummary(r),
+                    fontSize = 12.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+        }
+    }
+}
+
+private fun seedResultSummary(r: SeedResultMobile): String =
+    "Seeded ${r.worksCreated} works, ${r.editionsCreated} editions, " +
+        "${r.authorsCreated} authors, ${r.publishersCreated} publishers " +
+        "(${r.readingStatusCount} reading-status, ${r.readingSessionsCreated} sessions, " +
+        "${r.savedSearchesCreated} saved searches, ${r.readingListsCreated} reading lists)."
