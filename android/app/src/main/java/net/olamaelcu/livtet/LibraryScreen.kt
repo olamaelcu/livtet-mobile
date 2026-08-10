@@ -15,12 +15,14 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -73,6 +75,9 @@ fun LibraryScreen(viewModel: LibraryViewModel = viewModel()) {
 
 @Composable
 private fun BookRow(book: Book) {
+    val context = LocalContext.current
+    val koreaderInstalled by LivtetApp.getInstance().koreaderPresence.isInstalled.collectAsState()
+
     Card(
         modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
@@ -96,6 +101,17 @@ private fun BookRow(book: Book) {
                     overflow = TextOverflow.Ellipsis,
                     modifier = Modifier.padding(top = 4.dp),
                 )
+            }
+            // TODO(book-file-uri): replace `launchKoreader` with
+            // `OpenInKoreader.openBookInKoreader(book)` once the FFI
+            // exposes a local file URI per `Book`.
+            if (koreaderInstalled) {
+                TextButton(
+                    onClick = { OpenInKoreader.launchKoreader(context) },
+                    modifier = Modifier.padding(top = 4.dp),
+                ) {
+                    Text("Open in KOReader")
+                }
             }
         }
     }

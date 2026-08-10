@@ -6,6 +6,14 @@
          discoverServices on some OEM Android builds. It's a normal
          permission (no runtime prompt) so adding it here is free. -->
     <uses-permission android:name="android.permission.CHANGE_WIFI_MULTICAST_STATE" />
+    <!-- KOReader install detection — both F-Droid and direct-APK
+         package ids. Upstream does not publish a Google Play build
+         (https://github.com/koreader/koreader/wiki/Installation-on-Android-devices),
+         so no Play variant is listed here. -->
+    <queries>
+        <package android:name="org.koreader.launcher" />
+        <package android:name="org.koreader.launcher.fdroid" />
+    </queries>
     <application android:name=".LivtetApp"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"

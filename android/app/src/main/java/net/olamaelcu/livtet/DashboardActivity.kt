@@ -33,7 +33,6 @@ import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
 import androidx.navigation.NavDestination.Companion.hierarchy
-import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -93,20 +92,16 @@ private fun DashboardNavHost() {
                 actions = {
                     IconButton(
                         onClick = {
-                            // Same popUpTo / launchSingleTop / restoreState
-                            // options as the bottom-nav tabs (DashboardActivity.kt
-                            // bottomBar block, below). The gear and the tabs
-                            // must use identical navigation options so that
-                            // tapping a bottom-nav item after entering
-                            // Settings pops Settings off the back stack
-                            // cleanly and reveals the tab. Without these
-                            // options the navigate() call leaves Settings
-                            // as the visible destination because the bottom-
-                            // nav handler's `restoreState = true` interacts
-                            // poorly with an unmatched `navigate("settings")`
-                            // push from the gear.
+                            // Pop up to "dashboard" so the back stack
+                            // collapses to [dashboard, settings] after
+                            // the gear tap. The bottom-nav handler uses
+                            // the same popUpTo("dashboard") target below,
+                            // so a tab tap from Settings pops Settings
+                            // off the stack and reveals the tab. BACK
+                            // from Settings then pops Settings and
+                            // lands on Dashboard (the start destination).
                             navController.navigate("settings") {
-                                popUpTo(navController.graph.findStartDestination().id) {
+                                popUpTo("dashboard") {
                                     saveState = true
                                 }
                                 launchSingleTop = true
@@ -137,7 +132,7 @@ private fun DashboardNavHost() {
                         selected = selected,
                         onClick = {
                             navController.navigate(item.route) {
-                                popUpTo(navController.graph.findStartDestination().id) {
+                                popUpTo("dashboard") {
                                     saveState = true
                                 }
                                 launchSingleTop = true
@@ -165,7 +160,7 @@ private fun DashboardNavHost() {
                 DashboardScreen(
                     onNavigateToLibrary = {
                         navController.navigate("library") {
-                            popUpTo(navController.graph.findStartDestination().id) {
+                            popUpTo("dashboard") {
                                 saveState = true
                             }
                             launchSingleTop = true
