@@ -115,3 +115,4 @@ fastlane/.build-counter
 .worktrees/android/docs
 android/docs/
 android/kls_database.db
+.cortexkit/

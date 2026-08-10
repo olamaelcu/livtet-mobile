@@ -14,6 +14,17 @@ android {
 
     defaultConfig { minSdk = 24 }
 
+    // Mirror the `store` flavor dimension from the branding library so AGP
+    // can disambiguate when picking a branding variant for this module's
+    // compile classpath. The per-flavor resources (launcher icons, brand
+    // colors) flow through automatically via the shared flavor name.
+    flavorDimensions += "store"
+    productFlavors {
+        create("playstore") { dimension = "store" }
+        create("fdroid")    { dimension = "store" }
+        create("generic")   { dimension = "store" }
+    }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
