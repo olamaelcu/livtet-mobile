@@ -116,17 +116,19 @@ Gradle build, so baseline-profile regeneration is not yet actionable.)
 
 The Compose color schemes, brand typography, launcher icons, and per-flavor
 mipmaps are produced by the design-tokens build in the **sibling**
-`livtet-ecosystem/branding/` repo (consumed via the `includeBuild`
+`livtet-branding` repo at <https://github.com/olamaelcu/livtet-branding>
+(consumed via the `includeBuild`
 substitution in `mobile/android/settings.gradle.kts` as
 `net.olamaelcu:livtet-branding`). There is no `mise run design-tokens` task in
 this repo — regenerate from the branding repo:
 
 ```bash
-# from livtet-ecosystem/branding/
+# from a local clone of <https://github.com/olamaelcu/livtet-branding>
 tsx generate.ts --platform android    # writes into android/library/src/
 ```
 
-Do **not** hand-edit anything under `livtet-ecosystem/branding/android/library/src/`
+Do **not** hand-edit anything under `android/library/src/` in
+<https://github.com/olamaelcu/livtet-branding>
 once generated. The committed files to watch in this mobile repo are
 `mobile/android/core/designsystem/src/main/kotlin/.../LucideIcons.kt` and
 `mobile/android/core/designsystem/src/main/kotlin/.../LivtetRadius.kt`; both

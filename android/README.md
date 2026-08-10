@@ -142,8 +142,8 @@ modules (`:app`, `:core:designsystem`, `:core:auth`, `:jigsaw`) plus two
 included builds: `:build-logic` for convention plugins and the
 `branding/android` composite build that substitutes the
 `net.olamaelcu:livtet-branding` library from the checked-out
-`livtet-branding` repo (one level up from `mobile/`, at
-`livtet-ecosystem/branding/android`).
+`livtet-branding` repo at <https://github.com/olamaelcu/livtet-branding>
+(sibling directory `branding/` next to `mobile/`).
 
 Developer reference follows: Gradle Modules, Build Configuration, FFI
 Surface, etc.
@@ -158,8 +158,9 @@ Surface, etc.
 | `:jigsaw`             | `com.android.library`           | `mobile/android/jigsaw/`                      |
 | `:build-logic`        | included build (convention plugins) | `mobile/android/build-logic/`              |
 
-A second included build, the sibling `livtet-ecosystem/branding/android`
-repo (substituted as `net.olamaelcu:livtet-branding` via
+A second included build, the sibling `branding/` repo at
+<https://github.com/olamaelcu/livtet-branding> (substituted as
+`net.olamaelcu:livtet-branding` via
 `includeBuild("…") { dependencySubstitution { … } }` in
 `settings.gradle.kts`), supplies the launcher icons, brand color, and
 brand color scheme consumed by `:core:designsystem` and the `:app`
@@ -366,8 +367,8 @@ The launcher icons (`res/mipmap-*/ic_launcher{,_round}.xml` plus the
 resources (`ic_launcher_background`, `brand`) live in the
 `livtet-branding` composite build, not in this module. Each
 flavor — `playstore` / `fdroid` / `generic` — has its own per-flavor
-mipmap set in
-`livtet-ecosystem/branding/android/library/src/<flavor>/res/`.
+mipmap set in `branding/android/library/src/<flavor>/res/`
+within <https://github.com/olamaelcu/livtet-branding>.
 
 ## Permissions
 
