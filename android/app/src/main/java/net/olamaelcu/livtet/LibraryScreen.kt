@@ -33,6 +33,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -62,50 +64,53 @@ fun LibraryScreen(
 
     LaunchedEffect(Unit) { viewModel.load() }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(title = { Text("Library") })
-        },
-        floatingActionButton = {
-            FloatingActionButton(
-                onClick = {
-                    onAddBook()
-                    showWizard = true
-                },
-            ) {
-                Icon(Icons.Default.Add, contentDescription = "Add book")
-            }
-        },
-    ) { innerPadding ->
-        Box(
-            modifier = Modifier.fillMaxSize().padding(innerPadding),
-            contentAlignment = Alignment.Center,
-        ) {
-            when {
-                state.isLoading && state.books.isEmpty() -> {
+    Box(
+        modifier = Modifier.fillMaxSize(),
+    ) {
+        when {
+            state.isLoading && state.books.isEmpty() -> {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center,
+                ) {
                     CircularProgressIndicator()
                 }
-                state.error != null -> {
-                    ErrorView(message = state.error!!)
-                }
-                state.books.isEmpty() -> {
-                    EmptyView(message = state.emptyMessage)
-                }
-                else -> {
-                    LazyColumn(
-                        modifier = Modifier.fillMaxSize(),
-                        contentPadding = PaddingValues(vertical = 8.dp),
-                    ) {
-                        items(state.books, key = { it.id.toString() }) { book ->
-                            BookRow(book = book)
-                            HorizontalDivider(
-                                modifier = Modifier.padding(horizontal = 16.dp),
-                                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f),
-                            )
-                        }
+            }
+            state.error != null -> {
+                ErrorView(message = state.error!!)
+            }
+            state.books.isEmpty() -> {
+                EmptyView(message = state.emptyMessage)
+            }
+            else -> {
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(vertical = 8.dp),
+                ) {
+                    items(state.books, key = { it.id.toString() }) { book ->
+                        BookRow(book = book)
+                        HorizontalDivider(
+                            modifier = Modifier.padding(horizontal = 16.dp),
+                            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f),
+                        )
                     }
                 }
             }
+        }
+
+        FloatingActionButton(
+            onClick = {
+                onAddBook()
+                showWizard = true
+            },
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(end = 16.dp, bottom = 96.dp),
+        ) {
+            Icon(
+                Icons.Default.Add,
+                contentDescription = "Add book",
+            )
         }
     }
 
