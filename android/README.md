@@ -52,33 +52,40 @@ A gear icon in the top app bar navigates to **Settings** from every tab.
 
 ### Add Book Wizard
 
-A 3-step `ModalBottomSheet` (`wizard/AddBookWizard.kt`). Today only the first
-two steps do anything useful; the third is a form-only placeholder.
+A 5-step `ModalBottomSheet` (`wizard/AddBookWizard.kt`) that drives a linear
+guided flow:
 
-1. **Search** (`StepSearch.kt`) — type a title or ISBN (≥3 characters,
-   750 ms debounce). On mount, calls `Bridge.initPlugins()` once. While the
-   user types, calls `Bridge.searchProviders(query)` and renders title,
-   authors, year, ISBN, and source (`via <source>`). Pick a result to advance,
-   or use "Next: Authors" with the entered title to skip search. Provider-error
-   strings (`res/values/strings.xml`: auth required, rate-limited with
-   `retry_after_seconds`, timeout, not found, provider down) are defined in
-   resources but **not yet rendered** — the step currently shows a generic
-   `"Could not search online: <exception message>"` on error.
-   - **Not wired**: local library dedup against existing works
-     (`findWorksByTitlePrefix` and friends are absent from the current
-     `core/livtet-ffi` build).
+1. **Title and Cover** (`Step1TitleAndCover.kt`) — both required. The search
+   field debounces against `Bridge.searchProviders(query)` (≥3 characters,
+   750 ms). Selecting an online result pre-fills title and cover. The cover
+   source picker offers URL input (always), Photos (Phase 1 stub), and camera
+   (Phase 1 stub). The cover preview is rendered through Coil's
+   `SubcomposeAsyncImage`.
+2. **Contributors** (`Step2Contributors.kt`) — add one or more contributors
+   with role `{author, illustrator, translator, narrator}`. The step requires
+   at least one contributor with role `author` to advance.
+3. **Genres** (`Step3aGenres.kt`) — optional chip input.
+4. **Subjects** (`Step3bSubjects.kt`) — optional chip input.
+5. **Tags** (`Step4Tags.kt`) — optional chip input. In Phase 1 the "Save book"
+   button is replaced by a "Saving is coming soon" banner and a "Discard"
+   button.
 
-2. **Authors** (`StepAuthors.kt`) — add one or more authors, each with a role
-   (author, illustrator, translator, narrator). Local-only — entries are held
-   in `StepAuthors` state, not persisted. **No FFI calls** in this step.
+The view-model (`AddBookWizardViewModel.kt`) owns the state through a
+`SavedStateHandle` so configuration changes across rotation don't drop the
+in-progress wizard. It exposes per-step validation gates
+(`canContinueFromTitleAndCover`, `canContinueFromContributors`) and the
+`goToNext` / `goToBack` transitions.
 
-3. **Review** (`StepReview.kt`) — form-only preview with title and a "Saving
-   books is unavailable in this build" message. The intended Bridge calls
-   (`findWorkByIsbn`, `createBookComplete`, `mergeReplaceWork`,
-   `createEditionForWork`, `linkIsbnToExistingEdition`) and the
-   `MobileException.IsbnConflict` handler are documented in the source as
-   "previously called" — the upstream FFI surface is missing them, so this
-   step is reduced to a placeholder until the Rust side catches up.
+**Entry point**: the Library screen's `FloatingActionButton` (`Add book`)
+opens the wizard as a `ModalBottomSheet`. The Dashboard's "Add Your First
+Book" quick action still navigates to the Library tab; the user then taps
+the FAB to open the wizard.
+
+**Phase 1 — save path disabled.** The save flow is gated by
+`AddBookWizardViewModel.isSaveAvailable` (default `false`). The Rust core
+does not yet expose the `createBookComplete` / `findOrCreateAuthor` /
+`linkWorkTag|Genre|Subject` / `setEditionCover` / `downloadImage` FFI calls
+the wizard would otherwise make. See *Phase 2 follow-up* below.
 
 ### Settings
 
@@ -125,8 +132,11 @@ do the following on Android at this time:
   three; no Kotlin caller.
 - **Read a book in-app** — no reader screen; reading-progress FFI is
   unwired.
-- **Save a book from the wizard** — `StepReview` is a placeholder; no FFI
-  save call is reached.
+- **Save a book from the wizard** — the wizard collects the title, cover,
+  contributors, genres, subjects, and tags (the 5-step Phase 1 flow), but
+  the save path is gated by `isSaveAvailable = false` until the Phase 2
+  Rust FFI work in `core/livtet-ffi` lands. The Tags step currently shows a
+  "Saving is coming soon" banner instead of the "Save book" button.
 - **Resolve duplicate works / editions** — `DuplicateWorkDialog.kt`
   does not exist; the merge / add-as-edition / link-ISBN paths it would
   drive are not in the FFI build either.

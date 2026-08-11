@@ -64,13 +64,28 @@ social / recommendations surface.
   device's normal app-container backup rules.
 - **Add Book wizard.** Both the Library tab's toolbar `+` button
   and its empty-state *Add Book* CTA open a full-screen
-  `AddBookWizardView` (search → title/authors → hub → metadata
-  fields → cover). The wizard routes every step through
-  `LivtetCoreBridge` (and the `LivtetWizardBridgeAdapter`) so FFI
-  calls like `createBook`, `createEdition`, `findOrCreateAuthor`,
-  and `linkWorkAuthor` land in the same Rust database the rest of
-  the app reads from. The Library tab reloads automatically when the
-  wizard posts a `.livtetBookCreated` notification.
+  `AddBookWizardView` that drives a 5-step linear flow:
+  1. Title and Cover (both required; URL / PhotosPicker / camera)
+  2. Contributors (≥ 1 author)
+  3. Genres (optional)
+  4. Subjects (optional)
+  5. Tags (optional; "More options" link opens the legacy hub for
+     description, ISBN, publishedDate, language, format, and publisher)
+  The wizard routes every step through `LivtetCoreBridge` (and the
+  `LivtetWizardBridgeAdapter`) so FFI calls like `createBook`,
+  `createEdition`, `findOrCreateAuthor`, and `linkWorkAuthor` land in
+  the same Rust database the rest of the app reads from. The Library
+  tab reloads automatically when the wizard posts a
+  `.livtetBookCreated` notification.
+
+  **Phase 1 — save path disabled.** The save flow is gated by
+  `AddBookWizardViewModel.isSaveAvailable` (default `false`). The Rust
+  core does not yet expose `createBookComplete` / `findOrCreateAuthor` /
+  `linkWorkTag|Genre|Subject` / `setEditionCover` / `downloadImage` in
+  `core/livtet-ffi`. The Tags step currently shows a "Saving is coming
+  soon" banner instead of the "Save book" button. The legacy hub and
+  all the per-detail edit screens remain reachable via the
+  "More options" link.
 
 ### Wired but not yet finished
 
