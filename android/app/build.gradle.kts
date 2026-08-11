@@ -218,6 +218,7 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.9.4")
     implementation("androidx.navigation:navigation-compose:2.9.8")
     implementation("androidx.compose.material:material-icons-extended")
+    implementation(libs.coil.compose)
 
     // Instrumented test deps. See
     // `mobile/android/app/src/androidTest/java/net/olamaelcu/livtet/AddBookSearchTest.kt`

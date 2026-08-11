@@ -47,14 +47,16 @@ class AddBookSearchTest {
         composeTestRule.onNodeWithText("Library").performClick()
         composeTestRule.waitForIdle()
 
-        // 2. Tap the Add Book button. It's an IconButton with
-        //    contentDescription = "Add book"; no text label.
+        // 2. Tap the Add Book FAB. The FloatingActionButton on the
+        //    Library screen uses contentDescription = "Add book" so
+        //    it is reachable through the semantics tree without a
+        //    visible text label.
         composeTestRule.onNodeWithContentDescription("Add book").performClick()
         composeTestRule.waitForIdle()
 
         // 3. Type the search query. The placeholder string is
-        //    "Search by title or ISBN..." (three ASCII dots,
-        //    verbatim from StepSearch.kt:116).
+        //    "Search by title or ISBN..." (three ASCII dots, verbatim
+        //    from Step1TitleAndCover.kt).
         composeTestRule.onNodeWithText("Search by title or ISBN...").performTextInput("Bitter Root")
         composeTestRule.waitForIdle()
 
