@@ -1,4 +1,5 @@
 @testable import Livtet
+import Combine
 import FastULID
 import LivtetKitFFI
 import XCTest
@@ -9,34 +10,74 @@ final class AddBookWizardViewModelTests: XCTestCase {
         ULID(ulidData: Data(repeating: byte, count: 16))!
     }
 
-    func testCanContinueFromTitleAndAuthorsRequiresBoth() {
+    // MARK: - Initial state
+
+    func testInitialPageIsTitleAndCover() {
+        let viewModel = AddBookWizardViewModel(bridge: MockWizardBridge())
+        XCTAssertEqual(viewModel.currentPage, .titleAndCover)
+    }
+
+    func testCanContinueFromTitleAndCoverRequiresBoth() {
+        let viewModel = AddBookWizardViewModel(bridge: MockWizardBridge())
+        XCTAssertFalse(viewModel.canContinueFromTitleAndCover)
+        viewModel.data.title = "Test"
+        XCTAssertFalse(viewModel.canContinueFromTitleAndCover)
+        viewModel.data.cover = .remote(URL(string: "https://example.com/c.jpg")!)
+        XCTAssertTrue(viewModel.canContinueFromTitleAndCover)
+    }
+
+    func testCanContinueFromContributorsRequiresAuthor() {
+        let viewModel = AddBookWizardViewModel(bridge: MockWizardBridge())
+        XCTAssertFalse(viewModel.canContinueFromContributors)
+        viewModel.data.authors = [AuthorEntry(name: "Alice", role: "translator")]
+        XCTAssertFalse(viewModel.canContinueFromContributors)
+        viewModel.data.authors = [AuthorEntry(name: "Alice", role: "author")]
+        XCTAssertTrue(viewModel.canContinueFromContributors)
+    }
+
+    func testCanContinueFromTitleAndAuthorsRequiresBothNewSteps() {
         let viewModel = AddBookWizardViewModel(bridge: MockWizardBridge())
         XCTAssertFalse(viewModel.canContinueFromTitleAndAuthors)
         viewModel.data.title = "Test"
-        XCTAssertFalse(viewModel.canContinueFromTitleAndAuthors)
-        viewModel.data.authors = [AuthorEntry(name: "Author")]
+        viewModel.data.cover = .remote(URL(string: "https://example.com/c.jpg")!)
+        viewModel.data.authors = [AuthorEntry(name: "Alice", role: "author")]
         XCTAssertTrue(viewModel.canContinueFromTitleAndAuthors)
+    }
+
+    // MARK: - Cover transitions
+
+    func testCoverRoundTrip() {
+        let viewModel = AddBookWizardViewModel(bridge: MockWizardBridge())
+        XCTAssertNil(viewModel.data.cover)
+        viewModel.data.cover = .remote(URL(string: "https://example.com/c.jpg")!)
+        XCTAssertEqual(viewModel.data.coverUrl?.absoluteString, "https://example.com/c.jpg")
+        viewModel.data.cover = nil
+        XCTAssertNil(viewModel.data.coverUrl)
     }
 
     func testIsItemFilled() {
         let viewModel = AddBookWizardViewModel(bridge: MockWizardBridge())
+        XCTAssertFalse(viewModel.isItemFilled(.titleAndCover))
+        viewModel.data.title = "Test"
+        viewModel.data.cover = .remote(URL(string: "https://example.com/c.jpg")!)
+        XCTAssertTrue(viewModel.isItemFilled(.titleAndCover))
+        XCTAssertFalse(viewModel.isItemFilled(.contributors))
+        viewModel.data.authors = [AuthorEntry(name: "Alice", role: "author")]
+        XCTAssertTrue(viewModel.isItemFilled(.contributors))
         XCTAssertFalse(viewModel.isItemFilled(.description))
         viewModel.data.description = "A book"
         XCTAssertTrue(viewModel.isItemFilled(.description))
-        XCTAssertFalse(viewModel.isItemFilled(.cover))
-        viewModel.data.coverUrl = URL(string: "https://example.com/c.jpg")
-        XCTAssertTrue(viewModel.isItemFilled(.cover))
     }
 
     func testClearItem() {
         let viewModel = AddBookWizardViewModel(bridge: MockWizardBridge())
         viewModel.data.description = "Test"
-        viewModel.data.coverUrl = URL(string: "https://example.com/c.jpg")
+        viewModel.data.cover = .remote(URL(string: "https://example.com/c.jpg")!)
         viewModel.data.isbn = "123"
         viewModel.clearItem(.description)
         XCTAssertEqual(viewModel.data.description, "")
         viewModel.clearItem(.cover)
-        XCTAssertNil(viewModel.data.coverUrl)
+        XCTAssertNil(viewModel.data.cover)
         viewModel.clearItem(.isbn)
         XCTAssertEqual(viewModel.data.isbn, "")
     }
@@ -45,17 +86,54 @@ final class AddBookWizardViewModelTests: XCTestCase {
         let viewModel = AddBookWizardViewModel(bridge: MockWizardBridge())
         viewModel.data.title = "Test"
         viewModel.data.authors = [AuthorEntry(name: "Alice")]
+        XCTAssertEqual(viewModel.previewForItem(.titleAndCover), "Test")
+        XCTAssertEqual(viewModel.previewForItem(.contributors), "Alice")
         XCTAssertEqual(viewModel.previewForItem(.titleAndAuthors), "\"Test\" — Alice")
     }
 
-    func testSkipSearchAdvancesToTitleAndAuthors() {
+    // MARK: - Step navigation
+
+    func testContinueFromTitleAndCoverAdvancesToContributors() {
         let viewModel = AddBookWizardViewModel(bridge: MockWizardBridge())
-        XCTAssertEqual(viewModel.currentPage, .search)
-        viewModel.skipSearch()
-        XCTAssertEqual(viewModel.currentPage, .titleAndAuthors)
+        viewModel.data.title = "Test"
+        viewModel.data.cover = .remote(URL(string: "https://example.com/c.jpg")!)
+        viewModel.continueFromTitleAndCover()
+        XCTAssertEqual(viewModel.currentPage, .contributors)
     }
 
-    func testSelectResultPopulatesFields() {
+    func testContinueFromTitleAndCoverNoOpWhenIncomplete() {
+        let viewModel = AddBookWizardViewModel(bridge: MockWizardBridge())
+        viewModel.data.title = "Test"
+        viewModel.continueFromTitleAndCover()
+        XCTAssertEqual(viewModel.currentPage, .titleAndCover)
+    }
+
+    func testGoToNextWalksTheLinearFlow() {
+        let viewModel = AddBookWizardViewModel(bridge: MockWizardBridge())
+        XCTAssertEqual(viewModel.currentPage, .titleAndCover)
+        viewModel.goToNext()
+        XCTAssertEqual(viewModel.currentPage, .contributors)
+        viewModel.goToNext()
+        XCTAssertEqual(viewModel.currentPage, .genres)
+        viewModel.goToNext()
+        XCTAssertEqual(viewModel.currentPage, .subjects)
+        viewModel.goToNext()
+        XCTAssertEqual(viewModel.currentPage, .tags)
+        viewModel.goToNext()
+        XCTAssertEqual(viewModel.currentPage, .tags)
+    }
+
+    func testGoToBackReverts() {
+        let viewModel = AddBookWizardViewModel(bridge: MockWizardBridge())
+        viewModel.goToNext()
+        viewModel.goToNext()
+        viewModel.goToNext()
+        XCTAssertEqual(viewModel.currentPage, .subjects)
+        viewModel.goToBack()
+        XCTAssertEqual(viewModel.currentPage, .genres)
+    }
+
+    func testSelectResultPopulatesFieldsAndAdvances() {
         let viewModel = AddBookWizardViewModel(bridge: MockWizardBridge())
         let result = ProviderResult(
             title: "Selected", authors: ["Author"], isbn: "978-0-06-112008-4",
@@ -68,8 +146,8 @@ final class AddBookWizardViewModelTests: XCTestCase {
         XCTAssertEqual(viewModel.data.publishedDate, "2024-01-01")
         XCTAssertEqual(viewModel.data.publisher, "Pub")
         XCTAssertEqual(viewModel.data.authors.count, 1)
-        XCTAssertEqual(viewModel.data.coverUrl?.absoluteString, "https://example.com/c.jpg")
-        XCTAssertEqual(viewModel.currentPage, .titleAndAuthors)
+        XCTAssertEqual(viewModel.data.cover?.displayURL?.absoluteString, "https://example.com/c.jpg")
+        XCTAssertEqual(viewModel.currentPage, .contributors)
     }
 
     func testAddAuthor() {
@@ -79,7 +157,9 @@ final class AddBookWizardViewModelTests: XCTestCase {
         XCTAssertEqual(viewModel.data.authors[0].name, "Alice")
     }
 
-    func testSaveCallsCreateBookCompleteAndPostsNotification() async {
+    // MARK: - Save is unavailable in Phase 1
+
+    func testSaveIsUnavailableInPhase1() {
         let mock = MockWizardBridge()
         let workId = makeULID(1)
         mock.createBookResult = Book(id: workId, title: "Test", description: nil)
@@ -92,132 +172,14 @@ final class AddBookWizardViewModelTests: XCTestCase {
 
         let viewModel = AddBookWizardViewModel(bridge: mock)
         viewModel.data.title = "Test"
-        viewModel.data.authors = [AuthorEntry(name: "Alice")]
-        let expectation = expectation(forNotification: .livtetBookCreated, object: nil)
+        viewModel.data.cover = .remote(URL(string: "https://example.com/c.jpg")!)
+        viewModel.data.authors = [AuthorEntry(name: "Alice", role: "author")]
         viewModel.save()
-        await fulfillment(of: [expectation], timeout: 2.0)
-        XCTAssertTrue(viewModel.didCompleteSave)
+        XCTAssertFalse(viewModel.didCompleteSave)
+        XCTAssertFalse(viewModel.isSaving)
     }
 
-    func testSaveSetsDuplicateSummaryOnIsbnConflict() async {
-        let mock = MockWizardBridge()
-        mock.findByIsbnResult = ExistingWorkSummary(
-            id: makeULID(1), title: "Existing", description: nil,
-            editionCount: 1, identifierCount: 1,
-            existingIsbns: ["978-0-06-112008-4"], editions: []
-        )
-        let viewModel = AddBookWizardViewModel(bridge: mock)
-        viewModel.data.title = "Test"
-        viewModel.data.authors = [AuthorEntry(name: "Alice")]
-        viewModel.data.isbn = "978-0-06-112008-4"
-        viewModel.save()
-        try? await Task.sleep(nanoseconds: 500_000_000)
-        XCTAssertNotNil(viewModel.duplicateSummary)
-    }
-
-    func testFullFlowSearchSelectTagSave() async {
-        let mock = MockWizardBridge()
-        let workId = makeULID(1)
-        mock.createBookResult = Book(id: workId, title: "Selected Book", description: nil)
-        mock.editionsForWork = [Edition(
-            id: makeULID(2), workId: workId, editionTitle: nil, isbn: "978-0-06-112008-4",
-            publishedDate: nil, pageCount: nil, formatId: nil, languageId: nil,
-            notes: nil, description: nil, createdAt: "", updatedAt: nil,
-            inventoryId: nil, coverPath: nil
-        )]
-
-        let viewModel = AddBookWizardViewModel(bridge: mock)
-
-        let result = ProviderResult(
-            title: "Selected Book", authors: ["Alice"],
-            isbn: "978-0-06-112008-4", year: 2024, publisher: "Pub",
-            coverUrl: URL(string: "https://example.com/c.jpg"), source: "googlebooks"
-        )
-        viewModel.selectResult(result)
-        XCTAssertEqual(viewModel.data.title, "Selected Book")
-        XCTAssertEqual(viewModel.data.isbn, "978-0-06-112008-4")
-        XCTAssertEqual(viewModel.currentPage, .titleAndAuthors)
-
-        viewModel.addAuthor(name: "Bob", role: "illustrator")
-        XCTAssertEqual(viewModel.data.authors.count, 2)
-
-        viewModel.goToPage(.tags)
-        viewModel.data.tags = ["fiction", "classics"]
-
-        viewModel.goToPage(.genres)
-        viewModel.data.genres = ["literary"]
-
-        viewModel.goToPage(.subjects)
-        viewModel.data.subjects = ["history"]
-
-        viewModel.goToHub()
-        let expectation = expectation(forNotification: .livtetBookCreated, object: nil)
-        viewModel.save()
-        await fulfillment(of: [expectation], timeout: 2.0)
-
-        XCTAssertTrue(viewModel.didCompleteSave)
-        XCTAssertEqual(mock.createBookCallCount, 1)
-        XCTAssertEqual(mock.createBookCallArgs?.title, "Selected Book")
-        XCTAssertEqual(mock.createBookCallArgs?.isbn, "9780061120084")
-        XCTAssertEqual(mock.linkWorkTagCalls.count, 2)
-        XCTAssertEqual(mock.linkWorkGenreCalls.count, 1)
-        XCTAssertEqual(mock.linkWorkSubjectCalls.count, 1)
-        XCTAssertEqual(mock.findOrCreateTagCalls, ["fiction", "classics"])
-        XCTAssertEqual(mock.findOrCreateGenreCalls, ["literary"])
-        XCTAssertEqual(mock.findOrCreateSubjectCalls, ["history"])
-    }
-
-    func testSaveLinksTagsGenresAndSubjects() async {
-        let mock = MockWizardBridge()
-        let workId = makeULID(1)
-        mock.createBookResult = Book(id: workId, title: "Tagged Book", description: nil)
-        mock.editionsForWork = [Edition(
-            id: makeULID(2), workId: workId, editionTitle: nil, isbn: nil,
-            publishedDate: nil, pageCount: nil, formatId: nil, languageId: nil,
-            notes: nil, description: nil, createdAt: "", updatedAt: nil,
-            inventoryId: nil, coverPath: nil
-        )]
-
-        let viewModel = AddBookWizardViewModel(bridge: mock)
-        viewModel.data.title = "Tagged Book"
-        viewModel.data.authors = [AuthorEntry(name: "Alice")]
-        viewModel.data.tags = ["dystopian", "science fiction"]
-        viewModel.data.genres = ["sci-fi"]
-        viewModel.data.subjects = ["future", "technology"]
-
-        let expectation = expectation(forNotification: .livtetBookCreated, object: nil)
-        viewModel.save()
-        await fulfillment(of: [expectation], timeout: 2.0)
-
-        XCTAssertTrue(viewModel.didCompleteSave)
-        XCTAssertEqual(mock.linkWorkTagCalls.count, 2)
-        XCTAssertEqual(mock.linkWorkGenreCalls.count, 1)
-        XCTAssertEqual(mock.linkWorkSubjectCalls.count, 2)
-    }
-
-    func testDuplicatedTagsAreIgnored() async {
-        let mock = MockWizardBridge()
-        let workId = makeULID(1)
-        mock.createBookResult = Book(id: workId, title: "Dup Book", description: nil)
-        mock.editionsForWork = [Edition(
-            id: makeULID(2), workId: workId, editionTitle: nil, isbn: nil,
-            publishedDate: nil, pageCount: nil, formatId: nil, languageId: nil,
-            notes: nil, description: nil, createdAt: "", updatedAt: nil,
-            inventoryId: nil, coverPath: nil
-        )]
-
-        let viewModel = AddBookWizardViewModel(bridge: mock)
-        viewModel.data.title = "Dup Book"
-        viewModel.data.authors = [AuthorEntry(name: "Alice")]
-        viewModel.data.tags = ["fiction", "fiction"]
-
-        let expectation = expectation(forNotification: .livtetBookCreated, object: nil)
-        viewModel.save()
-        await fulfillment(of: [expectation], timeout: 2.0)
-
-        XCTAssertEqual(mock.findOrCreateTagCalls, ["fiction", "fiction"])
-        XCTAssertEqual(mock.linkWorkTagCalls.count, 2)
-    }
+    // MARK: - Search
 
     func testSearchWithShortQueryReturnsNoResults() {
         let viewModel = AddBookWizardViewModel(bridge: MockWizardBridge())

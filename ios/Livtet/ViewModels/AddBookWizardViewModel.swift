@@ -7,7 +7,7 @@ import os.log
 @MainActor
 final class AddBookWizardViewModel: ObservableObject {
     @Published var data: WizardData
-    @Published var currentPage: WizardPage = .search
+    @Published var currentPage: WizardPage = .titleAndCover
     @Published private(set) var isSearching = false
     @Published private(set) var isSaving = false
     @Published var errorMessage: String?
@@ -18,6 +18,11 @@ final class AddBookWizardViewModel: ObservableObject {
     @Published var formats: [FormatInfo] = []
     @Published var partialSaveWarning: String?
     @Published private(set) var didCompleteSave = false
+    /// Phase 1 ships the wizard UI without the write-back path. The
+    /// "Save book" affordance on the Tags step surfaces this banner
+    /// instead of calling the FFI save flow. Flip to `false` (or delete
+    /// the gate entirely) once the Phase 2 core/ FFI work lands.
+    @Published private(set) var isSaveAvailable = false
 
     private let bridge: WizardBridge
     private let googleBooksClient: GoogleBooksClient
@@ -42,17 +47,55 @@ final class AddBookWizardViewModel: ObservableObject {
     func goToPage(_ page: WizardPage) { currentPage = page }
     func goToHub() { currentPage = .hub }
 
+    /// Advance to the next step in the linear 5-step flow. Centralised
+    /// here so the step views don't need to know about page order.
+    func goToNext() {
+        switch currentPage {
+        case .titleAndCover: currentPage = .contributors
+        case .contributors: currentPage = .genres
+        case .genres: currentPage = .subjects
+        case .subjects: currentPage = .tags
+        case .tags, .hub: break
+        }
+    }
+
+    /// Step back in the linear flow. Used by the per-step back button.
+    func goToBack() {
+        switch currentPage {
+        case .titleAndCover: break
+        case .contributors: currentPage = .titleAndCover
+        case .genres: currentPage = .contributors
+        case .subjects: currentPage = .genres
+        case .tags: currentPage = .subjects
+        case .hub: currentPage = .tags
+        }
+    }
+
+    var canContinueFromTitleAndCover: Bool {
+        !data.title.trimmingCharacters(in: .whitespaces).isEmpty && data.cover != nil
+    }
+
+    /// Backward-compat alias for the older 2-in-1 step that combined
+    /// title and authors. Settles to `true` when both step 1 and step 2
+    /// are valid, which is the same gate the original
+    /// `canContinueFromTitleAndAuthors` enforced.
     var canContinueFromTitleAndAuthors: Bool {
-        !data.title.trimmingCharacters(in: .whitespaces).isEmpty && !data.authors.isEmpty
+        canContinueFromTitleAndCover && canContinueFromContributors
+    }
+
+    var canContinueFromContributors: Bool {
+        data.authors.contains { $0.role == "author" && !$0.name.trimmingCharacters(in: .whitespaces).isEmpty }
     }
 
     var canCreateBook: Bool { canContinueFromTitleAndAuthors }
 
     func isItemFilled(_ page: WizardPage) -> Bool {
         switch page {
+        case .titleAndCover: return canContinueFromTitleAndCover
+        case .contributors: return canContinueFromContributors
         case .titleAndAuthors: return canContinueFromTitleAndAuthors
         case .description: return !data.description.isEmpty
-        case .cover: return data.coverUrl != nil
+        case .cover: return data.cover != nil
         case .isbn: return !data.isbn.isEmpty
         case .publishedDate: return !data.publishedDate.isEmpty
         case .language: return data.languageId != nil
@@ -61,33 +104,40 @@ final class AddBookWizardViewModel: ObservableObject {
         case .tags: return !data.tags.isEmpty
         case .genres: return !data.genres.isEmpty
         case .subjects: return !data.subjects.isEmpty
-        default: return false
+        case .hub: return false
         }
     }
 
     func previewForItem(_ page: WizardPage) -> String? {
         switch page {
+        case .titleAndCover:
+            return data.title.isEmpty ? nil : data.title
+        case .contributors:
+            let names = data.authors.map(\.name).joined(separator: ", ")
+            return names.isEmpty ? nil : names
         case .titleAndAuthors:
             return "\"\(data.title)\" — \(data.authors.map(\.name).joined(separator: ", "))"
         case .description:
             return data.description.count > 50 ? String(data.description.prefix(50)) + "..." : data.description
-        case .cover: return data.coverUrl?.absoluteString
+        case .cover: return data.cover?.displayURL?.absoluteString
         case .isbn: return data.isbn
         case .publishedDate: return data.publishedDate
         case .language: return languages.first { $0.id == data.languageId }?.name
         case .format: return formats.first { $0.id == data.formatId }?.name
         case .publisher: return data.publisher
-        case .tags: return data.tags.joined(separator: ", ")
-        case .genres: return data.genres.joined(separator: ", ")
-        case .subjects: return data.subjects.joined(separator: ", ")
-        default: return nil
+        case .tags: return data.tags.isEmpty ? nil : data.tags.joined(separator: ", ")
+        case .genres: return data.genres.isEmpty ? nil : data.genres.joined(separator: ", ")
+        case .subjects: return data.subjects.isEmpty ? nil : data.subjects.joined(separator: ", ")
+        case .hub: return nil
         }
     }
 
     func clearItem(_ page: WizardPage) {
         switch page {
+        case .titleAndCover: break
+        case .contributors: data.authors = []
         case .description: data.description = ""
-        case .cover: data.coverUrl = nil
+        case .cover: data.cover = nil
         case .isbn: data.isbn = ""; data.localDedupResults = []
         case .publishedDate: data.publishedDate = ""
         case .language: data.languageId = nil
@@ -96,7 +146,8 @@ final class AddBookWizardViewModel: ObservableObject {
         case .tags: data.tags = []
         case .genres: data.genres = []
         case .subjects: data.subjects = []
-        default: break
+        case .titleAndAuthors: break
+        case .hub: break
         }
     }
 
@@ -110,7 +161,13 @@ final class AddBookWizardViewModel: ObservableObject {
 
     func updateSearchQuery(_ query: String) { data.searchQuery = query }
 
-    func skipSearch() { currentPage = .titleAndAuthors }
+    /// Phase 1: step 1 IS the search step (search inline) — there is no
+    /// separate search page to skip. Direct callers to the next step
+    /// when `canContinueFromTitleAndCover` is satisfied.
+    func continueFromTitleAndCover() {
+        guard canContinueFromTitleAndCover else { return }
+        currentPage = .contributors
+    }
 
     func selectResult(_ result: ProviderResult) {
         data.title = result.title
@@ -118,8 +175,10 @@ final class AddBookWizardViewModel: ObservableObject {
         data.publishedDate = result.year.map { "\($0)-01-01" } ?? ""
         data.publisher = result.publisher ?? ""
         data.authors = result.authors.map { AuthorEntry(name: $0) }
-        data.coverUrl = result.coverUrl
-        currentPage = .titleAndAuthors
+        if let url = result.coverUrl {
+            data.cover = .remote(url)
+        }
+        currentPage = .contributors
     }
 
     func runSearch(query: String) {
@@ -278,6 +337,7 @@ final class AddBookWizardViewModel: ObservableObject {
     }
 
     func save() {
+        guard isSaveAvailable else { return }
         guard canCreateBook else { return }
         isSaving = true
         errorMessage = nil

@@ -27,8 +27,9 @@ struct LivtetApp: App {
         // Eagerly init plugins so the default permission-grant
         // sidecars (e.g. googlebooks → google_books_api_key) get
         // written before the user navigates to AddBook. The FFI is
-        // idempotent — the second call from StepSearchView.task
-        // skips already-loaded plugins via a local HashSet.
+        // idempotent — the second call from the AddBook wizard's
+        // step-level task skips already-loaded plugins via a local
+        // HashSet.
         Task.detached(priority: .background) {
             do {
                 try await livtetFfiInitPlugins()
