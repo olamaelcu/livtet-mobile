@@ -49,7 +49,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import coil.compose.SubcomposeAsyncImage
+import coil3.compose.SubcomposeAsyncImage
 
 /**
  * Step 1 of the AddBook wizard. The user enters the title (required)
@@ -73,7 +73,7 @@ fun Step1TitleAndCover(
     val state by viewModel.state.collectAsState()
     val isSearching by viewModel.isSearching.collectAsState()
     val searchError by viewModel.searchError.collectAsState()
-    val canContinue by remember(state) { viewModel.canContinueFromTitleAndCover }
+    val canContinue = remember(state) { viewModel.canContinueFromTitleAndCover }
     var coverMenuExpanded by remember { mutableStateOf(false) }
     var coverUrlInput by remember(state.cover) {
         mutableStateOf(
@@ -98,7 +98,7 @@ fun Step1TitleAndCover(
             OutlinedTextField(
                 value = state.searchQuery,
                 onValueChange = viewModel::onSearchQueryChanged,
-                placeholder = { Text("Search by title or ISBN…") },
+                placeholder = { Text("Search by title or ISBN...") },
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
                 trailingIcon = {

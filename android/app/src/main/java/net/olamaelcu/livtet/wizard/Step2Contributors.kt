@@ -1,5 +1,6 @@
 package net.olamaelcu.livtet.wizard
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -17,10 +18,7 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExposedDropdownMenuBox
-import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -52,10 +50,9 @@ fun Step2Contributors(
     onBack: () -> Unit,
 ) {
     val state by viewModel.state.collectAsState()
-    val canContinue by remember(state.contributors) { viewModel.canContinueFromContributors }
+    val canContinue = remember(state.contributors) { viewModel.canContinueFromContributors }
     var newName by remember { mutableStateOf("") }
     var newRole by remember { mutableStateOf("author") }
-    var roleExpanded by remember { mutableStateOf(false) }
 
     Column(modifier = Modifier.fillMaxSize()) {
         TopAppBar(
@@ -128,32 +125,19 @@ fun Step2Contributors(
                     modifier = Modifier.weight(1f),
                 )
                 Spacer(modifier = Modifier.width(8.dp))
-                ExposedDropdownMenuBox(
-                    expanded = roleExpanded,
-                    onExpandedChange = { roleExpanded = it },
-                ) {
-                    OutlinedTextField(
-                        value = newRole,
-                        onValueChange = {},
-                        readOnly = true,
-                        modifier = Modifier.width(120.dp),
-                        trailingIcon = {
-                            ExposedDropdownMenuDefaults.TrailingIcon(expanded = roleExpanded)
-                        },
-                    )
-                    androidx.compose.material3.ExposedDropdownMenu(
-                        expanded = roleExpanded,
-                        onDismissRequest = { roleExpanded = false },
-                    ) {
-                        CONTRIBUTOR_ROLES.forEach { role ->
-                            DropdownMenuItem(
-                                text = { Text(role.replaceFirstChar { it.uppercase() }) },
-                                onClick = {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    CONTRIBUTOR_ROLES.forEach { role ->
+                        Text(
+                            text = role.replaceFirstChar { it.uppercase() },
+                            modifier = Modifier
+                                .padding(horizontal = 6.dp, vertical = 2.dp)
+                                .clickable {
                                     newRole = role
-                                    roleExpanded = false
                                 },
-                            )
-                        }
+                            color = if (newRole == role) MaterialTheme.colorScheme.primary
+                                    else MaterialTheme.colorScheme.onSurfaceVariant,
+                            style = MaterialTheme.typography.labelLarge,
+                        )
                     }
                 }
                 Spacer(modifier = Modifier.width(8.dp))

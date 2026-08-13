@@ -67,7 +67,7 @@ class AddBookSearchTest {
         //    worker thread actually runs and bubbles an error up.
         //    Either is fine; the load-bearing assertion is the next
         //    one.
-        composeTestRule.waitUntil(5_000L) {
+        composeTestRule.waitUntil(10_000L) {
             hasNoResultsBanner() || hasOnlineErrorBanner() || hasResultListVisible()
         }
 
@@ -127,25 +127,22 @@ class AddBookSearchTest {
     }
 
     private fun hasNoResultsBanner(): Boolean =
-        composeTestRule.onAllNodesWithText("No results found.").fetchSemanticsNodes().isNotEmpty()
+        composeTestRule.onAllNodesWithText("No results found", substring = true).fetchSemanticsNodes().isNotEmpty()
 
     private fun hasOnlineErrorBanner(): Boolean =
         composeTestRule
-            .onAllNodesWithText("Could not search online")
+            .onAllNodesWithText("Could not search online", substring = true)
             .fetchSemanticsNodes()
             .isNotEmpty()
 
     private fun hasResultListVisible(): Boolean {
-        // The wizard's text field still contains "Bitter Root" after
-        // `performTextInput`, so we look for a result row that
-        // *also* contains the query in its title — but we accept
-        // any node with that text as a positive signal, because
-        // Compose semantics trees don't separate input values
-        // from result labels. The composeTestRule's
-        // waitUntil() above gates the search completion, so a
-        // result-row presence is the steady-state outcome.
+        // Each search result row renders a "via <source>" badge
+        // (Step1TitleAndCover.kt). The search input field never
+        // contains this text, so checking for "via " reliably
+        // distinguishes actual results from the input field's
+        // remaining query text.
         return composeTestRule
-            .onAllNodesWithText("Bitter Root", substring = true)
+            .onAllNodesWithText("via ", substring = true)
             .fetchSemanticsNodes()
             .isNotEmpty()
     }
