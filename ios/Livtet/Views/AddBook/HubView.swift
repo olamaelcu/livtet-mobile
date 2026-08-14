@@ -27,16 +27,19 @@ struct HubView: View {
                     if let warning = viewModel.partialSaveWarning {
                         ErrorBanner(message: warning, onRetry: {})
                     }
-                    hubSection("Required") {
-                        hubRow("Title & Authors",
-                               status: viewModel.isItemFilled(.titleAndAuthors) ? .filled : .required,
-                               preview: viewModel.previewForItem(.titleAndAuthors),
-                               action: { viewModel.goToPage(.titleAndAuthors) })
+                    hubSection("Title & Cover") {
+                        hubRow("Title",
+                               status: viewModel.isItemFilled(.titleAndCover) ? .filled : .required,
+                               preview: viewModel.previewForItem(.titleAndCover),
+                               action: { viewModel.goToPage(.titleAndCover) })
+                        hubRow("Contributors",
+                               status: viewModel.isItemFilled(.contributors) ? .filled : .required,
+                               preview: viewModel.previewForItem(.contributors),
+                               action: { viewModel.goToPage(.contributors) })
                     }
                     hubSection("Details") {
                         VStack(spacing: 8) {
                             detailRow(.description)
-                            detailRow(.cover)
                             detailRow(.isbn)
                             detailRow(.publishedDate)
                             detailRow(.language)
@@ -56,14 +59,21 @@ struct HubView: View {
             }
 
             Divider()
-            Button("Create Book") { viewModel.save() }
-                .font(.livtetBody(size: 16, weight: .semibold))
-                .frame(maxWidth: .infinity).padding(.vertical, 14)
-                .background(Color.brand).foregroundStyle(Color("surfaceDefault"))
-                .clipShape(RoundedRectangle(cornerRadius: LivtetRadius.l))
-                .disabled(!viewModel.canCreateBook || viewModel.isSaving)
-                .padding(.horizontal, 16).padding(.vertical, 8)
-            if viewModel.isSaving { ProgressView() }
+            if viewModel.isSaveAvailable {
+                Button("Create Book") { viewModel.save() }
+                    .font(.livtetBody(size: 16, weight: .semibold))
+                    .frame(maxWidth: .infinity).padding(.vertical, 14)
+                    .background(Color.brand).foregroundStyle(Color("surfaceDefault"))
+                    .clipShape(RoundedRectangle(cornerRadius: LivtetRadius.l))
+                    .disabled(!viewModel.canCreateBook || viewModel.isSaving)
+                    .padding(.horizontal, 16).padding(.vertical, 8)
+                if viewModel.isSaving { ProgressView() }
+            } else {
+                Text("Saving is coming soon — the Hub is reachable from the Tags step's “More options” link.")
+                    .font(.livtetBody(size: 12))
+                    .foregroundStyle(Color("textQuiet"))
+                    .padding(.horizontal, 16).padding(.vertical, 12)
+            }
         }
         .background(Color("surfaceDefault").ignoresSafeArea())
     }
@@ -78,7 +88,6 @@ struct HubView: View {
     private func label(for page: WizardPage) -> String {
         switch page {
         case .description: return "Description"
-        case .cover: return "Cover Image"
         case .isbn: return "ISBN"
         case .publishedDate: return "Published Date"
         case .language: return "Language"

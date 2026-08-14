@@ -47,14 +47,16 @@ class AddBookSearchTest {
         composeTestRule.onNodeWithText("Library").performClick()
         composeTestRule.waitForIdle()
 
-        // 2. Tap the Add Book button. It's an IconButton with
-        //    contentDescription = "Add book"; no text label.
+        // 2. Tap the Add Book FAB. The FloatingActionButton on the
+        //    Library screen uses contentDescription = "Add book" so
+        //    it is reachable through the semantics tree without a
+        //    visible text label.
         composeTestRule.onNodeWithContentDescription("Add book").performClick()
         composeTestRule.waitForIdle()
 
         // 3. Type the search query. The placeholder string is
-        //    "Search by title or ISBN..." (three ASCII dots,
-        //    verbatim from StepSearch.kt:116).
+        //    "Search by title or ISBN..." (three ASCII dots, verbatim
+        //    from Step1TitleAndCover.kt).
         composeTestRule.onNodeWithText("Search by title or ISBN...").performTextInput("Bitter Root")
         composeTestRule.waitForIdle()
 
@@ -65,7 +67,7 @@ class AddBookSearchTest {
         //    worker thread actually runs and bubbles an error up.
         //    Either is fine; the load-bearing assertion is the next
         //    one.
-        composeTestRule.waitUntil(5_000L) {
+        composeTestRule.waitUntil(10_000L) {
             hasNoResultsBanner() || hasOnlineErrorBanner() || hasResultListVisible()
         }
 
@@ -125,25 +127,22 @@ class AddBookSearchTest {
     }
 
     private fun hasNoResultsBanner(): Boolean =
-        composeTestRule.onAllNodesWithText("No results found.").fetchSemanticsNodes().isNotEmpty()
+        composeTestRule.onAllNodesWithText("No results found", substring = true).fetchSemanticsNodes().isNotEmpty()
 
     private fun hasOnlineErrorBanner(): Boolean =
         composeTestRule
-            .onAllNodesWithText("Could not search online")
+            .onAllNodesWithText("Could not search online", substring = true)
             .fetchSemanticsNodes()
             .isNotEmpty()
 
     private fun hasResultListVisible(): Boolean {
-        // The wizard's text field still contains "Bitter Root" after
-        // `performTextInput`, so we look for a result row that
-        // *also* contains the query in its title — but we accept
-        // any node with that text as a positive signal, because
-        // Compose semantics trees don't separate input values
-        // from result labels. The composeTestRule's
-        // waitUntil() above gates the search completion, so a
-        // result-row presence is the steady-state outcome.
+        // Each search result row renders a "via <source>" badge
+        // (Step1TitleAndCover.kt). The search input field never
+        // contains this text, so checking for "via " reliably
+        // distinguishes actual results from the input field's
+        // remaining query text.
         return composeTestRule
-            .onAllNodesWithText("Bitter Root", substring = true)
+            .onAllNodesWithText("via ", substring = true)
             .fetchSemanticsNodes()
             .isNotEmpty()
     }

@@ -18,9 +18,12 @@ struct AddBookWizardView: View {
 
     private var currentPageLabel: String {
         switch viewModel.currentPage {
-        case .search: return "Add Book - Search"
-        case .titleAndAuthors: return "Add Book - Title and Authors"
-        case .hub: return "Add Book - Hub (complete or skip)"
+        case .titleAndCover: return "Add Book - Title and Cover"
+        case .contributors: return "Add Book - Contributors"
+        case .genres: return "Add Book - Genres"
+        case .subjects: return "Add Book - Subjects"
+        case .tags: return "Add Book - Tags"
+        case .hub: return "Add Book - More options"
         case .description: return "Add Book - Description"
         case .cover: return "Add Book - Cover"
         case .isbn: return "Add Book - ISBN"
@@ -28,9 +31,6 @@ struct AddBookWizardView: View {
         case .language: return "Add Book - Language"
         case .format: return "Add Book - Format"
         case .publisher: return "Add Book - Publisher"
-        case .tags: return "Add Book - Tags"
-        case .genres: return "Add Book - Genres"
-        case .subjects: return "Add Book - Subjects"
         }
     }
 
@@ -59,19 +59,32 @@ struct AddBookWizardView: View {
     @ViewBuilder
     private var content: some View {
         switch viewModel.currentPage {
-        case .search: StepSearchView(viewModel: viewModel)
-        case .titleAndAuthors: StepTitleAndAuthorsView(viewModel: viewModel)
-        case .hub: HubView(viewModel: viewModel)
-        case .description: DescriptionDetailView(viewModel: viewModel)
-        case .cover: CoverDetailView(viewModel: viewModel)
-        case .isbn: IsbnDetailView(viewModel: viewModel)
-        case .publishedDate: PublishedDateDetailView(viewModel: viewModel)
-        case .language: LanguageDetailView(viewModel: viewModel)
-        case .format: FormatDetailView(viewModel: viewModel)
-        case .publisher: PublisherDetailView(viewModel: viewModel)
-        case .tags: TagsDetailView(viewModel: viewModel)
-        case .genres: GenresDetailView(viewModel: viewModel)
-        case .subjects: SubjectsDetailView(viewModel: viewModel)
+        case .titleAndCover:
+            Step1TitleAndCoverView(viewModel: viewModel)
+        case .contributors:
+            Step2ContributorsView(viewModel: viewModel)
+        case .genres:
+            Step3aGenresView(viewModel: viewModel)
+        case .subjects:
+            Step3bSubjectsView(viewModel: viewModel)
+        case .tags:
+            Step4TagsView(viewModel: viewModel)
+        case .hub:
+            HubView(viewModel: viewModel)
+        case .description:
+            DescriptionDetailView(viewModel: viewModel)
+        case .cover:
+            CoverDetailView(viewModel: viewModel)
+        case .isbn:
+            IsbnDetailView(viewModel: viewModel)
+        case .publishedDate:
+            PublishedDateDetailView(viewModel: viewModel)
+        case .language:
+            LanguageDetailView(viewModel: viewModel)
+        case .format:
+            FormatDetailView(viewModel: viewModel)
+        case .publisher:
+            PublisherDetailView(viewModel: viewModel)
         }
     }
 }
