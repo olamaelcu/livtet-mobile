@@ -30,6 +30,8 @@ import net.olamaelcu.livtet.jigsaw.model.Size as ModelSize
 import net.olamaelcu.livtet.jigsaw.model.Vector
 import kotlin.math.roundToInt
 
+internal const val DEBUG_COVER_URL = "https://placehold.net/7-600x800.png"
+
 @Composable
 fun JigsawScreen(
     imageBitmap: ImageBitmap?,
