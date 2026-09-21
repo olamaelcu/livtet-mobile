@@ -1,7 +1,6 @@
 package net.olamaelcu.livtet
 
 import androidx.compose.ui.test.assertCountEquals
-import androidx.compose.ui.test.assertDoesNotExist
 import androidx.compose.ui.test.assertHasClickAction
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsSelected
@@ -113,7 +112,8 @@ class DashboardA11yTest {
         composeTestRule.waitForIdle()
 
         // Dashboard tab is selected and Settings is no longer visible.
+        // Dashboard tab is selected and Settings is no longer visible.
         composeTestRule.onNodeWithText("Dashboard").assertIsSelected()
-        composeTestRule.onNodeWithText("Settings").assertDoesNotExist()
+        composeTestRule.onAllNodesWithText("Settings").assertCountEquals(0)
     }
 }
