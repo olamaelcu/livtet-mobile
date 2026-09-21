@@ -12,7 +12,7 @@ import kotlinx.coroutines.launch
 import net.olamaelcu.livtet.Bridge
 import net.olamaelcu.livtet.DiscoveredSyncDevice
 import net.olamaelcu.livtet.DiscoveryService
-import net.olamaelcu.livtet.ffi.SeedResultMobile
+import net.olamaelcu.livtet.SeedResultMobile
 
 /**
  * State for the Settings screen.

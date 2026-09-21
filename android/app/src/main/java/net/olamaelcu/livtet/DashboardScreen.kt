@@ -36,10 +36,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import net.olamaelcu.livtet.branding.LivtetColors
 import net.olamaelcu.livtet.core.designsystem.LivtetRadius
-import net.olamaelcu.livtet.ffi.DashboardStats
 import net.olamaelcu.livtet.ffi.Greeting
-import net.olamaelcu.livtet.ffi.RecentSearch
-import net.olamaelcu.livtet.ffi.RecentlyReadBook
 
 @Composable
 fun DashboardScreen(onNavigateToLibrary: () -> Unit = {}) {

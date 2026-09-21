@@ -6,8 +6,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import net.olamaelcu.livtet.ffi.Book
-import net.olamaelcu.livtet.ffi.BookSearchSortOrder
 import net.olamaelcu.livtet.ffi.EmptyMessage
 
 /** UI state for the Library screen. */

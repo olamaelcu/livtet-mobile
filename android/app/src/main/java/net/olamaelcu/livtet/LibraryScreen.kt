@@ -40,7 +40,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import net.olamaelcu.livtet.core.designsystem.LivtetRadius
-import net.olamaelcu.livtet.ffi.Book
+import net.olamaelcu.livtet.ffi.EmptyMessage
 import net.olamaelcu.livtet.wizard.AddBookWizard
 
 /**
@@ -164,7 +164,7 @@ private fun BookRow(book: Book) {
 }
 
 @Composable
-private fun EmptyView(message: net.olamaelcu.livtet.ffi.EmptyMessage?) {
+private fun EmptyView(message: EmptyMessage?) {
     Column(
         modifier = Modifier.fillMaxSize().padding(32.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
