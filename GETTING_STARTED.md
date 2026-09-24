@@ -69,7 +69,8 @@ mobile apps actually exercise are `livtet-core`, `livtet-types`,
 `livtet-database`, `livtet-search`, and `livtet-ffi`. Default
 `cargo test` runs those four plus anything else in the workspace.
 
-If you change `core/livtet-ffi` (or its companion `livtet-ffi-types`),
+If you change `core/livtet-ffi` (or its type sources `livtet-types`,
+`livtet-search`),
 regenerate the platform bindings before building the apps — see
 [Regenerating UniFFI bindings](#6-regenerating-uniffi-bindings).
 

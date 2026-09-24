@@ -40,7 +40,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import net.olamaelcu.livtet.BuildConfig
-import net.olamaelcu.livtet.ffi.SeedResultMobile
+import net.olamaelcu.livtet.SeedResultMobile
 
 /**
  * Settings screen. Three sections previously existed — Paired Devices, Plugins, and

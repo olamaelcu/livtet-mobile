@@ -74,7 +74,7 @@ object OpenInKoreader {
      * `.cbz` → `application/vnd.comicbook+zip`, `.txt` → `text/plain`.
      */
     @Suppress("unused")
-    fun openBookInKoreader(context: Context, book: net.olamaelcu.livtet.ffi.Book) {
+    fun openBookInKoreader(context: Context, book: Book) {
         Toast.makeText(context, "Open-in-KOReader needs the book file path (TODO)", Toast.LENGTH_SHORT).show()
     }
 }

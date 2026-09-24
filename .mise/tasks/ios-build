@@ -2,7 +2,7 @@
 #MISE description="Build iOS app: Rust FFI (core/) → XCFramework → Xcode build. Flags: --sim|--device|--ipad|--clean"
 #MISE env={_.file=".mise/secrets.env"}
 #MISE depends=["secrets-export-env", "secrets-ios-buildconfig"]
-#MISE sources=["core/livtet-ffi/**/*.rs", "core/livtet-core/**/*.rs", "ios/Livtet/**/*.swift", "ios/project.yml"]
+#MISE sources=["core/livtet-ffi/**/*.rs", "core/livtet-core/**/*.rs", "core/livtet-types/**/*.rs", "core/livtet-search/**/*.rs", "core/livtet-temporal-quotes/**/*.rs", "ios/Livtet/**/*.swift", "ios/LivtetKit/**", "ios/project.yml"]
 #MISE outputs=["ios/LivtetKit.xcframework/**", "ios/.derivedData/**/Livtet.app"]
 #USAGE flag "--profile <profile>" help="Build profile" default="debug" {
 #USAGE   choices "debug" "release"
@@ -83,86 +83,17 @@ build_native() {
 		esac
 	done
 
-	# Create fat library for simulator if both arches built
+	# Create the fat simulator library when both arches were built.
+	# mlua is gone from the core workspace, so the archives are linked
+	# directly with lipo — no vendored Lua objects to merge in.
 	local SIM_FAT_DIR="$ROOT_CARGO/target/ios-sim-fat"
 	if [ "$BUILT_SIM_ARM" = true ] && [ "$BUILT_SIM_X86" = true ]; then
 		mkdir -p "$SIM_FAT_DIR"
 		echo "--- Creating simulator fat library ---"
-
-		# Find liblua5.4.a - use shell globbing to expand mlua-sys build dir
-		# The mlua-sys build dirs have unpredictable hash suffixes, so we must glob
-		local LUA_ARM_SIM LUA_X86_SIM
-		LUA_ARM_SIM=$(find "$ROOT_CARGO/target/aarch64-apple-ios-sim/$CARGO_PROFILE_DIR/build/mlua-sys-"* -path "*/lib/liblua5.4.a" -o -path "*/lua-build/lib/liblua5.4.a" 2>/dev/null | head -1)
-		LUA_X86_SIM=$(find "$ROOT_CARGO/target/x86_64-apple-ios/$CARGO_PROFILE_DIR/build/mlua-sys-"* -path "*/lib/liblua5.4.a" -o -path "*/lua-build/lib/liblua5.4.a" 2>/dev/null | head -1)
-
-		# For each arch, merge ffi and lua objects into a single archive
-		# Then lipo the merged arches together
-		local TMP_ARM="$SIM_FAT_DIR/tmp_arm64"
-		local TMP_X86="$SIM_FAT_DIR/tmp_x86_64"
-		mkdir -p "$TMP_ARM" "$TMP_X86"
-
-		# Extract objects from arm64 ffi and lua, merge into single arm64 archive
-		if [ -n "$LUA_ARM_SIM" ]; then
-			echo "--- Merging arm64 ffi + lua ---"
-			(cd "$TMP_ARM" && ar x "$ROOT_CARGO/target/aarch64-apple-ios-sim/$CARGO_PROFILE_DIR/liblivtet_ffi.a")
-			(cd "$TMP_ARM" && ar x "$LUA_ARM_SIM")
-			(cd "$TMP_ARM" && ar rcs "$SIM_FAT_DIR/liblivtet_ffi_arm64.a" *.o)
-		fi
-
-		# Extract objects from x86_64 ffi and lua, merge into single x86_64 archive
-		if [ -n "$LUA_X86_SIM" ]; then
-			echo "--- Merging x86_64 ffi + lua ---"
-			(cd "$TMP_X86" && ar x "$ROOT_CARGO/target/x86_64-apple-ios/$CARGO_PROFILE_DIR/liblivtet_ffi.a")
-			(cd "$TMP_X86" && ar x "$LUA_X86_SIM")
-			(cd "$TMP_X86" && ar rcs "$SIM_FAT_DIR/liblivtet_ffi_x86_64.a" *.o)
-		fi
-
-		# Create the fat library from the merged per-arch libs
-		echo "--- Creating final fat merged library ---"
-		lipo -create "$SIM_FAT_DIR/liblivtet_ffi_arm64.a" "$SIM_FAT_DIR/liblivtet_ffi_x86_64.a" -output "$SIM_FAT_DIR/liblivtet_ffi.a"
-
-		# Cleanup temp dirs and per-arch arches
-		rm -rf "$TMP_ARM" "$SIM_FAT_DIR/liblivtet_ffi_arm64.a" "$SIM_FAT_DIR/liblivtet_ffi_x86_64.a"
-	fi
-
-	#######################################
-	# Single-arch simulator builds also need Lua merged in, otherwise the
-	# XCFramework the Xcode link consumes is missing every _lua_* symbol
-	# (mlua-sys's "vendored" feature compiled the Lua C source into a static
-	# archive that cargo's link line does not embed automatically).
-	# Fat case above handles both archs together; this branches handle the
-	# --sim / --sim-x86 fast paths where only one arch was built.
-	#######################################
-	if [ "$TARGET_LABEL" = "sim-arm64" ] && [ "$BUILT_SIM_ARM" = true ]; then
-		local LUA_ARM_ONLY
-		LUA_ARM_ONLY=$(find "$ROOT_CARGO/target/aarch64-apple-ios-sim/$CARGO_PROFILE_DIR/build/mlua-sys-"* -path "*/lib/liblua5.4.a" -o -path "*/lua-build/lib/liblua5.4.a" 2>/dev/null | head -1)
-		if [ -n "$LUA_ARM_ONLY" ]; then
-			echo "--- Merging arm64 ffi + lua (single-arch build) ---"
-			local TMP_MERGE="$ROOT_CARGO/target/aarch64-apple-ios-sim/$CARGO_PROFILE_DIR/_lua_merge"
-			mkdir -p "$TMP_MERGE"
-			(cd "$TMP_MERGE" && ar x "$ROOT_CARGO/target/aarch64-apple-ios-sim/$CARGO_PROFILE_DIR/liblivtet_ffi.a")
-			(cd "$TMP_MERGE" && ar x "$LUA_ARM_ONLY")
-			(cd "$TMP_MERGE" && ar rcs "$ROOT_CARGO/target/aarch64-apple-ios-sim/$CARGO_PROFILE_DIR/liblivtet_ffi.a" *.o)
-			rm -rf "$TMP_MERGE"
-		else
-			echo "WARN: liblua5.4.a not found for aarch64-apple-ios-sim; link will fail unless mlua's vendored archive is embedded" >&2
-		fi
-	fi
-
-	if [ "$TARGET_LABEL" = "sim-x86" ] && [ "$BUILT_SIM_X86" = true ]; then
-		local LUA_X86_ONLY
-		LUA_X86_ONLY=$(find "$ROOT_CARGO/target/x86_64-apple-ios/$CARGO_PROFILE_DIR/build/mlua-sys-"* -path "*/lib/liblua5.4.a" -o -path "*/lua-build/lib/liblua5.4.a" 2>/dev/null | head -1)
-		if [ -n "$LUA_X86_ONLY" ]; then
-			echo "--- Merging x86_64 ffi + lua (single-arch build) ---"
-			local TMP_MERGE="$ROOT_CARGO/target/x86_64-apple-ios/$CARGO_PROFILE_DIR/_lua_merge"
-			mkdir -p "$TMP_MERGE"
-			(cd "$TMP_MERGE" && ar x "$ROOT_CARGO/target/x86_64-apple-ios/$CARGO_PROFILE_DIR/liblivtet_ffi.a")
-			(cd "$TMP_MERGE" && ar x "$LUA_X86_ONLY")
-			(cd "$TMP_MERGE" && ar rcs "$ROOT_CARGO/target/x86_64-apple-ios/$CARGO_PROFILE_DIR/liblivtet_ffi.a" *.o)
-			rm -rf "$TMP_MERGE"
-		else
-			echo "WARN: liblua5.4.a not found for x86_64-apple-ios; link will fail unless mlua's vendored archive is embedded" >&2
-		fi
+		lipo -create \
+			"$ROOT_CARGO/target/aarch64-apple-ios-sim/$CARGO_PROFILE_DIR/liblivtet_ffi.a" \
+			"$ROOT_CARGO/target/x86_64-apple-ios/$CARGO_PROFILE_DIR/liblivtet_ffi.a" \
+			-output "$SIM_FAT_DIR/liblivtet_ffi.a"
 	fi
 
 	echo "=== Creating XCFramework ==="
@@ -172,21 +103,8 @@ build_native() {
 	local XCFW_LIBS=()
 
 	if [ "$BUILT_DEVICE" = true ]; then
-		# For device, also merge liblua5.4.a into liblivtet_ffi.a
-		local LUA_DEVICE
-		LUA_DEVICE=$(find "$ROOT_CARGO/target/aarch64-apple-ios/$CARGO_PROFILE_DIR/build/mlua-sys-"* -path "*/lib/liblua5.4.a" -o -path "*/lua-build/lib/liblua5.4.a" 2>/dev/null | head -1)
-		if [ -n "$LUA_DEVICE" ]; then
-			echo "--- Merging device ffi + lua ---"
-			local DEV_MERGE_DIR="/tmp/lua_merge_$$"
-			mkdir -p "$DEV_MERGE_DIR"
-			(cd "$DEV_MERGE_DIR" && ar x "$ROOT_CARGO/target/aarch64-apple-ios/$CARGO_PROFILE_DIR/liblivtet_ffi.a")
-			(cd "$DEV_MERGE_DIR" && ar x "$LUA_DEVICE")
-			(cd "$DEV_MERGE_DIR" && ar rcs "$ROOT_CARGO/target/aarch64-apple-ios/$CARGO_PROFILE_DIR/liblivtet_ffi.a" *.o)
-			rm -rf "$DEV_MERGE_DIR"
-		fi
 		XCFW_LIBS+=(-library "$ROOT_CARGO/target/aarch64-apple-ios/$CARGO_PROFILE_DIR/liblivtet_ffi.a")
 	elif [ "$BUILT_SIM_ARM" = true ] && [ "$BUILT_SIM_X86" = true ]; then
-		# Fat sim already merged with lua above
 		XCFW_LIBS+=(-library "$SIM_FAT_DIR/liblivtet_ffi.a")
 	elif [ "$BUILT_SIM_ARM" = true ]; then
 		XCFW_LIBS+=(-library "$ROOT_CARGO/target/aarch64-apple-ios-sim/$CARGO_PROFILE_DIR/liblivtet_ffi.a")
@@ -271,15 +189,19 @@ generate_swift_bindings() {
 	STAGING="$(mktemp -d)"
 
 	uniffi-bindgen generate \
-		--library "$LIB_PATH" \
+		"$LIB_PATH" \
 		--language swift \
 		--out-dir "$STAGING"
 
 	local SWIFT_PKG="$MOBILE_ROOT/ios/LivtetKit/Sources"
 
-	# Ensure target directories exist for generated bindings
-	mkdir -p "$SWIFT_PKG/LivtetKitFFI"
+	# Ensure target directories exist for generated bindings. The three
+	# Swift sources compile into the single `LivtetKit` module; each
+	# component keeps its own C bridge module.
+	mkdir -p "$SWIFT_PKG/LivtetKit"
 	mkdir -p "$SWIFT_PKG/livtet_ffiFFI"
+	mkdir -p "$SWIFT_PKG/LivtetTypesFFI"
+	mkdir -p "$SWIFT_PKG/LivtetSearchFFI"
 	# Move a required file from staging to its per-target subdirectory.
 	# Aborts the build if bindgen did not produce the file (the build
 	# would otherwise link against stale generated content).
@@ -303,11 +225,24 @@ generate_swift_bindings() {
 	# The destination subdirectories are owned by Swift targets defined
 	# in `ios/LivtetKit/Package.swift`.
 	move_required "$STAGING/livtet_ffi.swift" \
-		"$SWIFT_PKG/LivtetKitFFI/livtet_ffi.swift"
+		"$SWIFT_PKG/LivtetKit/livtet_ffi.swift"
+	move_required "$STAGING/LivtetTypes.swift" \
+		"$SWIFT_PKG/LivtetKit/LivtetTypes.swift"
+	move_required "$STAGING/LivtetSearch.swift" \
+		"$SWIFT_PKG/LivtetKit/LivtetSearch.swift"
+
 	move_required "$STAGING/livtet_ffiFFI.h" \
 		"$SWIFT_PKG/livtet_ffiFFI/livtet_ffiFFI.h"
 	move_required "$STAGING/livtet_ffiFFI.modulemap" \
 		"$SWIFT_PKG/livtet_ffiFFI/module.modulemap"
+	move_required "$STAGING/LivtetTypesFFI.h" \
+		"$SWIFT_PKG/LivtetTypesFFI/LivtetTypesFFI.h"
+	move_required "$STAGING/LivtetTypesFFI.modulemap" \
+		"$SWIFT_PKG/LivtetTypesFFI/module.modulemap"
+	move_required "$STAGING/LivtetSearchFFI.h" \
+		"$SWIFT_PKG/LivtetSearchFFI/LivtetSearchFFI.h"
+	move_required "$STAGING/LivtetSearchFFI.modulemap" \
+		"$SWIFT_PKG/LivtetSearchFFI/module.modulemap"
 
 	# Note: `uniffi-bindgen` 0.31 no longer emits per-language
 	# `anchor.c` files; the `module.modulemap` it produces is

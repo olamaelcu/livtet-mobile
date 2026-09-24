@@ -2,7 +2,7 @@
 #MISE description="Build native libs (core/livtet-ffi), generate bindings, and assemble Android APK"
 #MISE env={_.file=".mise/secrets.env"}
 #MISE depends=["secrets-export-env"]
-#MISE sources=["core/livtet-ffi/**/*.rs", "core/livtet-core/**/*.rs", "core/livtet-plugin/**/*.rs", "android/**/*.kt", "android/**/*.kts", "android/app/src/main/res/**", "android/app/src/**/AndroidManifest.xml"]
+#MISE sources=["core/livtet-ffi/**/*.rs", "core/livtet-core/**/*.rs", "core/livtet-types/**/*.rs", "core/livtet-search/**/*.rs", "core/livtet-temporal-quotes/**/*.rs", "android/**/*.kt", "android/**/*.kts", "android/app/src/main/res/**", "android/app/src/**/AndroidManifest.xml"]
 #USAGE flag "--flavor <flavor>" help="Android product flavor" default="generic" {
 #USAGE   choices "generic" "playstore" "fdroid"
 #USAGE }
@@ -34,6 +34,7 @@ PROFILE_CAP="${PROFILE^}"
 # commands run from there; the resulting target/ tree sits at core/target/.
 CARGO_WS="core"
 JNI_LIBS_DIR="android/app/src/main/jniLibs"
+GENERATED_KT_DIR="android/build/generated/source/uniffi/kotlin"
 
 case "${usage_target:-emulator}" in
 all)
@@ -85,12 +86,16 @@ done
 
 FIRST_TARGET="${TARGETS[0]}"
 
+# Clear stale generated sources: the FFI/types/search split means a
+# renamed or removed type must not survive in a stale package dir.
+rm -rf "$GENERATED_KT_DIR"
+
 echo "  Generating Kotlin bindings for $FIRST_TARGET..."
 (
 	cd "$CARGO_WS"
 	cargo run --bin uniffi-bindgen -p livtet-ffi --features cli -- generate \
 		--language kotlin \
-		--out-dir "../android/build/generated/source/uniffi/kotlin" \
+		--out-dir "../$GENERATED_KT_DIR" \
 		"target/$FIRST_TARGET/$CARGO_PROFILE_DIR/liblivtet_ffi.so"
 )
 

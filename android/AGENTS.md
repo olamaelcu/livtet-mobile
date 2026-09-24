@@ -64,8 +64,11 @@ sourceSets["main"]
 ```
 
 Treat these files as build artifacts: do not hand-edit, and re-run the Android
-build after every change to `core/livtet-ffi/` or `core/livtet-types/`
-(`livtet-ffi` re-exports types from `livtet-types`).
+build after every change to `core/livtet-ffi/`, `core/livtet-types/`, or
+`core/livtet-search/`. The generated Kotlin lands in three packages:
+`net.olamaelcu.livtet.ffi` (the store facade + DTOs),
+`net.olamaelcu.livtet.types` (`livtet-types` domain types), and
+`net.olamaelcu.livtet.search` (search result types).
 
 ## Product Flavors
 
