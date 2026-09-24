@@ -1,13 +1,9 @@
 import XCTest
 
-// NOTE: imports the UniFFI module generated from core/livtet-ffi.
-// The iOS Swift bindings for the revived livtet-ffi crate have not been
-// wired into the Xcode project yet (regeneration happens on macOS via
-// `mise run ios-bindings`); until then this file intentionally fails to
-// build on macOS too and the task below stays red.
-// TODO(ffi): after regenerating bindings, adjust the import module name
-// if it differs and remove this note.
-import LivtetFfi
+// Imports the UniFFI module generated from core/livtet-ffi. All three
+// generated sources compile into the single `LivtetKit` module, so the
+// generated types and the hand-written shims are imported together.
+import LivtetKit
 
 /// Golden scenario across the UniFFI boundary (mirrors the Android
 /// instrumented test in `android/app/src/androidTest/.../FfiGoldenScenarioTest.kt`).

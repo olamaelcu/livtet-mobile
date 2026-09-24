@@ -2,6 +2,9 @@ package net.olamaelcu.livtet
 
 import android.util.Log
 import java.io.File
+import java.text.SimpleDateFormat
+import java.util.Locale
+import java.util.TimeZone
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -29,8 +32,9 @@ enum class BookSearchSortOrder {
 /** Outcome of a seed/reset call (`SeedStats` is the FFI shape). */
 typealias SeedResultMobile = SeedStats
 
-/** Dashboard stats placeholder — the FFI surface lands upstream later.
- * Mirrors the old FFI record's field names exactly.
+/** Dashboard stats, projected from the FFI record. The FFI carries
+ * `firstReadingAt` as an RFC 3339 string; the UI works in epoch millis,
+ * so `Bridge.getDashboardStats` converts at the boundary.
  */
 data class DashboardStats(
     val totalBooks: Long = 0,
@@ -163,13 +167,41 @@ object Bridge {
 
     suspend fun cancelSync(deviceId: String) = Unit
 
-    // ── Dashboard stub data ────────────────────────────────────────
+    // ── Dashboard ────────────────────────────────────────
 
-    suspend fun getDashboardStats(): DashboardStats? = null
+    suspend fun getDashboardStats(): DashboardStats? =
+        withContext(Dispatchers.IO) {
+            val s = requireStore().getDashboardStats()
+            DashboardStats(
+                totalBooks = s.totalBooks,
+                booksInProgress = s.booksInProgress,
+                finishedBooks = s.finishedBooks,
+                totalReadingTimeSecs = s.totalReadingTimeSecs,
+                firstReadingAtMillis = s.firstReadingAt?.let(::parseRfc3339Millis),
+            )
+        }
 
-    suspend fun getRecentlyReadBooks(limit: Int): List<RecentlyReadBook> = emptyList()
+    suspend fun getRecentlyReadBooks(limit: Int): List<RecentlyReadBook> =
+        withContext(Dispatchers.IO) {
+            requireStore().getRecentlyReadBooks(limit.toUInt()).map { r ->
+                RecentlyReadBook(
+                    workId = r.workId.toString(),
+                    editionId = r.editionId.toString(),
+                    title = r.title,
+                    authorName = r.authorName,
+                    progress = r.progress,
+                    totalReadingTimeSecs = r.totalReadingTimeSecs,
+                    lastReadAt = r.lastReadAt,
+                )
+            }
+        }
 
-    suspend fun getRecentSearches(limit: Int): List<RecentSearch> = emptyList()
+    suspend fun getRecentSearches(limit: Int): List<RecentSearch> =
+        withContext(Dispatchers.IO) {
+            requireStore().getRecentSearches(limit.toUInt()).map { s ->
+                RecentSearch(query = s.query, searchedAt = s.searchedAt)
+            }
+        }
 
     // ── Seed helper (used by smoke tests) ───────────────────────────
 
@@ -184,3 +216,17 @@ object Bridge {
 
     private const val TAG = "Bridge"
 }
+
+/**
+ * Parse the FFI's RFC 3339 (UTC) timestamps into epoch millis for the UI.
+ * The Rust side renders sub-second precision variably, so it is truncated
+ * before parsing; malformed input degrades to `null`.
+ */
+private fun parseRfc3339Millis(value: String): Long? =
+    try {
+        val formatter = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.US)
+        formatter.timeZone = TimeZone.getTimeZone("UTC")
+        formatter.parse(value.substringBefore('.').removeSuffix("Z"))?.time
+    } catch (_: java.text.ParseException) {
+        null
+    }
