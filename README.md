@@ -1,8 +1,9 @@
 # Livtet — Mobile
 
 Native Android and iOS clients for **Livtet**, a personal library
-manager. The mobile apps are thin shells over a shared Rust core that
-also powers the Tauri desktop application.
+manager. The mobile apps are graphical shells over a shared Rust core that also
+powers the Tauri desktop application with additional support for interacting
+with the hosted Bibliograph AppView for ATProto support.
 
 This repository hosts only the mobile clients and the build glue that
 ties them to the shared core - vendored here as the `core/` git submodule.
@@ -112,4 +113,3 @@ Each platform has its own agent / contributor notes:
 Source code in this repository is licensed under the [Mozilla Public
 License, v. 2.0](./LICENSE). Copyright (c) 2026 Jacky Alcine
 <yo@jacky.wtf>.
-

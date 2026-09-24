@@ -1,10 +1,12 @@
 package net.olamaelcu.livtet
 
 import android.app.Application
+import dagger.hilt.android.HiltAndroidApp
 import io.sentry.android.core.SentryAndroid
 import net.olamaelcu.livtet.ffi.setSystemSecrets
 import timber.log.Timber
 
+@HiltAndroidApp
 class LivtetApp : Application() {
     val koreaderPresence: KoreaderPresence by lazy { KoreaderPresence(this) }
 

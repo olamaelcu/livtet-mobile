@@ -1,5 +1,6 @@
 package net.olamaelcu.livtet
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -37,14 +38,32 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.MutableSharedFlow
 import net.olamaelcu.livtet.account.AccountScreen
 import net.olamaelcu.livtet.core.designsystem.LivtetTheme
 import net.olamaelcu.livtet.settings.SettingsScreen
 import net.olamaelcu.livtet.settings.ThemeManager
 
+@AndroidEntryPoint
 class DashboardActivity : ComponentActivity() {
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        val uri = intent.data?.toString() ?: return
+        if (uri.startsWith(AtprotoAuthRedirectHandler.REDIRECT_PREFIX)) {
+            AtprotoAuthRedirectHandler.emit(uri)
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        // Handle redirect from cold start
+        intent.data?.toString()?.let { uri ->
+            if (uri.startsWith(AtprotoAuthRedirectHandler.REDIRECT_PREFIX)) {
+                AtprotoAuthRedirectHandler.emit(uri)
+            }
+        }
         enableEdgeToEdge()
         setContent {
             val themeMode by
@@ -174,5 +193,15 @@ private fun DashboardNavHost() {
             composable("account") { AccountScreen() }
             composable("settings") { SettingsScreen() }
         }
+    }
+}
+
+object AtprotoAuthRedirectHandler {
+    const val REDIRECT_PREFIX = "net.olamaelcu.livtet:/oauth-redirect"
+    private val _redirects = MutableSharedFlow<String>(extraBufferCapacity = 1)
+    val redirects = _redirects
+
+    fun emit(uri: String) {
+        _redirects.tryEmit(uri)
     }
 }

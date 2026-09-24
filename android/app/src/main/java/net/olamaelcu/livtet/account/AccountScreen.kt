@@ -1,5 +1,7 @@
 package net.olamaelcu.livtet.account
 
+import android.content.Intent
+import android.net.Uri
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -16,6 +18,8 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -31,9 +35,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardCapitalization
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -45,10 +52,11 @@ private val GoogleBlue = Color(0xFF4285F4)
 private val AtProtocolBlue = Color(0xFF1185FE)
 
 @Composable
-fun AccountScreen(viewModel: AccountViewModel = viewModel()) {
+fun AccountScreen(viewModel: AccountViewModel = hiltViewModel()) {
     val state by viewModel.state.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
     var isSigningIn by remember { mutableStateOf(false) }
+    val context = LocalContext.current
 
     LaunchedEffect(Unit) {
         viewModel.events.collect { event ->
@@ -65,6 +73,11 @@ fun AccountScreen(viewModel: AccountViewModel = viewModel()) {
                 }
                 is AccountEvent.SignOutComplete -> {
                     snackbarHostState.showSnackbar("Signed out of ${providerLabel(event.provider)}")
+                }
+                is AccountEvent.OpenAuthUrl -> {
+                    isSigningIn = false
+                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse(event.url))
+                    context.startActivity(intent)
                 }
             }
         }
@@ -87,6 +100,10 @@ fun AccountScreen(viewModel: AccountViewModel = viewModel()) {
                         onAppleClick = {
                             isSigningIn = true
                             viewModel.signIn(AuthProvider.Apple)
+                        },
+                        onAtprotoClick = { handle ->
+                            isSigningIn = true
+                            viewModel.signIn(AuthProvider.Atproto(did = "", handle = handle))
                         },
                     )
                 }
@@ -115,6 +132,10 @@ fun AccountScreen(viewModel: AccountViewModel = viewModel()) {
                             isSigningIn = true
                             viewModel.signIn(AuthProvider.Apple)
                         },
+                        onAtprotoClick = { handle ->
+                            isSigningIn = true
+                            viewModel.signIn(AuthProvider.Atproto(did = "", handle = handle))
+                        },
                     )
                 }
             }
@@ -128,7 +149,10 @@ private fun SignedOutContent(
     compact: Boolean = false,
     onGoogleClick: () -> Unit = {},
     onAppleClick: () -> Unit = {},
+    onAtprotoClick: (String) -> Unit = {},
 ) {
+    var atprotoHandle by remember { mutableStateOf("") }
+
     if (!compact) {
         Text(
             "Sign in to unlock social features",
@@ -147,7 +171,26 @@ private fun SignedOutContent(
         Spacer(Modifier.height(8.dp))
     }
 
-    ProviderButton("Sign in with AT Protocol", AtProtocolBlue, isSigningIn, {})
+    OutlinedTextField(
+        value = atprotoHandle,
+        onValueChange = { atprotoHandle = it },
+        label = { Text("ATProto handle") },
+        modifier = Modifier.fillMaxWidth(),
+        singleLine = true,
+        enabled = !isSigningIn,
+        keyboardOptions = KeyboardOptions(
+            capitalization = KeyboardCapitalization.None,
+            autoCorrect = false,
+            keyboardType = KeyboardType.Uri,
+        ),
+    )
+    Spacer(Modifier.height(4.dp))
+    ProviderButton(
+        "Sign in with AT Protocol",
+        AtProtocolBlue,
+        isSigningIn,
+        { onAtprotoClick(atprotoHandle) },
+    )
 }
 
 @Composable

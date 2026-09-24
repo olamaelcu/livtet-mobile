@@ -2,7 +2,15 @@ plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.serialization)
+    alias(libs.plugins.ksp)
+    alias(libs.plugins.hilt)
     id("livtet.android.library.lint")
+}
+
+// Hilt 2.58 bundles kotlin-metadata-jvm 2.3.x which cannot read
+// metadata format 2.4.0 emitted by Kotlin 2.4.0.
+configurations.all {
+    resolutionStrategy.force("org.jetbrains.kotlin:kotlin-metadata-jvm:2.4.0")
 }
 
 android {
@@ -30,9 +38,19 @@ dependencies {
     implementation(libs.ktor.client.core)
     implementation(libs.ktor.client.okhttp)
     implementation(libs.ktor.client.content.negotiation)
+    implementation(libs.ktor.client.logging)
     implementation(libs.ktor.serialization.kotlinx.json)
     implementation(libs.androidx.datastore.preferences)
     implementation(libs.timber)
+
+    // Hilt
+    implementation(libs.hilt.android)
+    ksp(libs.hilt.compiler)
+
+    // AT Protocol
+    implementation("io.github.kikin81.atproto:runtime:9.10.0")
+    implementation("io.github.kikin81.atproto:oauth:9.10.0")
+    implementation("io.github.kikin81.atproto:models:9.10.0")
 
     testImplementation(libs.junit)
     testImplementation(libs.kotlin.test)

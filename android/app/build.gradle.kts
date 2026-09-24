@@ -2,11 +2,20 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.ksp)
+    alias(libs.plugins.hilt)
     // The kotlin.android plugin includes compose + serialization
     // Pulls in ktfmt + ktlint + detekt and configures them per the
     // shared detekt.yml at `config/detekt/detekt.yml`. See
     // `docs/superpowers/specs/2026-07-11-ktfmt-android-lint-design.md`.
     id("livtet.android.application.lint")
+}
+
+// Hilt 2.58 bundles kotlin-metadata-jvm 2.3.x which cannot read
+// metadata format 2.4.0 emitted by Kotlin 2.4.0. Force the newer
+// version so the Hilt Java annotation processor can parse classes.
+configurations.all {
+    resolutionStrategy.force("org.jetbrains.kotlin:kotlin-metadata-jvm:2.4.0")
 }
 
 android {
@@ -207,6 +216,11 @@ dependencies {
     implementation(project(":core:designsystem"))
     implementation(project(":core:auth"))
     implementation(project(":jigsaw"))
+
+    // Hilt
+    implementation(libs.hilt.android)
+    ksp(libs.hilt.compiler)
+    implementation(libs.hilt.navigation.compose)
 
     val composeBom = platform("androidx.compose:compose-bom:2026.03.00")
     implementation(composeBom)
