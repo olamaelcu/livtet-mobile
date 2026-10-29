@@ -1,21 +1,51 @@
 #!/usr/bin/env bash
 #MISE description="Create / launch Android emulator(s) for tablet and phone"
 #USAGE flag "--create" help="Create the AVDs if they don't exist"
-#USAGE flag "--start [phone|tablet]" help="Launch emulator(s); defaults to phone if no arg"
-#USAGE flag "--select [phone|tablet]" help="Print the ADB serial of the target emulator"
+#USAGE flag "--start [phone|tablet]" help="Launch emulator(s); defaults to phone if no arg" value_optional=#true default_missing="phone"
+#USAGE flag "--select [phone|tablet]" help="Print the ADB serial of the target emulator" value_optional=#true default_missing="phone"
 #USAGE flag "--recreate [phone|tablet|both]" help="Delete and recreate existing AVDs"
 #USAGE flag "--list" help="List all created AVDs with running/stopped status"
-#USAGE flag "--foreground [phone|tablet]" help="Launch emulator(s) with visible GUI; defaults to phone if no arg"
+#USAGE flag "--foreground [phone|tablet]" help="Launch emulator(s) with visible GUI; defaults to phone if no arg" value_optional=#true default_missing="phone"
 
 set -e
 
-SDK_ROOT="${ANDROID_SDK_ROOT:-${ANDROID_HOME:-$HOME/.local/share/mise/installs/android-sdk/1.0}}"
-AVD_MGR="$SDK_ROOT/cmdline-tools/1.0/bin/avdmanager"
+SDK_ROOT="${ANDROID_SDK_ROOT:-${ANDROID_HOME:-$HOME/.local/share/mise/installs/android-sdk/latest}}"
+
+resolve_cmdline_bin() {
+  local bin="$1"
+  if command -v "$bin" >/dev/null 2>&1; then
+    command -v "$bin"
+    return 0
+  fi
+  find "$SDK_ROOT/cmdline-tools" -maxdepth 3 -name "$bin" -type f 2>/dev/null | head -1
+}
+AVD_MGR="$(resolve_cmdline_bin avdmanager)"
 EMULATOR="$SDK_ROOT/emulator/emulator"
+ANDROID_BIN="$(resolve_cmdline_bin android)"
+ADB="$(resolve_cmdline_bin adb)"
+if [ -z "$AVD_MGR" ] || [ -z "$EMULATOR" ] || [ -z "$ANDROID_BIN" ] || [ -z "$ADB" ]; then
+  echo "ERROR: missing Android tools (avdmanager/emulator/android/adb) under $SDK_ROOT" >&2
+  exit 1
+fi
+
 # Must match the ABIs the FFI is built for. `android-build --target emulator`
 # produces only x86_64; an AVD on android-x86 (32-bit) would dlopen-fail at
 # LivtetApp.onCreate. Keep these in lockstep.
 SYS_IMAGE="system-images;android-30;google_apis;x86_64"
+
+# Read image.sysdir.1 from an AVD's config.ini
+avd_sysdir() {
+  local name="$1"
+  local cfg="$HOME/.android/avd/${name}.avd/config.ini"
+  grep -E '^image.sysdir.1=' "$cfg" 2>/dev/null | cut -d= -f2 | tr -d ' \r'
+}
+
+# Check whether an AVD's image ABI matches the required SYS_IMAGE (x86_64)
+avd_image_matches() {
+  local name="$1"
+  local actual="$(avd_sysdir "$name")"
+  [ "$actual" = "system-images/android-30/google_apis/x86_64/" ]
+}
 
 PHONE_AVD="livtet-emulator-phone"
 PHONE_DEVICE="Nexus 5X"
@@ -85,7 +115,7 @@ if [ "$LIST" = true ]; then
         is_running=false
         rserial=""
         for serial in $running_serials; do
-          serial_name=$("$EMULATOR" -avd-info "$serial" 2>/dev/null | grep -i "avd.name" | cut -d= -f2 | tr -d ' \r' || true)
+          serial_name=$("$ADB" -s "$serial" emu avd name 2>/dev/null | tr -d ' \r' || true)
           if [ "$serial_name" = "$current_name" ]; then
             is_running=true
             rserial="$serial"
@@ -138,21 +168,29 @@ fi
 
 if [ "$CREATE" = true ]; then
   echo "Installing system image: $SYS_IMAGE"
-  SDK_MGR="$SDK_ROOT/cmdline-tools/1.0/bin/sdkmanager"
-  "$SDK_MGR" --sdk_root="$SDK_ROOT" "$SYS_IMAGE"
 
-  if ! "$AVD_MGR" list avd 2>/dev/null | grep -q "$PHONE_AVD"; then
-    echo "Creating $PHONE_AVD..."
-    "$AVD_MGR" create avd -n "$PHONE_AVD" -k "$SYS_IMAGE" -d "$PHONE_DEVICE" -f
-  else
-    echo "$PHONE_AVD already exists, skipping"
-  fi
-  if ! "$AVD_MGR" list avd 2>/dev/null | grep -q "$TABLET_AVD"; then
-    echo "Creating $TABLET_AVD..."
-    "$AVD_MGR" create avd -n "$TABLET_AVD" -k "$SYS_IMAGE" -d "$TABLET_DEVICE" -f
-  else
-    echo "$TABLET_AVD already exists, skipping"
-  fi
+  # Auto-accept licenses and install via modern android CLI (no sdkmanager deprecation)
+  yes | "$ANDROID_BIN" sdk install "$SYS_IMAGE" --sdk="$SDK_ROOT" 2>/dev/null || true
+
+  # Check AVDs for image mismatch and recreate if needed (fixes broken tablet)
+  for pair in "$PHONE_AVD:$PHONE_DEVICE" "$TABLET_AVD:$TABLET_DEVICE"; do
+    name="${pair%%:*}"
+    device="${pair##*:}"
+    if "$AVD_MGR" list avd 2>/dev/null | grep -q "$name"; then
+      if ! avd_image_matches "$name"; then
+        echo "$name has mismatched image, deleting and recreating..."
+        "$AVD_MGR" delete avd -n "$name" 2>/dev/null || true
+        rm -f ".${name}.serial"
+        "$AVD_MGR" create avd -n "$name" -k "$SYS_IMAGE" -d "$device" -f
+      else
+        echo "$name already exists with correct image, skipping"
+      fi
+    else
+      echo "Creating $name..."
+      "$AVD_MGR" create avd -n "$name" -k "$SYS_IMAGE" -d "$device" -f
+    fi
+  done
+
 fi
 
 if [ "$CREATE" = true ] && [ -z "$START" ] && [ -z "$FOREGROUND" ] && [ -z "$SELECT" ] && [ "$LIST" != true ]; then
@@ -183,21 +221,24 @@ for avd in "${LAUNCH_AVDS[@]}"; do
   while IFS= read -r line; do
     serial=$(echo "$line" | awk '{print $1}')
     if echo "$line" | grep -q "emulator"; then
-      running=true
-      echo "$avd already running at $serial"
-      echo "$serial" >".${avd}.serial"
+      # Verify this serial actually belongs to this AVD via adb emu avd name
+      avd_name_check=$("$ADB" -s "$serial" emu avd name 2>/dev/null | head -n1 | tr -d ' \r' || true)
+      if [ "$avd_name_check" = "$avd" ]; then
+        running=true
+        echo "$avd already running at $serial"
+        echo "$serial" >".${avd}.serial"
 
-      if [ "$USE_GUI" = true ]; then
-        existing_pid=$(pgrep -f "emulator.*-avd $avd" | head -1 || true)
-        if [ -n "$existing_pid" ]; then
-          echo "Stopping headless instance (PID $existing_pid) for GUI re-launch..."
-          kill "$existing_pid" 2>/dev/null || true
-          wait "$existing_pid" 2>/dev/null || true
-          sleep 2
-          running=false
+        if [ "$USE_GUI" = true ]; then
+          existing_pid=$(pgrep -f "emulator.*-avd $avd" | head -1 || true)
+          if [ -n "$existing_pid" ]; then
+            echo "Stopping headless instance (PID $existing_pid) for GUI re-launch..."
+            kill "$existing_pid" 2>/dev/null || true
+            wait "$existing_pid" 2>/dev/null || true
+            sleep 2
+            running=false
+          fi
         fi
       fi
-      break
     fi
   done < <(adb devices 2>/dev/null | tail -n +2 | grep -v "^$" || true)
 
@@ -219,25 +260,30 @@ done
 echo "Waiting for emulator(s) to boot..."
 for avd in "${LAUNCH_AVDS[@]}"; do
   serial=""
-  for _ in $(seq 1 45); do
-    current=$(adb devices 2>/dev/null | grep "emulator" | grep -v "offline" | head -1 | awk '{print $1}' || true)
-    if [ -n "$current" ]; then
-      status=$(adb -s "$current" shell getprop sys.boot_completed 2>/dev/null | tr -d '\r\n' || true)
-      if [ "$status" = "1" ]; then
-        serial="$current"
-        break
+  # Match serial per AVD; 120s per AVD boot wait
+  for _ in $(seq 1 120); do
+    while IFS= read -r line; do
+      current=$(echo "$line" | awk '{print $1}')
+      if echo "$line" | grep -q "emulator" && [ -n "$current" ]; then
+        avd_name_check=$("$ADB" -s "$current" emu avd name 2>/dev/null | head -n1 | tr -d ' \r' || true)
+        if [ "$avd_name_check" = "$avd" ]; then
+          status=$("$ADB" -s "$current" shell getprop sys.boot_completed 2>/dev/null | tr -d '\r\n' || true)
+          if [ "$status" = "1" ]; then
+            serial="$current"
+            break 2
+          fi
+        fi
       fi
-    fi
+    done < <(adb devices 2>/dev/null | tail -n +2 | grep -v "^$" || true)
     sleep 1
   done
   if [ -n "$serial" ]; then
     echo "$serial" >".${avd}.serial"
     echo "$avd ready at $serial"
   else
-    echo "$avd failed to boot within 45s" >&2
+    echo "$avd failed to boot within 120s" >&2
     exit 1
   fi
 done
 
 echo "Done."
-

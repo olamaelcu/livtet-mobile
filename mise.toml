@@ -44,7 +44,7 @@ xcbeautify = { version = "latest", os = ["macos"] }
 
 [env]
 RUST_BACKTRACE = "full"
-RUST_LOG = "tao=warn,wry=warn,tantivy=info,log=warn,trace"
+RUST_LOG = "tao=warn,wry=warn,tantivy=info,log=warn"
 PKG_CONFIG_PATH = { value = "{{ tools.sqlite.path }}/lib/pkgconfig:${PKG_CONFIG_PATH:-}", tools = true }
 ANDROID_NDK_VERSION = "27.1.12297006"  # source of truth for the NDK; consumed by android-dev-init (sdkmanager install)
 
