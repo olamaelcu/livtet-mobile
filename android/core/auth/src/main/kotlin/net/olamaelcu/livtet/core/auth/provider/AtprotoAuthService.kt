@@ -34,6 +34,7 @@ constructor(
             redirectUri = REDIRECT_URI,
             sessionStore = sessionStore,
             httpClient = httpClient,
+            scope = "atproto repo:net.olamaelcu.livtet.actor.profile repo:net.olamaelcu.livtet.biblio.readingGoal repo:net.olamaelcu.livtet.biblio.shelf repo:net.olamaelcu.livtet.biblio.bookShelving repo:net.olamaelcu.livtet.bookReview blob:image/*",
         )
     }
 

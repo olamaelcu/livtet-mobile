@@ -24,7 +24,6 @@ dependencyResolutionManagement {
 include(":app")
 include(":core:designsystem")
 include(":core:auth")
-include(":jigsaw")
 
 // Composite build that substitutes the branding library so
 // `net.olamaelcu:livtet-branding` resolves from the checked-out

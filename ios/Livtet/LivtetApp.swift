@@ -65,7 +65,6 @@ struct LivtetApp: App {
         WindowGroup {
             SplashScreenView()
                 .environmentObject(syncManager)
-                .environmentObject(SystemSoundFX())
                 .sheet(isPresented: $showPairingSheet) {
                     PairingSheet(syncManager: syncManager)
                 }

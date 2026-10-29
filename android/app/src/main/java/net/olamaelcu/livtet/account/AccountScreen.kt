@@ -48,7 +48,6 @@ import net.olamaelcu.livtet.BuildConfig
 import net.olamaelcu.livtet.core.auth.ProviderAccount
 import net.olamaelcu.livtet.core.auth.provider.AuthProvider
 
-private val GoogleBlue = Color(0xFF4285F4)
 private val AtProtocolBlue = Color(0xFF1185FE)
 
 @Composable
@@ -93,14 +92,6 @@ fun AccountScreen(viewModel: AccountViewModel = hiltViewModel()) {
                 item {
                     SignedOutContent(
                         isSigningIn = isSigningIn,
-                        onGoogleClick = {
-                            isSigningIn = true
-                            viewModel.signIn(AuthProvider.Google)
-                        },
-                        onAppleClick = {
-                            isSigningIn = true
-                            viewModel.signIn(AuthProvider.Apple)
-                        },
                         onAtprotoClick = { handle ->
                             isSigningIn = true
                             viewModel.signIn(AuthProvider.Atproto(did = "", handle = handle))
@@ -110,7 +101,7 @@ fun AccountScreen(viewModel: AccountViewModel = hiltViewModel()) {
             } else {
                 item {
                     Text(
-                        "Your Accounts",
+                        "Your Connected Accounts",
                         fontWeight = FontWeight.SemiBold,
                         color = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.padding(vertical = 8.dp),
@@ -120,23 +111,17 @@ fun AccountScreen(viewModel: AccountViewModel = hiltViewModel()) {
                     val (provider, account) = state.providers.entries.elementAt(i)
                     SignedInCard(account, onSignOut = { viewModel.signOut(provider) })
                 }
-                item {
-                    SignedOutContent(
-                        isSigningIn = isSigningIn,
-                        compact = true,
-                        onGoogleClick = {
-                            isSigningIn = true
-                            viewModel.signIn(AuthProvider.Google)
-                        },
-                        onAppleClick = {
-                            isSigningIn = true
-                            viewModel.signIn(AuthProvider.Apple)
-                        },
-                        onAtprotoClick = { handle ->
-                            isSigningIn = true
-                            viewModel.signIn(AuthProvider.Atproto(did = "", handle = handle))
-                        },
-                    )
+                if (!state.providers.keys.any { it is AuthProvider.Atproto }) {
+                    item {
+                        SignedOutContent(
+                            isSigningIn = isSigningIn,
+                            compact = true,
+                            onAtprotoClick = { handle ->
+                                isSigningIn = true
+                                viewModel.signIn(AuthProvider.Atproto(did = "", handle = handle))
+                            },
+                        )
+                    }
                 }
             }
         }
@@ -147,8 +132,6 @@ fun AccountScreen(viewModel: AccountViewModel = hiltViewModel()) {
 private fun SignedOutContent(
     isSigningIn: Boolean,
     compact: Boolean = false,
-    onGoogleClick: () -> Unit = {},
-    onAppleClick: () -> Unit = {},
     onAtprotoClick: (String) -> Unit = {},
 ) {
     var atprotoHandle by remember { mutableStateOf("") }
@@ -159,16 +142,6 @@ private fun SignedOutContent(
             fontWeight = FontWeight.Medium,
             modifier = Modifier.padding(bottom = 8.dp),
         )
-    }
-
-    if (BuildConfig.GOOGLE_SIGN_IN_ENABLED) {
-        ProviderButton("Continue with Google", GoogleBlue, isSigningIn, onGoogleClick)
-        Spacer(Modifier.height(8.dp))
-    }
-
-    if (BuildConfig.APPLE_SIGN_IN_ENABLED) {
-        ProviderButton("Continue with Apple", Color.Black, isSigningIn, onAppleClick)
-        Spacer(Modifier.height(8.dp))
     }
 
     OutlinedTextField(
@@ -246,7 +219,7 @@ private fun SignedInCard(account: ProviderAccount, onSignOut: () -> Unit) {
 
 private fun providerLabel(provider: AuthProvider): String =
     when (provider) {
-        AuthProvider.Google -> "Google"
-        AuthProvider.Apple -> "Apple"
         is AuthProvider.Atproto -> "AT Protocol"
+        // Apple/Google removed; else covers any unexpected provider
+        else -> "Unknown"
     }

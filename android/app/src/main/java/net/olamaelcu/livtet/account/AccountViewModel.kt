@@ -13,9 +13,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import net.olamaelcu.livtet.core.auth.AccountManager
 import net.olamaelcu.livtet.core.auth.AccountState
-import net.olamaelcu.livtet.core.auth.provider.AppleAuthProvider
 import net.olamaelcu.livtet.core.auth.provider.AuthProvider
-import net.olamaelcu.livtet.core.auth.provider.GoogleAuthProvider
 import net.olamaelcu.livtet.AtprotoAuthRedirectHandler
 import timber.log.Timber
 import javax.inject.Inject
@@ -52,22 +50,8 @@ constructor(
                     // ATProto — emit event to open Custom Tab
                     _events.emit(AccountEvent.OpenAuthUrl(authUrl))
                 } else {
-                    // Google/Apple — sign-in completed synchronously
                     _events.emit(AccountEvent.SignInSucceeded(provider))
                 }
-            } catch (e: AppleAuthProvider.AppleAuthException) {
-                Timber.w(e, "Apple sign-in failed")
-                _events.emit(
-                    AccountEvent.SignInFailed(
-                        provider,
-                        e.message ?: "Apple sign-in is not available",
-                    )
-                )
-            } catch (e: GoogleAuthProvider.GoogleAuthException) {
-                Timber.w(e, "Google sign-in failed")
-                _events.emit(
-                    AccountEvent.SignInFailed(provider, "Could not sign in with Google. Try again.")
-                )
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {

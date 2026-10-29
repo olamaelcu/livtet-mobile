@@ -215,7 +215,6 @@ dependencies {
     implementation(libs.androidx.datastore.preferences)
     implementation(project(":core:designsystem"))
     implementation(project(":core:auth"))
-    implementation(project(":jigsaw"))
 
     // Hilt
     implementation(libs.hilt.android)
