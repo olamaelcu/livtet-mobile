@@ -40,7 +40,7 @@ cocoapods = { version = "1.16.2", os = ["macos"], postinstall = "mise run ios-de
 "github:peripheryapp/periphery" = { version = "3.7.4", os = ["macos"] }
 xcbeautify = { version = "latest", os = ["macos"] }
 "github:robotsandpencils/xcodes" = { version = "2.0.3", os = ["macos"] }
-"github:indygreg/apple-platform-rs" = { version = "0.29.0", os = ["macos"] }
+"github:indygreg/apple-platform-rs" = { version = "0.29.0", os = ["macos"], tag = "apple-codesign/0.29.0" }
 
 [env]
 RUST_BACKTRACE = "full"
