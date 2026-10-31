@@ -190,7 +190,17 @@ final class SyncManagerTests: XCTestCase {
     }
 
     func testScannedNodeIdIsAPairingTarget() async {
-        let (manager, client, _, _) = makeManager()
+        let (manager, client, discovery, _) = makeManager(host: nil)
+        // A bare node id carries no address, so the flow has to find the peer.
+        discovery.peer = Desktop(
+            id: nodeId,
+            name: "Nimble Quail",
+            host: "192.168.1.20",
+            port: 4123,
+            version: "0.1.0",
+            deviceFlavor: "desktop",
+            hostname: "livtet-ab"
+        )
 
         await manager.pair(withRawInput: "  \(nodeId)\n")
 
