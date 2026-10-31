@@ -31,6 +31,8 @@ extension Bundle {
 struct SettingsView: View {
     @ObservedObject var syncManager = SyncManager.shared
 
+    @State private var showPairingEntry = false
+
     @ObserveInjection var forceRedraw
 
     var body: some View {
@@ -42,6 +44,9 @@ struct SettingsView: View {
             .scrollContentBackground(.hidden)
             .background(Color("surfaceDefault").ignoresSafeArea())
             .navigationTitle("Settings")
+            .sheet(isPresented: $showPairingEntry) {
+                ManualPairingSheet(syncManager: syncManager)
+            }
         }
         .enableInjection()
     }
@@ -53,6 +58,17 @@ struct SettingsView: View {
         Section("Sync") {
             SyncStatusView(syncManager: syncManager)
                 .accessibilityLabel("Sync status")
+
+            Button {
+                showPairingEntry = true
+            } label: {
+                Label(
+                    syncManager.hasSavedSession ? "Pair another desktop" : "Pair a device",
+                    systemImage: "qrcode"
+                )
+            }
+            .accessibilityLabel("Pair a device")
+            .accessibilityHint("Scan or enter the node ID shown on the desktop")
 
             if syncManager.hasSavedSession {
                 Button("Disconnect", role: .destructive) {

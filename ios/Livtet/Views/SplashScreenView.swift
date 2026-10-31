@@ -17,10 +17,17 @@ import SwiftUI
 struct SplashScreenView: View {
     private let logger = Logger(subsystem: "net.olamaelcu.livtet", category: "SplashScreenView")
 
-    @State private var state: SplashState = .loading
+    @State private var state: SplashState = SplashScreenView.isRunningTests ? .ready : .loading
     @State private var errorMessage: String?
 
     @ObserveInjection var forceRedraw
+
+    /// Unit tests are hosted by this app. The splash's FFI and database setup
+    /// can outlast the test runner's bootstrap window, and none of the tests
+    /// need a seeded library, so start ready instead.
+    private static var isRunningTests: Bool {
+        ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil
+    }
 
     enum SplashState {
         case loading

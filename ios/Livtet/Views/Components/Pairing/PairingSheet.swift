@@ -141,8 +141,7 @@ struct PairingSheet: View {
                     .accessibilityLabel("Error message")
 
                 Button("Try Again") {
-                    // TODO: Re-trigger pairing via syncManager.startPairing()
-                    // when SyncManager exposes that method.
+                    Task { await syncManager.retry() }
                 }
                 .buttonStyle(.borderedProminent)
                 .accessibilityLabel("Try again")

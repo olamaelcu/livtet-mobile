@@ -1,215 +1,156 @@
 import SwiftUI
 
-/// Modal sheet for manual device pairing. Used when mDNS discovery
-/// isn't available (CI, sandboxed networks, restricted LANs) or the
-/// user prefers to enter the device's address directly.
+/// Manual pairing entry: a node id (typed, pasted, or scanned) and, when
+/// Bonjour is unavailable, the desktop's address.
 ///
-/// Supports QR code scanning via `QRScannerView`. When a QR code
-/// containing a `livtet://sync?ip[]=...` URL is scanned, the form is
-/// auto-filled. If multiple IPs are embedded in the URL (via repeated
-/// `ip[]` query parameters), the user is prompted to pick one.
-///
-/// Calls `onPair` with the form values. The pairing logic itself
-/// (which writes to `paired_devices`) lives in the Settings view
-/// via the `SyncBridge` protocol — this sheet just collects input.
+/// The desktop shows a QR code containing either its node id or a
+/// `livtet://sync?v=2&nodeId=…&host=…&port=…` link; both are accepted.
 struct ManualPairingSheet: View {
+    @ObservedObject var syncManager: SyncManager = .shared
     @Environment(\.dismiss) private var dismiss
 
-    let networkAddresses: [String]
-    let prefillAddress: String?
-    let prefillPort: String?
-    let onPair: (_ name: String, _ address: String, _ port: Int32, _ deviceType: String) -> Void
-
-    @State private var name: String = "Desktop"
-    @State private var address: String
-    @State private var portText: String
-    @State private var deviceType: String = "desktop"
-    @State private var addressError: String?
-
+    @State private var nodeId = ""
+    @State private var address = ""
+    @State private var portText = String(NetworkClient.defaultPort)
     @State private var showScanner = false
-    @State private var showAddressPicker = false
-    @State private var pickerAddresses: [String] = []
-    @State private var scannedHistory: [String] = []
+    @State private var validationError: String?
 
-    init(
-        networkAddresses: [String] = [],
-        prefillAddress: String? = nil,
-        prefillPort: String? = nil,
-        onPair: @escaping (_ name: String, _ address: String, _ port: Int32, _ deviceType: String) -> Void
-    ) {
-        self.networkAddresses = networkAddresses
-        self.prefillAddress = prefillAddress
-        self.prefillPort = prefillPort
-        self.onPair = onPair
-        self._address = State(initialValue: prefillAddress ?? "")
-        self._portText = State(initialValue: prefillPort ?? "3120")
-    }
-
-    /// Pairs the address field with the suggested interface.
-    private func applyAddress(_ candidate: String) {
-        address = candidate
-        addressError = nil
-    }
-
-    private var port: Int32? {
-        Int32(portText)
+    private var port: UInt16? {
+        UInt16(portText).flatMap { $0 == 0 ? nil : $0 }
     }
 
     private var canPair: Bool {
-        guard !address.isEmpty, let p = port, p > 0, p < 65536 else { return false }
-        return !name.isEmpty
-    }
-
-    private func submit() {
-        addressError = validateAddress(address)
-        guard addressError == nil, let p = port else { return }
-        onPair(name, address, p, deviceType)
-        dismiss()
+        PairingInput.isNodeId(nodeId.trimmingCharacters(in: .whitespacesAndNewlines))
     }
 
     var body: some View {
         NavigationStack {
             Form {
-                Section("Device") {
-                    TextField("Name", text: $name)
-                    TextField("Address (e.g. 192.168.1.42)", text: $address)
-                        .keyboardType(.numbersAndPunctuation)
-                        .autocorrectionDisabled()
-                        .onChange(of: address) { _, new in
-                            addressError = validateAddress(new)
-                        }
-                    if let err = addressError {
-                        Text(err)
-                            .font(.caption)
-                            .foregroundColor(Color("dangerOnNormal"))
-                    }
-                    TextField("Port", text: $portText)
-                        .keyboardType(.numberPad)
-                    TextField("Device type", text: $deviceType)
-                        .autocorrectionDisabled()
-                }
-
-                if !networkAddresses.isEmpty {
-                    Section("Local interfaces (tap to fill)") {
-                        ForEach(networkAddresses, id: \.self) { addr in
-                            Button(addr) {
-                                applyAddress(addr)
-                            }
-                            .foregroundColor(Color("textLink"))
-                        }
-                    }
-                }
-
-                if !scannedHistory.isEmpty {
-                    Section("Recently scanned") {
-                        ForEach(scannedHistory, id: \.self) { addr in
-                            Button(addr) {
-                                applyAddress(addr)
-                            }
-                            .foregroundColor(Color("textLink"))
-                        }
-                    }
-                }
-
                 Section {
-                    Button {
-                        submit()
-                    } label: {
-                        HStack {
-                            Spacer()
-                            Text("Pair")
-                                .fontWeight(.semibold)
-                            Spacer()
-                        }
-                    }
-                    .disabled(!canPair)
+                    TextField("Node ID", text: $nodeId)
+                        .textInputAutocapitalization(.never)
+                        .autocorrectionDisabled()
+                        .font(.system(.footnote, design: .monospaced))
+                        .accessibilityLabel("Desktop node ID")
+                        .accessibilityHint("The node ID shown in the desktop's Sync settings")
 
                     Button {
                         showScanner = true
                     } label: {
-                        HStack {
-                            Spacer()
-                            Image(systemName: "qrcode.viewfinder")
-                            Text("Scan QR Code")
-                            Spacer()
-                        }
+                        Label("Scan a code", systemImage: "qrcode.viewfinder")
+                    }
+                    .accessibilityLabel("Scan pairing code")
+                } header: {
+                    Text("Desktop")
+                } footer: {
+                    Text("The desktop shows this in Settings → Sync → Pair a device.")
+                }
+
+                Section {
+                    TextField("Address (optional)", text: $address)
+                        .textInputAutocapitalization(.never)
+                        .autocorrectionDisabled()
+                        .keyboardType(.URL)
+                        .accessibilityLabel("Desktop address")
+
+                    TextField("Port", text: $portText)
+                        .keyboardType(.numberPad)
+                        .accessibilityLabel("Desktop port")
+                } header: {
+                    Text("Network")
+                } footer: {
+                    Text("Leave the address blank to find the desktop over Bonjour.")
+                }
+
+                if let validationError {
+                    Section {
+                        Text(validationError)
+                            .foregroundColor(Color("dangerOnNormal"))
                     }
                 }
             }
-            .navigationTitle("Pair New Device")
+            .navigationTitle("Pair with Desktop")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") { dismiss() }
                 }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Pair") { pair() }
+                        .disabled(!canPair)
+                }
             }
-            .fullScreenCover(isPresented: $showScanner) {
+            .sheet(isPresented: $showScanner) {
                 QRScannerView(
-                    onScan: { scanned in handleScan(scanned) },
+                    onScan: { scanned in
+                        showScanner = false
+                        apply(scanned)
+                    },
                     onCancel: { showScanner = false }
                 )
-            }
-            .alert("Select an address", isPresented: $showAddressPicker, presenting: pickerAddresses) { addrs in
-                ForEach(addrs, id: \.self) { addr in
-                    Button(addr) { fillForm(address: addr, allAddresses: addrs) }
-                }
-                Button("Cancel", role: .cancel) {}
-            } message: { _ in
-                Text("The pairing URL contains multiple network addresses. Choose the one that matches your connection.")
+                .ignoresSafeArea()
             }
         }
     }
 
-    private func handleScan(_ scanned: String) {
-        showScanner = false
-        guard let url = URL(string: scanned),
-              let parsed = try? url.parseLivtetSyncURL()
-        else { return }
-
-        if parsed.addresses.count > 1 {
-            pickerAddresses = parsed.addresses
-            showAddressPicker = true
-        } else {
-            fillForm(address: parsed.ip, allAddresses: parsed.addresses)
+    /// Fill the form from a scanned code, then pair immediately: the user has
+    /// already expressed intent by scanning.
+    private func apply(_ scanned: String) {
+        guard let target = PairingInput.target(from: scanned) else {
+            validationError = PairingError.invalidURL.localizedDescription
+            return
         }
-
-        portText = String(parsed.port)
-        name = "Desktop (\(parsed.ip))"
+        nodeId = target.nodeId
+        if let host = target.host {
+            address = host
+        }
+        if let scannedPort = target.port {
+            portText = String(scannedPort)
+        }
+        pair(with: target)
     }
 
-    private func fillForm(address chosen: String, allAddresses: [String]) {
-        address = chosen
-        addressError = nil
-        for addr in allAddresses where !scannedHistory.contains(addr) {
-            scannedHistory.append(addr)
+    private func pair() {
+        validationError = nil
+        guard canPair else {
+            validationError = PairingError.invalidURL.localizedDescription
+            return
+        }
+        let trimmedAddress = address.trimmingCharacters(in: .whitespacesAndNewlines)
+        var components = URLComponents()
+        components.scheme = "livtet"
+        components.host = "sync"
+        components.queryItems = [
+            URLQueryItem(name: "v", value: "2"),
+            URLQueryItem(name: "nodeId", value: nodeId.trimmingCharacters(in: .whitespacesAndNewlines))
+        ]
+        if !trimmedAddress.isEmpty {
+            components.queryItems?.append(URLQueryItem(name: "host", value: trimmedAddress))
+            if let port {
+                components.queryItems?.append(URLQueryItem(name: "port", value: String(port)))
+            }
+        }
+        guard let url = components.url else {
+            validationError = PairingError.invalidURL.localizedDescription
+            return
+        }
+        pair(with: PairingInput.target(from: url.absoluteString))
+    }
+
+    private func pair(with target: LivtetSyncURL?) {
+        guard let target else {
+            validationError = PairingError.invalidURL.localizedDescription
+            return
+        }
+        dismiss()
+        Task {
+            await syncManager.pair(with: target)
         }
     }
-}
-
-/// Validates an IPv4 address string. Returns nil on success, an
-/// error message on failure. iOS NSDManager gives us resolved IPs,
-/// so manual entry here is the path for users who want to type
-/// directly (e.g. testing, or for an off-LAN desktop).
-private func validateAddress(_ addr: String) -> String? {
-    let trimmed = addr.trimmingCharacters(in: .whitespaces)
-    if trimmed.isEmpty { return "Address is required" }
-    let parts = trimmed.split(separator: ".")
-    guard parts.count == 4 else {
-        return "Must be an IPv4 address (x.x.x.x)"
-    }
-    for p in parts {
-        guard let n = Int(p), (0...255).contains(n) else {
-            return "Invalid octet: \(p)"
-        }
-    }
-    return nil
 }
 
 #if DEBUG
 #Preview {
-    ManualPairingSheet(
-        networkAddresses: ["127.0.0.1", "192.168.1.42", "fe80::1"],
-        onPair: { _, _, _, _ in }
-    )
+    ManualPairingSheet(syncManager: SyncManager.shared)
 }
 #endif

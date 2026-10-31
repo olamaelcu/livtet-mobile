@@ -39,6 +39,37 @@ final class DiscoveryService {
         browser.cancel()
     }
 
+    /// Wait up to `timeout` for a peer advertising `nodeId` to appear.
+    ///
+    /// A pairing link or scanned code may carry only the node id; the address
+    /// then comes from this browser. Returns `nil` when the peer does not show
+    /// up in the window (multicast blocked, or the desktop is not advertising).
+    func desktop(forNodeId nodeId: String, timeout: TimeInterval = 3) async -> Desktop? {
+        await withCheckedContinuation { continuation in
+            let lock = NSLock()
+            var finished = false
+            func finish(_ desktop: Desktop?) {
+                lock.lock()
+                defer { lock.unlock() }
+                guard !finished else { return }
+                finished = true
+                continuation.resume(returning: desktop)
+            }
+
+            let cancellable = desktops
+                .sink { peers in
+                    if let match = peers.first(where: { $0.id == nodeId }) {
+                        finish(match)
+                    }
+                }
+
+            DispatchQueue.main.asyncAfter(deadline: .now() + timeout) {
+                cancellable.cancel()
+                finish(nil)
+            }
+        }
+    }
+
     private func resolveResults(_ results: Set<NWBrowser.Result>) {
         var desktops: [Desktop] = []
         let group = DispatchGroup()

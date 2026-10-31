@@ -1,35 +1,66 @@
 import Combine
 import Foundation
 
-final class NetworkClient {
+/// The sync HTTP calls the app makes during pairing.
+///
+/// A protocol so `SyncManager` can be driven by a fake in tests without a
+/// socket.
+protocol SyncHTTPClient {
+    func pair(
+        nodeId: String,
+        deviceId: String,
+        name: String,
+        deviceType: String,
+        host: String,
+        port: UInt16
+    ) async throws -> PairStatus
+
+    func pairStatus(
+        nodeId: String,
+        claim: String,
+        host: String,
+        port: UInt16
+    ) -> AnyPublisher<PairingDecision, Error>
+
+    func identity(host: String, port: UInt16) async throws -> SyncIdentity
+}
+
+final class NetworkClient: SyncHTTPClient {
     static let defaultPort: UInt16 = 3120
+    /// Header the sync server accepts for session-gated data routes.
+    static let sessionHeader = "x-livtet-session"
+
+    private let session: URLSession
 
     private let decoder: JSONDecoder = {
+        // No `convertFromSnakeCase`: the wire models carry explicit
+        // `CodingKeys`, and applying a strategy would rename the incoming keys
+        // before they are matched.
         let decoder = JSONDecoder()
-        decoder.keyDecodingStrategy = .convertFromSnakeCase
         return decoder
     }()
 
     private let encoder = JSONEncoder()
 
+    init(session: URLSession = .shared) {
+        self.session = session
+    }
+
+    /// File a claim. The desktop returns the secret the status stream needs.
     func pair(
-        token: String,
+        nodeId: String,
         deviceId: String,
         name: String,
         deviceType: String,
         host: String,
         port: UInt16 = defaultPort
     ) async throws -> PairStatus {
-        let urlString = "http://\(host):\(port)/sync/pair"
-        guard let url = URL(string: urlString) else {
-            throw AppError.network("Invalid pair URL: \(urlString)")
-        }
-
+        let url = try baseURL(host: host, port: port, path: "/sync/pair")
         let body: [String: String] = [
             "device_id": deviceId,
             "name": name,
             "device_type": deviceType,
-            "token": token
+            "node_id": nodeId
         ]
 
         var request = URLRequest(url: url)
@@ -37,45 +68,44 @@ final class NetworkClient {
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.httpBody = try encoder.encode(body)
 
-        let (data, response) = try await URLSession.shared.data(for: request)
+        let (data, response) = try await session.data(for: request)
+        try Self.check(response)
 
-        guard let httpResponse = response as? HTTPURLResponse else {
-            throw AppError.network("Non-HTTP response")
+        let status = try decoder.decode(PairStatus.self, from: data)
+        guard status.status == "pending", let claim = status.claim, !claim.isEmpty else {
+            throw AppError.network("The desktop did not return a pairing claim")
         }
-
-        guard (200...299).contains(httpResponse.statusCode) else {
-            throw AppError.network("HTTP \(httpResponse.statusCode)")
-        }
-
-        return try decoder.decode(PairStatus.self, from: data)
+        return status
     }
 
+    /// Subscribe to the pairing decision stream.
+    ///
+    /// The claim is sent as a query parameter, not a header: the server opens
+    /// the stream only for the device that filed the claim.
     func pairStatus(
-        token: String,
+        nodeId: String,
+        claim: String,
         host: String,
         port: UInt16 = defaultPort
     ) -> AnyPublisher<PairingDecision, Error> {
         let subject = PassthroughSubject<PairingDecision, Error>()
 
-        Task { [decoder] in
+        Task { [decoder, session] in
             do {
-                let urlString = "http://\(host):\(port)/sync/pair/status/\(token)"
-                guard let url = URL(string: urlString) else {
-                    subject.send(completion: .failure(AppError.network("Invalid SSE URL: \(urlString)")))
-                    return
+                guard let url = Self.pairStatusURL(
+                    nodeId: nodeId,
+                    claim: claim,
+                    host: host,
+                    port: port
+                ) else {
+                    throw AppError.network("Invalid pairing status URL")
                 }
-
                 var request = URLRequest(url: url)
                 request.setValue("text/event-stream", forHTTPHeaderField: "Accept")
                 request.setValue("no-cache", forHTTPHeaderField: "Cache-Control")
 
-                let (bytes, response) = try await URLSession.shared.bytes(for: request)
-
-                guard let httpResponse = response as? HTTPURLResponse,
-                      (200...299).contains(httpResponse.statusCode) else {
-                    subject.send(completion: .failure(AppError.network("SSE connection failed")))
-                    return
-                }
+                let (bytes, response) = try await session.bytes(for: request)
+                try Self.check(response)
 
                 try await Self.readSSEStream(
                     bytes: bytes,
@@ -89,6 +119,51 @@ final class NetworkClient {
         }
 
         return subject.eraseToAnyPublisher()
+    }
+
+    /// Confirm the peer's identity before claiming it.
+    func identity(host: String, port: UInt16 = defaultPort) async throws -> SyncIdentity {
+        let url = try baseURL(host: host, port: port, path: "/sync/identity")
+        let (data, response) = try await session.data(from: url)
+        try Self.check(response)
+        return try decoder.decode(SyncIdentity.self, from: data)
+    }
+
+    // MARK: - Private
+
+    /// URL of the claim-gated decision stream; internal so tests can assert the
+    /// node id and claim land where the server expects them.
+    static func pairStatusURL(nodeId: String, claim: String, host: String, port: UInt16) -> URL? {
+        var components = URLComponents()
+        components.scheme = "http"
+        components.host = host
+        components.port = Int(port)
+        components.path = "/sync/pair/status/\(nodeId)"
+        components.queryItems = [URLQueryItem(name: "claim", value: claim)]
+        return components.url
+    }
+
+    private func baseURL(host: String, port: UInt16, path: String) throws -> URL {
+        var components = URLComponents()
+        components.scheme = "http"
+        components.host = host
+        components.port = Int(port)
+        components.path = path
+        guard let url = components.url else {
+            throw AppError.network("Invalid sync URL for \(host):\(port)\(path)")
+        }
+        return url
+    }
+
+    private static func check(_ response: URLResponse) throws {
+        guard let http = response as? HTTPURLResponse else {
+            throw AppError.network("Non-HTTP response")
+        }
+        guard (200...299).contains(http.statusCode) else {
+            // 401 on a data route means the session token is missing or was
+            // revoked; the caller has to pair again.
+            throw AppError.network("HTTP \(http.statusCode)")
+        }
     }
 
     private static func readSSEStream(
