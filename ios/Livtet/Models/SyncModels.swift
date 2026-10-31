@@ -1,7 +1,6 @@
 import Foundation
 
-/// A device paired with this instance. Mirrors the
-/// `PairedDeviceMobile` FFI record but is `Identifiable` and
+/// A device paired with this instance. `Identifiable` and
 /// `Equatable` for SwiftUI use.
 struct PairedDeviceRecord: Identifiable, Equatable, Codable {
     /// The desktop-side `DbId` as a string. Acts as the SwiftUI
@@ -14,8 +13,7 @@ struct PairedDeviceRecord: Identifiable, Equatable, Codable {
     let lastSyncAt: String?
 }
 
-/// A bundled plugin installed on the device. Mirrors
-/// `InstalledPluginMobile` from the FFI.
+/// A bundled plugin installed on the device.
 struct InstalledPluginRecord: Identifiable, Equatable, Codable {
     let id: String
     let pluginId: String
@@ -27,8 +25,7 @@ struct InstalledPluginRecord: Identifiable, Equatable, Codable {
     var url: URL? { URL(string: sourcePath) }
 }
 
-/// Non-loopback network addresses of the device. Mirrors
-/// `NetworkAddressesMobile` from the FFI.
+/// Non-loopback network addresses of the device.
 struct NetworkAddressesRecord: Equatable, Codable {
     let addresses: [String]
 }

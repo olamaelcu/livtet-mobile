@@ -34,9 +34,6 @@ packages:
   Inject:
     url: https://github.com/krzysztofzablocki/Inject.git
     revision: "1.2.4"  # latest stable
-  LivtetBranding:
-    url: https://github.com/olamaelcu/livtet-branding
-    from: "0.1.0"
 
 targets:
   Livtet:
@@ -51,14 +48,10 @@ targets:
     dependencies:
       - package: LivtetKit
         product: LivtetKit
-      - package: LivtetKit
-        product: LivtetKitFFI
       - package: Sentry
         product: Sentry
       - package: Inject
         product: Inject
-      - package: LivtetBranding
-        product: LivtetBranding
       - package: LivtetJigsaw
         product: LivtetJigsaw
     settings:

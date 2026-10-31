@@ -188,10 +188,11 @@ generate_swift_bindings() {
 	local STAGING
 	STAGING="$(mktemp -d)"
 
-	uniffi-bindgen generate \
-		"$LIB_PATH" \
-		--language swift \
-		--out-dir "$STAGING"
+(cd "$CARGO_WS" && uniffi-bindgen generate \
+    "$LIB_PATH" \
+    --language swift \
+    --out-dir "$STAGING" \
+)
 
 	local SWIFT_PKG="$MOBILE_ROOT/ios/LivtetKit/Sources"
 

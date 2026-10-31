@@ -1,5 +1,5 @@
 import Foundation
-import LivtetKitFFI
+import LivtetKit
 
 /// Source of the cover image entered in Step 1 — Title and Cover.
 ///
@@ -38,7 +38,6 @@ struct WizardData: Equatable {
     var subjects: [String] = []
     var cover: CoverSource? = nil
     var searchQuery: String = ""
-    var localDedupResults: [WorkSummary] = []
     var searchResults: [ProviderResult] = []
 
     /// Backward-compat accessor for the original `coverUrl: URL?` field.

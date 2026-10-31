@@ -1,5 +1,4 @@
 import LivtetKit
-import LivtetKitFFI
 import SwiftUI
 
 /// Horizontal row of recent-search chips. Mirrors Android's

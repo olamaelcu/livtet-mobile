@@ -1,7 +1,6 @@
 import Combine
 import Foundation
 import LivtetKit
-import LivtetKitFFI
 import os.log
 
 @MainActor
@@ -13,15 +12,11 @@ final class AddBookWizardViewModel: ObservableObject {
     @Published var errorMessage: String?
     @Published var providerError: ProviderErrorInfo?
     @Published var searchSource: SearchSource?
-    @Published var duplicateSummary: ExistingWorkSummary?
-    @Published var languages: [LanguageInfo] = []
+    @Published var languages: [LibraryLanguage] = []
     @Published var formats: [FormatInfo] = []
-    @Published var partialSaveWarning: String?
     @Published private(set) var didCompleteSave = false
-    /// Phase 1 ships the wizard UI without the write-back path. The
-    /// "Save book" affordance on the Tags step surfaces this banner
-    /// instead of calling the FFI save flow. Flip to `false` (or delete
-    /// the gate entirely) once the Phase 2 core/ FFI work lands.
+    /// The current core surface has no create-work operation, so the save
+    /// path is unavailable; `save()` surfaces an explanatory error instead.
     @Published private(set) var isSaveAvailable = false
 
     private let bridge: WizardBridge
@@ -29,7 +24,6 @@ final class AddBookWizardViewModel: ObservableObject {
     private let openLibraryClient: OpenLibraryClient
     private static let logger = Logger(subsystem: "net.olamaelcu.livtet", category: "AddBookWizardViewModel")
     private var searchTask: Task<Void, Never>?
-    private var isbnCheckTask: Task<Void, Never>?
     private var cancellables = Set<AnyCancellable>()
 
     init(
@@ -56,6 +50,9 @@ final class AddBookWizardViewModel: ObservableObject {
         case .genres: currentPage = .subjects
         case .subjects: currentPage = .tags
         case .tags, .hub: break
+        case .description, .isbn, .publishedDate, .language, .format, .publisher, .cover:
+            // Hub field pages are never `currentPage` in the linear flow.
+            break
         }
     }
 
@@ -68,6 +65,9 @@ final class AddBookWizardViewModel: ObservableObject {
         case .subjects: currentPage = .genres
         case .tags: currentPage = .subjects
         case .hub: currentPage = .tags
+        case .description, .isbn, .publishedDate, .language, .format, .publisher, .cover:
+            // Hub field pages are never `currentPage` in the linear flow.
+            break
         }
     }
 
@@ -93,7 +93,6 @@ final class AddBookWizardViewModel: ObservableObject {
         switch page {
         case .titleAndCover: return canContinueFromTitleAndCover
         case .contributors: return canContinueFromContributors
-        case .titleAndAuthors: return canContinueFromTitleAndAuthors
         case .description: return !data.description.isEmpty
         case .cover: return data.cover != nil
         case .isbn: return !data.isbn.isEmpty
@@ -115,8 +114,6 @@ final class AddBookWizardViewModel: ObservableObject {
         case .contributors:
             let names = data.authors.map(\.name).joined(separator: ", ")
             return names.isEmpty ? nil : names
-        case .titleAndAuthors:
-            return "\"\(data.title)\" — \(data.authors.map(\.name).joined(separator: ", "))"
         case .description:
             return data.description.count > 50 ? String(data.description.prefix(50)) + "..." : data.description
         case .cover: return data.cover?.displayURL?.absoluteString
@@ -138,7 +135,7 @@ final class AddBookWizardViewModel: ObservableObject {
         case .contributors: data.authors = []
         case .description: data.description = ""
         case .cover: data.cover = nil
-        case .isbn: data.isbn = ""; data.localDedupResults = []
+        case .isbn: data.isbn = ""
         case .publishedDate: data.publishedDate = ""
         case .language: data.languageId = nil
         case .format: data.formatId = nil
@@ -146,7 +143,6 @@ final class AddBookWizardViewModel: ObservableObject {
         case .tags: data.tags = []
         case .genres: data.genres = []
         case .subjects: data.subjects = []
-        case .titleAndAuthors: break
         case .hub: break
         }
     }
@@ -184,7 +180,7 @@ final class AddBookWizardViewModel: ObservableObject {
     func runSearch(query: String) {
         searchTask?.cancel()
         guard query.count >= 3 else {
-            data.localDedupResults = []; data.searchResults = []
+            data.searchResults = []
             return
         }
         isSearching = true
@@ -192,10 +188,6 @@ final class AddBookWizardViewModel: ObservableObject {
     }
 
     func performSearch(query: String) async {
-        do {
-            data.localDedupResults = try bridge.findWorksByTitlePrefix(prefix: query, limit: 5)
-        } catch { data.localDedupResults = [] }
-
         do {
             let items = try await googleBooksClient.search(query: query)
             data.searchResults = items.map(toProviderResult)
@@ -290,259 +282,33 @@ final class AddBookWizardViewModel: ObservableObject {
 
     func updateIsbn(_ isbn: String) {
         data.isbn = isbn
-        isbnCheckTask?.cancel()
-        let clean = isbn.trimmingCharacters(in: .whitespaces).replacingOccurrences(of: "-", with: "")
-        guard isValidIsbnFormat(clean) else { return }
-        isbnCheckTask = Task { [weak self] in
-            try? await Task.sleep(nanoseconds: 750_000_000)
-            guard let self, !Task.isCancelled else { return }
-            await self.checkIsbnDuplicate(cleanIsbn: clean)
-        }
-    }
-
-    private func isValidIsbnFormat(_ isbn: String) -> Bool {
-        guard !isbn.isEmpty else { return false }
-        return isbn.range(of: "^(?:ISBN-?1[03])?[: ]*([0-9X-]+)$", options: .regularExpression) != nil
-    }
-
-    private func checkIsbnDuplicate(cleanIsbn: String) async {
-        let urn = "urn:isbn:\(cleanIsbn)"
-        do {
-            if let existing = try bridge.findWorkByIsbn(isbnUrn: urn) {
-                duplicateSummary = existing
-            }
-        } catch {}
     }
 
     func addAuthor(name: String, role: String) {
         guard !name.isEmpty else { return }
-        do {
-            _ = try bridge.findOrCreateAuthor(name: name)
-            data.authors.append(AuthorEntry(name: name, role: role))
-        } catch {
-            errorMessage = "Failed to add author: \(error.localizedDescription)"
-        }
+        data.authors.append(AuthorEntry(name: name, role: role))
     }
 
     func removeAuthor(_ author: AuthorEntry) {
         data.authors.removeAll { $0.id == author.id }
     }
 
-    func loadLanguages() {
-        do { languages = try bridge.getDistinctLanguages() } catch {}
+    func loadLanguages() async {
+        do { languages = try await bridge.getDistinctLanguages() } catch {}
     }
 
-    func loadFormats() {
-        do { formats = try bridge.getDistinctFormats() } catch {}
+    func loadFormats() async {
+        do { formats = try await bridge.getDistinctFormats() } catch {}
     }
 
+    /// The current core API exposes no create-work operation, so the wizard
+    /// cannot persist a book yet. Surface that clearly instead of silently
+    /// doing nothing.
     func save() {
-        guard isSaveAvailable else { return }
         guard canCreateBook else { return }
-        isSaving = true
-        errorMessage = nil
-        partialSaveWarning = nil
-        Task { [weak self] in await self?.performSave() }
+        errorMessage = "Saving is not available yet: the library API has no create-book operation."
     }
 
-    private func performSave() async {
-        do {
-            let cleanIsbn = data.isbn.trimmingCharacters(in: .whitespaces).replacingOccurrences(of: "-", with: "")
-            let authorNames = data.authors.map { $0.name.trimmingCharacters(in: .whitespaces) }
-
-            if !cleanIsbn.isEmpty {
-                let urn = "urn:isbn:\(cleanIsbn)"
-                if let existing = try bridge.findWorkByIsbn(isbnUrn: urn) {
-                    duplicateSummary = existing
-                    isSaving = false
-                    return
-                }
-            }
-
-            let book = try bridge.createBookComplete(
-                title: data.title.trimmingCharacters(in: .whitespaces),
-                description: data.description.isEmpty ? nil : data.description,
-                editionTitle: data.title.trimmingCharacters(in: .whitespaces),
-                isbn: cleanIsbn.isEmpty ? nil : cleanIsbn,
-                publishedDate: data.publishedDate.isEmpty ? nil : data.publishedDate,
-                languageId: data.languageId,
-                authorNames: authorNames,
-                publisher: data.publisher.isEmpty ? nil : data.publisher
-            )
-
-            let editions = try bridge.getEditionsForWork(workId: book.id)
-            guard let edition = editions.first else {
-                errorMessage = "Book created but no edition found"
-                isSaving = false
-                return
-            }
-
-            var warnings: [String] = []
-
-            if let formatId = data.formatId {
-                do {
-                    _ = try bridge.updateEdition(
-                        editionId: edition.id, title: nil, publishedDate: nil,
-                        formatId: formatId, languageId: nil, notes: nil, description: nil
-                    )
-                } catch { warnings.append("format update failed") }
-            }
-
-            if let coverUrl = data.coverUrl {
-                do {
-                    let localUrl = try await bridge.downloadImage(from: coverUrl)
-                    try bridge.setEditionCover(editionId: edition.id, localPath: localUrl.path)
-                } catch { warnings.append("cover image failed") }
-            }
-
-            for tagName in data.tags {
-                do {
-                    let tag = try bridge.findOrCreateTag(name: tagName)
-                    try bridge.linkWorkTag(workId: book.id, tagId: tag.id)
-                } catch { warnings.append("tag '\(tagName)' failed") }
-            }
-
-            for genreName in data.genres {
-                do {
-                    let genre = try bridge.findOrCreateGenre(name: genreName)
-                    try bridge.linkWorkGenre(workId: book.id, genreId: genre.id)
-                } catch { warnings.append("genre '\(genreName)' failed") }
-            }
-
-            for subjectName in data.subjects {
-                do {
-                    let subject = try bridge.findOrCreateSubject(name: subjectName)
-                    try bridge.linkWorkSubject(workId: book.id, subjectId: subject.id)
-                } catch { warnings.append("subject '\(subjectName)' failed") }
-            }
-
-            if !warnings.isEmpty {
-                partialSaveWarning = "Book saved, but: \(warnings.joined(separator: ", "))"
-            }
-
-            NotificationCenter.default.post(name: .livtetBookCreated, object: nil)
-            didCompleteSave = true
-            isSaving = false
-        } catch let error as MobileError {
-            handleMobileError(error)
-            isSaving = false
-        } catch {
-            errorMessage = "Save failed: \(error.localizedDescription)"
-            isSaving = false
-        }
-    }
-
-    private func handleMobileErrorAsBridge(_ error: Error) {
-        if let mobile = error as? MobileError {
-            handleMobileError(mobile)
-        } else {
-            errorMessage = "Save failed: \(error.localizedDescription)"
-        }
-    }
-
-    private func handleMobileError(_ error: MobileError) {
-        switch error {
-        case .Database(let msg):
-            if msg.contains("UNIQUE constraint failed") {
-                errorMessage = "This ISBN already exists in your library"
-            } else if msg.contains("constraint failed") {
-                errorMessage = "Duplicate entry detected"
-            } else {
-                errorMessage = "Database error: \(msg)"
-            }
-        case .IsbnConflict(_, _, let conflictingIsbn):
-            let urn = "urn:isbn:\(conflictingIsbn.replacingOccurrences(of: "urn:isbn:", with: ""))"
-            if let existing = try? bridge.findWorkByIsbn(isbnUrn: urn) {
-                duplicateSummary = existing
-            } else {
-                errorMessage = "ISBN conflict on \(conflictingIsbn)"
-            }
-        case .NotFound(let msg):
-            errorMessage = "Not found: \(msg)"
-        default:
-            errorMessage = "Save failed: \(error.localizedDescription)"
-        }
-    }
-
-    enum DuplicateAction {
-        case replace(workId: DbId), newEdition(workId: DbId), linkIsbn(editionId: DbId), cancel
-    }
-
-    func handleDuplicateAction(_ action: DuplicateAction) {
-        guard let summary = duplicateSummary else { return }
-        duplicateSummary = nil
-        switch action {
-        case .cancel: return
-        case .replace(let workId): performReplace(workId: workId, summary: summary)
-        case .newEdition(let workId): performNewEdition(workId: workId)
-        case .linkIsbn(let editionId): performLinkIsbn(editionId: editionId)
-        }
-    }
-
-    private func performReplace(workId: DbId, summary: ExistingWorkSummary) {
-        let cleanIsbn = data.isbn.trimmingCharacters(in: .whitespaces).replacingOccurrences(of: "-", with: "")
-        isSaving = true
-        Task { [weak self] in
-            guard let self else { return }
-            do {
-                _ = try bridge.mergeReplaceWork(
-                    workId: workId,
-                    newTitle: data.title.trimmingCharacters(in: .whitespaces),
-                    newDescription: data.description.isEmpty ? nil : data.description,
-                    newIsbn: cleanIsbn,
-                    newEditionTitle: data.title.trimmingCharacters(in: .whitespaces),
-                    publishedDate: data.publishedDate.isEmpty ? nil : data.publishedDate
-                )
-                NotificationCenter.default.post(name: .livtetBookCreated, object: nil)
-                didCompleteSave = true
-                isSaving = false
-            } catch {
-                handleMobileErrorAsBridge(error)
-                isSaving = false
-            }
-        }
-    }
-
-    private func performNewEdition(workId: DbId) {
-        let cleanIsbn = data.isbn.trimmingCharacters(in: .whitespaces).replacingOccurrences(of: "-", with: "")
-        isSaving = true
-        Task { [weak self] in
-            guard let self else { return }
-            do {
-                _ = try bridge.createEditionForWork(
-                    workId: workId, isbnUrn: "urn:isbn:\(cleanIsbn)",
-                    editionTitle: data.title.trimmingCharacters(in: .whitespaces),
-                    publishedDate: data.publishedDate.isEmpty ? nil : data.publishedDate,
-                    languageId: data.languageId
-                )
-                NotificationCenter.default.post(name: .livtetBookCreated, object: nil)
-                didCompleteSave = true
-                isSaving = false
-            } catch {
-                handleMobileErrorAsBridge(error)
-                isSaving = false
-            }
-        }
-    }
-
-    private func performLinkIsbn(editionId: DbId) {
-        let cleanIsbn = data.isbn.trimmingCharacters(in: .whitespaces).replacingOccurrences(of: "-", with: "")
-        isSaving = true
-        Task { [weak self] in
-            guard let self else { return }
-            do {
-                try bridge.linkIsbnToExistingEdition(
-                    editionId: editionId, isbnUrn: "urn:isbn:\(cleanIsbn)"
-                )
-                NotificationCenter.default.post(name: .livtetBookCreated, object: nil)
-                didCompleteSave = true
-                isSaving = false
-            } catch {
-                handleMobileErrorAsBridge(error)
-                isSaving = false
-            }
-        }
-    }
 }
 
 struct ProviderErrorInfo: Equatable {

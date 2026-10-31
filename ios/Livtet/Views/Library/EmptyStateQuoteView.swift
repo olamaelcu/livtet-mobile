@@ -1,4 +1,4 @@
-import LivtetKitFFI
+import LivtetKit
 import SwiftUI
 
 /// A small "card" rendering of a literary quotation for the

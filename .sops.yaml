@@ -1,3 +1,3 @@
 creation_rules:
   - path_regex: \.mise/secrets\.json\.sops$
-    age: "age1axwj6v7edw0am6ldltr6hzdrekxup07y2pw4dmdrmmw8hkvleamqe384sk"
+    age: "age16vdvy0txtq3x303s7xtvtqwpvwk50mwq9d2j8z2q26cy2s3kjuqq9kdlmr"

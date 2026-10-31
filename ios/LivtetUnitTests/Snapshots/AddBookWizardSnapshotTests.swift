@@ -1,7 +1,5 @@
-import FastULID
 @testable import Livtet
 import LivtetKit
-import LivtetKitFFI
 import SnapshotTesting
 import SwiftUI
 import XCTest
@@ -12,10 +10,6 @@ final class AddBookWizardSnapshotTests: XCTestCase {
 
     private var recordMode: Bool {
         ProcessInfo.processInfo.environment["SNAPSHOT_RECORD"] == "true"
-    }
-
-    private func makeULID(_ byte: UInt8) -> ULID {
-        ULID(ulidData: Data(repeating: byte, count: 16))!
     }
 
     // MARK: - Step1TitleAndCoverView
@@ -225,31 +219,6 @@ final class AddBookWizardSnapshotTests: XCTestCase {
             matching: view,
             as: .image(layout: .device(config: .iPhone13)),
             named: "testHubFullyPopulated",
-            record: recordMode,
-            testName: Self.snapshotsDirectory
-        )
-    }
-
-    // MARK: - DuplicateWorkDialog
-
-    func testDuplicateDialog() {
-        let viewModel = AddBookWizardViewModel(bridge: MockWizardBridge())
-        let workId = makeULID(1)
-        viewModel.duplicateSummary = ExistingWorkSummary(
-            id: workId, title: "Existing Book", description: nil,
-            editionCount: 2, identifierCount: 2,
-            existingIsbns: ["978-0-06-112008-4", "978-0-06-112008-5"],
-            editions: [EditionSummary(id: makeULID(2), editionTitle: nil, publishedDate: nil, existingIsbns: ["978-0-06-112008-4"])]
-        )
-
-        let view = DuplicateWorkDialog(viewModel: viewModel)
-            .padding()
-            .background(Color("surfaceDefault"))
-
-        assertSnapshot(
-            matching: view,
-            as: .image(layout: .device(config: .iPhone13)),
-            named: "testDuplicateDialog",
             record: recordMode,
             testName: Self.snapshotsDirectory
         )

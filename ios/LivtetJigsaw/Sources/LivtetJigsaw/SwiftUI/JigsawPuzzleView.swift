@@ -51,7 +51,8 @@ public struct JigsawPuzzleView: View {
             ToolbarItemGroup(placement: .bottomBar) {
                 Button { hintEngine.toggleGhostOutline() } label: {
                     Image(systemName: hintEngine.ghostOutlineVisible ? "eye.fill" : "eye")
-                        .foregroundStyle(hintEngine.ghostOutlineVisible ? .brand : .secondary)
+                        // `.brand` came from the unlinked livtet-branding package; use the host app's accent.
+                        .foregroundStyle(hintEngine.ghostOutlineVisible ? Color.accentColor : Color.secondary)
                 }
                 .disabled(coverImage == nil)
 

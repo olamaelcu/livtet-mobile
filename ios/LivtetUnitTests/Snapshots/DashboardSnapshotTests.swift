@@ -1,7 +1,6 @@
 import FastULID
 @testable import Livtet
 import LivtetKit
-import LivtetKitFFI
 import SnapshotTesting
 import SwiftUI
 import XCTest
@@ -197,12 +196,12 @@ final class DashboardSnapshotTests: XCTestCase {
         booksInProgress: 3,
         finishedBooks: 12,
         totalReadingTimeSecs: 9 * 3600 + 12 * 60,
-        firstReadingAtMillis: nil
+        firstReadingAt: nil
     )
 
     private static let fixtureBook = RecentlyReadBook(
-        workId: ULID(ulidData: Data(repeating: 0, count: 16))!,
-        editionId: ULID(ulidData: Data(repeating: 0, count: 16))!,
+        workId: "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+        editionId: "01ARZ3NDEKTSV4RRFFQ69G5FAW",
         title: "Beloved",
         authorName: "Toni Morrison",
         progress: 0.42,

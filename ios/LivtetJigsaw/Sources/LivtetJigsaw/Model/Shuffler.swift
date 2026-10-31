@@ -1,3 +1,5 @@
+import CoreFoundation
+
 public struct Shuffler {
     public let fn: ([Piece]) -> [Piece]
 

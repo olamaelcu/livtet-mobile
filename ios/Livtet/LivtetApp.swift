@@ -20,24 +20,6 @@ struct LivtetApp: App {
         Bundle(path: "/Applications/InjectionIII.app/Contents/Resources/iOSInjection.bundle")?.load()
 #endif
 
-        if !BuildConfig.googleAPIKey.isEmpty {
-            livtetFfiSetSystemSecrets(["google_books_api_key": BuildConfig.googleAPIKey])
-        }
-
-        // Eagerly init plugins so the default permission-grant
-        // sidecars (e.g. googlebooks → google_books_api_key) get
-        // written before the user navigates to AddBook. The FFI is
-        // idempotent — the second call from the AddBook wizard's
-        // step-level task skips already-loaded plugins via a local
-        // HashSet.
-        Task.detached(priority: .background) {
-            do {
-                try await livtetFfiInitPlugins()
-            } catch {
-                Logger(subsystem: "net.olamaelcu.livtet", category: "LivtetApp")
-                    .error("eager livtetFfiInitPlugins failed: \(error.localizedDescription, privacy: .public)")
-            }
-        }
 
         if !BuildConfig.sentryDSN.isEmpty {
             SentrySDK.start { options in

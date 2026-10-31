@@ -1,6 +1,5 @@
 import Inject
 import LivtetKit
-import LivtetKitFFI
 import SwiftUI
 
 /// The Dashboard tab of the Livtet iOS app.
@@ -106,11 +105,10 @@ private struct QuickActions: View {
     let onAddBook: () -> Void
 
     var body: some View {
-        let firstReadingAt = stats.firstReadingAtMillis
-        let now = Date().timeIntervalSince1970 * 1000
+        let firstReadingAt = stats.firstReadingAt.flatMap(parseRFC3339)
         let daysSinceFirst: Int64 = {
             guard let firstReadingAt else { return 0 }
-            return Int64((now - Double(firstReadingAt)) / (1000 * 60 * 60 * 24))
+            return Int64(Date().timeIntervalSince(firstReadingAt) / (60 * 60 * 24))
         }()
 
         let showAddBook = stats.totalBooks < 10
@@ -164,6 +162,17 @@ private struct QuickActions: View {
         guard total > 0 else { return 0 }
         return min(1, max(0, Double(current) / Double(total)))
     }
+}
+
+/// Parses the RFC 3339 timestamps the FFI returns (`DashboardStats.firstReadingAt`,
+/// `RecentlyReadBook.lastReadAt`, …). Accepts values with and without
+/// fractional seconds.
+private func parseRFC3339(_ raw: String) -> Date? {
+    let formatter = ISO8601DateFormatter()
+    formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+    if let date = formatter.date(from: raw) { return date }
+    formatter.formatOptions = [.withInternetDateTime]
+    return formatter.date(from: raw)
 }
 
 #if DEBUG

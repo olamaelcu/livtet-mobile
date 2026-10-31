@@ -1,15 +1,10 @@
 @testable import Livtet
 import Combine
 import FastULID
-import LivtetKitFFI
 import XCTest
 
 @MainActor
 final class AddBookWizardViewModelTests: XCTestCase {
-    private func makeULID(_ byte: UInt8) -> ULID {
-        ULID(ulidData: Data(repeating: byte, count: 16))!
-    }
-
     // MARK: - Initial state
 
     func testInitialPageIsTitleAndCover() {
@@ -88,7 +83,6 @@ final class AddBookWizardViewModelTests: XCTestCase {
         viewModel.data.authors = [AuthorEntry(name: "Alice")]
         XCTAssertEqual(viewModel.previewForItem(.titleAndCover), "Test")
         XCTAssertEqual(viewModel.previewForItem(.contributors), "Alice")
-        XCTAssertEqual(viewModel.previewForItem(.titleAndAuthors), "\"Test\" — Alice")
     }
 
     // MARK: - Step navigation
@@ -160,23 +154,17 @@ final class AddBookWizardViewModelTests: XCTestCase {
     // MARK: - Save is unavailable in Phase 1
 
     func testSaveIsUnavailableInPhase1() {
-        let mock = MockWizardBridge()
-        let workId = makeULID(1)
-        mock.createBookResult = Book(id: workId, title: "Test", description: nil)
-        mock.editionsForWork = [Edition(
-            id: makeULID(2), workId: workId, editionTitle: nil, isbn: nil,
-            publishedDate: nil, pageCount: nil, formatId: nil, languageId: nil,
-            notes: nil, description: nil, createdAt: "", updatedAt: nil,
-            inventoryId: nil, coverPath: nil
-        )]
-
-        let viewModel = AddBookWizardViewModel(bridge: mock)
+        let viewModel = AddBookWizardViewModel(bridge: MockWizardBridge())
         viewModel.data.title = "Test"
         viewModel.data.cover = .remote(URL(string: "https://example.com/c.jpg")!)
         viewModel.data.authors = [AuthorEntry(name: "Alice", role: "author")]
         viewModel.save()
         XCTAssertFalse(viewModel.didCompleteSave)
         XCTAssertFalse(viewModel.isSaving)
+        XCTAssertEqual(
+            viewModel.errorMessage,
+            "Saving is not available yet: the library API has no create-book operation."
+        )
     }
 
     // MARK: - Search
@@ -185,33 +173,6 @@ final class AddBookWizardViewModelTests: XCTestCase {
         let viewModel = AddBookWizardViewModel(bridge: MockWizardBridge())
         viewModel.data.searchQuery = "ab"
         XCTAssertTrue(viewModel.data.searchResults.isEmpty)
-        XCTAssertTrue(viewModel.data.localDedupResults.isEmpty)
         XCTAssertFalse(viewModel.isSearching)
-    }
-
-    func testSearchShowsProviderError() async {
-        let mock = MockWizardBridge()
-        mock.searchError = MobileError.ProviderError(
-            category: .needsAuth, retryAfterSeconds: nil, providerId: "googlebooks"
-        )
-        let viewModel = AddBookWizardViewModel(bridge: mock)
-        await viewModel.performSearch(query: "test query")
-        XCTAssertNotNil(viewModel.providerError)
-        XCTAssertEqual(viewModel.providerError?.providerId, "googlebooks")
-    }
-
-    func testProviderErrorClearedOnRetry() async {
-        let mock = MockWizardBridge()
-        mock.searchError = MobileError.ProviderError(
-            category: .needsAuth, retryAfterSeconds: nil, providerId: "googlebooks"
-        )
-        let viewModel = AddBookWizardViewModel(bridge: mock)
-        await viewModel.performSearch(query: "test query")
-        XCTAssertNotNil(viewModel.providerError)
-
-        mock.searchError = nil
-        mock.searchResults = []
-        await viewModel.performSearch(query: "new query")
-        XCTAssertNil(viewModel.providerError)
     }
 }

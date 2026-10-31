@@ -1,7 +1,6 @@
 import FastULID
 @testable import Livtet
 import LivtetKit
-import LivtetKitFFI
 import XCTest
 
 /// Mock bridge for unit-testing the dashboard view-model without the FFI.
@@ -16,7 +15,7 @@ private final class MockDashboardBridge: DashboardBridge {
     /// `isLoading` flag while a load is in flight.
     var artificialDelayNanos: UInt64 = 0
 
-    func getGreeting() throws -> Greeting {
+    func getGreeting() async throws -> Greeting {
         try sleepIfNeeded()
         if let error { throw error }
         return greeting ?? Greeting(
@@ -28,7 +27,7 @@ private final class MockDashboardBridge: DashboardBridge {
         )
     }
 
-    func getDashboardStats() throws -> DashboardStats {
+    func getDashboardStats() async throws -> DashboardStats {
         try sleepIfNeeded()
         if let error { throw error }
         return stats ?? DashboardStats(
@@ -36,17 +35,17 @@ private final class MockDashboardBridge: DashboardBridge {
             booksInProgress: 3,
             finishedBooks: 12,
             totalReadingTimeSecs: 9 * 3600 + 12 * 60,
-            firstReadingAtMillis: nil
+            firstReadingAt: nil
         )
     }
 
-    func getRecentlyReadBooks(limit: Int32) throws -> [RecentlyReadBook] {
+    func getRecentlyReadBooks(limit: Int32) async throws -> [RecentlyReadBook] {
         try sleepIfNeeded()
         if let error { throw error }
         return Array(recentBooks.prefix(Int(limit)))
     }
 
-    func getRecentSearches(limit: Int32) throws -> [RecentSearch] {
+    func getRecentSearches(limit: Int32) async throws -> [RecentSearch] {
         try sleepIfNeeded()
         if let error { throw error }
         return Array(recentSearches.prefix(Int(limit)))
@@ -71,8 +70,8 @@ private final class MockDashboardBridge: DashboardBridge {
 final class DashboardViewModelTests: XCTestCase {
     func testLoadSuccessPopulatesAllFields() async {
         let mock = MockDashboardBridge()
-        let workId = ULID(ulidData: Data(repeating: 0, count: 16))!
-        let editionId = ULID(ulidData: Data(repeating: 0, count: 16))!
+        let workId = "01ARZ3NDEKTSV4RRFFQ69G5FAV"
+        let editionId = "01ARZ3NDEKTSV4RRFFQ69G5FAW"
         mock.recentBooks = [
             RecentlyReadBook(
                 workId: workId,

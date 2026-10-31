@@ -1,4 +1,4 @@
-import LivtetKitFFI
+import LivtetKit
 import SwiftUI
 
 /// Modal sheet that lets the user pick format / language / status
@@ -25,8 +25,8 @@ struct LibraryFilterSheet: View {
             Form {
                 Section("Sort by") {
                     Picker("Sort by", selection: $viewModel.sortOrder) {
-                        Text("Newest first").tag(BookSearchSortOrder.descending)
-                        Text("Oldest first").tag(BookSearchSortOrder.ascending)
+                        Text("Newest first").tag(SortDirection.desc)
+                        Text("Oldest first").tag(SortDirection.asc)
                     }
                     .pickerStyle(.segmented)
                     .accessibilityLabel("Sort by")
@@ -56,29 +56,6 @@ struct LibraryFilterSheet: View {
                         .accessibilityHint("Select languages to filter the library")
                     }
                 }
-
-                if !viewModel.statuses.isEmpty {
-                    Section {
-                        // Status chips are inert — see LibraryViewModel.
-                        // Present so the affordance exists when the
-                        // deferred status predicate lands.
-                        FilterChipRow(
-                            allLabel: "All statuses",
-                            selectedIds: $viewModel.selectedStatusIds,
-                            entries: viewModel.statuses.map { ($0.id, $0.name) }
-                        )
-                        .accessibilityLabel("Status filter")
-                        .accessibilityHint("Status filtering is coming soon")
-                    } header: {
-                        HStack {
-                            Text("Status")
-                            Spacer()
-                            Text("Coming soon")
-                                .font(.livtetBody(size: 11))
-                                .foregroundStyle(Color("textQuiet"))
-                        }
-                    }
-                }
             }
             .navigationTitle("Filter library")
             .navigationBarTitleDisplayMode(.inline)
@@ -87,8 +64,7 @@ struct LibraryFilterSheet: View {
                     Button("Reset") {
                         viewModel.selectedFormatIds = []
                         viewModel.selectedLanguageIds = []
-                        viewModel.selectedStatusIds = []
-                        viewModel.sortOrder = .descending
+                        viewModel.sortOrder = .desc
                     }
                 }
                 ToolbarItem(placement: .navigationBarTrailing) {
@@ -100,7 +76,7 @@ struct LibraryFilterSheet: View {
     }
 
     /// Render the language name with an optional flag emoji prefix.
-    private func languageLabel(_ language: LanguageInfo) -> String {
+    private func languageLabel(_ language: LibraryLanguage) -> String {
         if let flag = language.flagEmoji, !flag.isEmpty {
             return "\(flag) \(language.name)"
         }
@@ -179,15 +155,19 @@ private struct FilterChip: View {
 /// Stub bridge for the filter-sheet preview only. Returns empty
 /// filter dimensions so the sheet shows just the sort picker.
 private final class PreviewLibraryBridge: LibraryBridge {
-    func listBooksWithFilters(
+    func listWorks(
         limit: Int32,
         offset: Int32,
-        order: BookSearchSortOrder,
-        filters: BookListFilters
-    ) throws -> [Book] { [] }
-    func getDistinctFormats() throws -> [FormatInfo] { [] }
-    func getDistinctLanguages() throws -> [LanguageInfo] { [] }
-    func getDistinctWorkStatuses() throws -> [WorkStatusInfo] { [] }
+        sortDirection: SortDirection,
+        formatIds: [DbId],
+        languageIds: [DbId]
+    ) async throws -> [WorkSummary] { [] }
+
+    func getDistinctFormats() async throws -> [FormatInfo] { [] }
+    func getDistinctLanguages() async throws -> [LibraryLanguage] { [] }
+    func getEditionsForWork(workId: DbId) async throws -> [EditionSummary] { [] }
+    func getEdition(id: DbId) async throws -> EditionDetail? { nil }
+
     func getEmptyStateQuotation() -> EmptyMessage {
         EmptyMessage(
             text: "I have a duty to speak the truth as I see it and to share not just my triumphs, not just the things that felt good, but the pain.",
@@ -195,7 +175,5 @@ private final class PreviewLibraryBridge: LibraryBridge {
             material: "Sister Outsider"
         )
     }
-    func getEditionsWithCoversForWork(workId: DbId) throws -> [Edition] { [] }
-    func setEditionManualCover(editionId: DbId, localPath: String) throws {}
 }
 #endif

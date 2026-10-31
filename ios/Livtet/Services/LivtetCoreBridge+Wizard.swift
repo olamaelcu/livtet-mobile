@@ -1,40 +1,28 @@
 import Foundation
 import LivtetKit
-import LivtetKitFFI
 
+/// Write-side facade for the Add Book wizard, backed by `LivtetStore`.
+///
+/// The old free-function surface (`createBookComplete`, `mergeReplaceWork`,
+/// `findOrCreateAuthor`/`Tag`/`Genre`/`Subject`, `linkWork*`, plugin search,
+/// `setEditionCover`) no longer exists: `LivtetStore` exposes editions,
+/// identifiers, annotations and reading state — no create-work operation.
+/// The wizard's creation flow is gated off (`isSaveAvailable == false`), so
+/// only the store-backed operations remain here.
 protocol WizardBridge: AnyObject {
-    func setApiKeys(_ keys: [String: String])
-    func initPlugins() async throws
-    func searchProviders(query: String) async throws -> [PluginHitMobile]
-    func findWorksByTitlePrefix(prefix: String, limit: Int32) throws -> [WorkSummary]
-    func findWorkByIsbn(isbnUrn: String) throws -> ExistingWorkSummary?
-    func findOrCreateAuthor(name: String) throws -> AuthorInfo
-    func findOrCreateTag(name: String) throws -> TagInfo
-    func findOrCreateGenre(name: String) throws -> GenreInfo
-    func findOrCreateSubject(name: String) throws -> SubjectInfo
-    func linkWorkTag(workId: DbId, tagId: DbId) throws
-    func linkWorkGenre(workId: DbId, genreId: DbId) throws
-    func linkWorkSubject(workId: DbId, subjectId: DbId) throws
-    func createBookComplete(
-        title: String, description: String?, editionTitle: String?, isbn: String?,
-        publishedDate: String?, languageId: DbId?, authorNames: [String], publisher: String?
-    ) throws -> Book
+    func getEditionsForWork(workId: DbId) async throws -> [EditionSummary]
     func updateEdition(
-        editionId: DbId, title: String?, publishedDate: String?,
-        formatId: DbId?, languageId: DbId?, notes: String?, description: String?
-    ) throws -> Edition?
-    func setEditionCover(editionId: DbId, localPath: String) throws
-    func getEditionsForWork(workId: DbId) throws -> [Edition]
-    func mergeReplaceWork(
-        workId: DbId, newTitle: String, newDescription: String?, newIsbn: String,
-        newEditionTitle: String?, publishedDate: String?
-    ) throws -> Book
-    func createEditionForWork(
-        workId: DbId, isbnUrn: String, editionTitle: String?, publishedDate: String?, languageId: DbId?
-    ) throws -> DbId
-    func linkIsbnToExistingEdition(editionId: DbId, isbnUrn: String) throws
-    func getDistinctLanguages() throws -> [LanguageInfo]
-    func getDistinctFormats() throws -> [FormatInfo]
+        editionId: DbId,
+        title: String?,
+        publishedDate: String?,
+        formatId: DbId?,
+        languageId: DbId?,
+        notes: String?,
+        description: String?
+    ) async throws -> EditionDetail
+    func linkIsbnToExistingEdition(editionId: DbId, isbnUrn: String) async throws
+    func getDistinctLanguages() async throws -> [LibraryLanguage]
+    func getDistinctFormats() async throws -> [FormatInfo]
     func downloadImage(from url: URL) async throws -> URL
 }
 
@@ -45,90 +33,70 @@ final class LivtetWizardBridgeAdapter: WizardBridge {
         self.imageDownloader = imageDownloader
     }
 
-    func setApiKeys(_ keys: [String: String]) { livtetFfiSetSystemSecrets(keys) }
-    func initPlugins() async throws { try await livtetFfiInitPlugins() }
-    func searchProviders(query: String) async throws -> [PluginHitMobile] {
-        try await livtetFfiSearchProviders(query: query)
+    func getEditionsForWork(workId: DbId) async throws -> [EditionSummary] {
+        try await requireStore().listEditions(workId: workId)
     }
-    func findWorksByTitlePrefix(prefix: String, limit: Int32) throws -> [WorkSummary] {
-        try livtetFfiFindWorksByTitlePrefix(prefix: prefix, limit: limit)
-    }
-    func findWorkByIsbn(isbnUrn: String) throws -> ExistingWorkSummary? {
-        try livtetFfiFindWorkByIsbn(isbnUrn: isbnUrn)
-    }
-    func findOrCreateAuthor(name: String) throws -> AuthorInfo {
-        try livtetFfiFindOrCreateAuthor(name: name)
-    }
-    func findOrCreateTag(name: String) throws -> TagInfo {
-        try livtetFfiFindOrCreateTag(name: name)
-    }
-    func findOrCreateGenre(name: String) throws -> GenreInfo {
-        try livtetFfiFindOrCreateGenre(name: name)
-    }
-    func findOrCreateSubject(name: String) throws -> SubjectInfo {
-        try livtetFfiFindOrCreateSubject(name: name)
-    }
-    func linkWorkTag(workId: DbId, tagId: DbId) throws {
-        try livtetFfiLinkWorkTag(workId: workId, tagId: tagId)
-    }
-    func linkWorkGenre(workId: DbId, genreId: DbId) throws {
-        try livtetFfiLinkWorkGenre(workId: workId, genreId: genreId)
-    }
-    func linkWorkSubject(workId: DbId, subjectId: DbId) throws {
-        try livtetFfiLinkWorkSubject(workId: workId, subjectId: subjectId)
-    }
-    func createBookComplete(
-        title: String, description: String?, editionTitle: String?, isbn: String?,
-        publishedDate: String?, languageId: DbId?, authorNames: [String], publisher: String?
-    ) throws -> Book {
-        try livtetFfiCreateBookComplete(
-            title: title, description: description, editionTitle: editionTitle,
-            isbn: isbn, publishedDate: publishedDate, languageId: languageId,
-            authorNames: authorNames, publisher: publisher
-        )
-    }
+
     func updateEdition(
-        editionId: DbId, title: String?, publishedDate: String?,
-        formatId: DbId?, languageId: DbId?, notes: String?, description: String?
-    ) throws -> Edition? {
-        try livtetFfiUpdateEdition(
-            editionId: editionId, title: title, publishedDate: publishedDate,
-            formatId: formatId, languageId: languageId, notes: notes, description: description
+        editionId: DbId,
+        title: String?,
+        publishedDate: String?,
+        formatId: DbId?,
+        languageId: DbId?,
+        notes: String?,
+        description: String?
+    ) async throws -> EditionDetail {
+        let patch = EditionPatch(
+            title: title,
+            description: description,
+            notes: notes,
+            publishedDate: try Self.publishedDate(from: publishedDate),
+            formatId: formatId,
+            languageId: languageId
         )
+        return try await requireStore().updateEdition(editionId: editionId, patch: patch)
     }
-    func setEditionCover(editionId: DbId, localPath: String) throws {
-        try livtetFfiSetEditionCover(editionId: editionId, localPath: localPath)
+
+    func linkIsbnToExistingEdition(editionId: DbId, isbnUrn: String) async throws {
+        // `Identifier` is a typealias for the URN string on the Swift side.
+        _ = try await requireStore().addEditionIdentifier(editionId: editionId, identifier: isbnUrn)
     }
-    func getEditionsForWork(workId: DbId) throws -> [Edition] {
-        try livtetFfiGetEditionsForWork(workId: workId)
+
+    func getDistinctLanguages() async throws -> [LibraryLanguage] {
+        try await requireStore().listLanguages()
     }
-    func mergeReplaceWork(
-        workId: DbId, newTitle: String, newDescription: String?, newIsbn: String,
-        newEditionTitle: String?, publishedDate: String?
-    ) throws -> Book {
-        try livtetFfiMergeReplaceWork(
-            workId: workId, newTitle: newTitle, newDescription: newDescription,
-            newIsbn: newIsbn, newEditionTitle: newEditionTitle, publishedDate: publishedDate
-        )
+
+    func getDistinctFormats() async throws -> [FormatInfo] {
+        try await requireStore().listFormats()
     }
-    func createEditionForWork(
-        workId: DbId, isbnUrn: String, editionTitle: String?, publishedDate: String?, languageId: DbId?
-    ) throws -> DbId {
-        try livtetFfiCreateEditionForWork(
-            workId: workId, isbnUrn: isbnUrn, editionTitle: editionTitle,
-            publishedDate: publishedDate, languageId: languageId
-        )
-    }
-    func linkIsbnToExistingEdition(editionId: DbId, isbnUrn: String) throws {
-        try livtetFfiLinkIsbnToExistingEdition(editionId: editionId, isbnUrn: isbnUrn)
-    }
-    func getDistinctLanguages() throws -> [LanguageInfo] {
-        try livtetFfiGetDistinctLanguages()
-    }
-    func getDistinctFormats() throws -> [FormatInfo] {
-        try livtetFfiGetDistinctFormats()
-    }
+
     func downloadImage(from url: URL) async throws -> URL {
         try await imageDownloader.download(from: url)
+    }
+
+    /// The store handle, or a clear error when the library has not been
+    /// initialized yet.
+    private func requireStore() throws -> LivtetStore {
+        guard let store = LivtetCoreBridge.store else {
+            throw AppError.notFound("Library store is not open")
+        }
+        return store
+    }
+
+    /// Parses the wizard's free-text `YYYY-MM-DD` date into the FFI's
+    /// `PublishedDate`. `EditionPatch` only stores the full calendar date;
+    /// year-only and year-month forms are rejected by the core, so they are
+    /// rejected here with the same message instead of surfacing a database
+    /// error later.
+    private static func publishedDate(from text: String?) throws -> PublishedDate? {
+        guard let text, !text.isEmpty else { return nil }
+        let parts = text.split(separator: "-", omittingEmptySubsequences: true)
+        guard parts.count == 3,
+              let year = Int32(parts[0]),
+              let month = UInt8(parts[1]),
+              let day = UInt8(parts[2]) else {
+            throw LivtetError.InvalidInput("Published date must be YYYY-MM-DD")
+        }
+        return .yearMonthDay(year: year, month: month, day: day)
     }
 }

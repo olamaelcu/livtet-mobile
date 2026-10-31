@@ -5,7 +5,7 @@ public struct SpatialMetadata {
     }
 
     public static func solved(_ piece: Piece) -> Bool {
-        guard let currentPos = piece.metadata["currentPosition"] as? Vector,
+        guard piece.metadata["currentPosition"] is Vector,
               let targetPos = piece.metadata["targetPosition"] as? Vector else { return false }
         guard let anchor = piece.centralAnchor else { return false }
         return Vector.isClose(anchor.asVector(), targetPos, tolerance: 2.0)

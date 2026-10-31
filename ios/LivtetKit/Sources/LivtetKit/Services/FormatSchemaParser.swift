@@ -1,7 +1,15 @@
 import Foundation
-import LivtetKitFFI
 
-public typealias ProgressUnit = LivtetKitFFI.ProgressUnit
+/// Semantic unit for progress values derived from a format's metadata schema.
+///
+/// Deliberately separate from the FFI's `ProgressUnit`: the schema parser only
+/// distinguishes page numbers, completion ratios and elapsed seconds. Map to
+/// the FFI enum at the persistence boundary.
+public enum FormatProgressUnit: Equatable {
+    case page
+    case ratio
+    case seconds
+}
 
 /// Type of format as determined by its metadata_schema JSON
 public enum FormatType: String, Codable {
@@ -19,7 +27,7 @@ public struct FormatSchema: Codable, Equatable {
     public let durationSeconds: Int?
 
     /// Determines the semantic unit for progress values
-    public var progressUnit: ProgressUnit {
+    public var progressUnit: FormatProgressUnit {
         switch type {
         case .physicalBook:
             return .page
@@ -77,19 +85,24 @@ struct FormatSchemaParser {
     }
 }
 
-/// Extension to FormatInfo to add schema parsing
-extension FormatInfo {
-    /// Parsed format metadata schema, if available
-    var formatSchema: FormatSchema? {
-        return FormatSchemaParser.parse(from: self)
+private extension ProgressUnit {
+    /// Display-oriented unit for the persisted FFI unit.
+    var formatUnit: FormatProgressUnit {
+        switch self {
+        case .page, .virtualPage:
+            return .page
+        case .timestamp:
+            return .seconds
+        case .percentage, .chapter, .cfi:
+            return .ratio
+        }
     }
 }
 
-/// Extension to ReadingProgress to add format-aware display
 extension ReadingProgress {
     /// Format the progress value for display based on its unit
     func displayProgress(formatSchema: FormatSchema?) -> String {
-        let unit = formatSchema.map { $0.progressUnit } ?? (progressUnit ?? .ratio)
+        let unit = formatSchema?.progressUnit ?? progressUnit?.formatUnit ?? .ratio
 
         switch unit {
         case .page:
@@ -109,7 +122,7 @@ extension ReadingProgress {
 
     /// Validate that a progress value is within acceptable bounds
     func isValidProgress(formatSchema: FormatSchema?) -> Bool {
-        let unit = formatSchema.map { $0.progressUnit } ?? (progressUnit ?? .ratio)
+        let unit = formatSchema?.progressUnit ?? progressUnit?.formatUnit ?? .ratio
 
         switch unit {
         case .page:
@@ -147,11 +160,14 @@ extension ReadingProgress {
 
 // MARK: - FFI FormatInfo Extension (for the generated FFI type)
 
-#if canImport(Foundation)
 extension FormatInfo {
     /// Parsed format metadata schema, if available
+    var formatSchema: FormatSchema? {
+        return FormatSchemaParser.parse(from: self)
+    }
+
+    /// Parsed format metadata schema, if available
     var parsedSchema: FormatSchema? {
-        return FormatSchemaParser.parse(from: self.metadataSchema)
+        return FormatSchemaParser.parse(from: self)
     }
 }
-#endif

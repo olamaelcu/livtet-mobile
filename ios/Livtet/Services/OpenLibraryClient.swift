@@ -1,6 +1,5 @@
 import Foundation
 import LivtetKit
-import LivtetKitFFI
 import os.log
 
 struct OpenLibraryClient {

@@ -1,5 +1,4 @@
 @testable import Livtet
-import LivtetKitFFI
 import SwiftUI
 import ViewInspector
 import XCTest

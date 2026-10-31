@@ -1,3 +1,5 @@
+import CoreFoundation
+
 public final class Manufacturer {
     public var insertsGenerator: InsertsGenerator = InsertSequence.fixed
     public var metadata: [[String: Any]] = []

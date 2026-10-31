@@ -43,7 +43,6 @@ struct Step1TitleAndCoverView: View {
                     if let providerError = viewModel.providerError {
                         ProviderErrorCallout(error: providerError) { viewModel.providerError = nil }
                     }
-                    if !viewModel.data.localDedupResults.isEmpty { localResultsSection }
                     if !viewModel.data.searchResults.isEmpty {
                         onlineResultsSection
                     } else if !viewModel.isSearching && viewModel.data.searchQuery.count >= 3 {
@@ -165,17 +164,6 @@ struct Step1TitleAndCoverView: View {
                 }
             }
         )
-    }
-
-    private var localResultsSection: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text("Already in your library").font(.livtetBody(size: 12, weight: .semibold)).foregroundStyle(Color("textQuiet"))
-            ForEach(viewModel.data.localDedupResults.prefix(3), id: \.id) { work in
-                Text(work.title).font(.livtetBody(size: 14))
-                    .padding(12).frame(maxWidth: .infinity, alignment: .leading)
-                    .background(RoundedRectangle(cornerRadius: LivtetRadius.l).fill(Color("surfaceDefault")))
-            }
-        }
     }
 
     private var onlineResultsSection: some View {

@@ -1,6 +1,5 @@
 import SwiftUI
 import LivtetKit
-import LivtetKitFFI
 
 /// A format-adaptive progress input control for reading progress.
 ///
@@ -18,7 +17,7 @@ struct ReadingProgressControl: View {
     @State private var minutes: Int = 0
     @State private var seconds: Int = 0
 
-    private var progressUnit: ProgressUnit {
+    private var progressUnit: FormatProgressUnit {
         formatSchema?.progressUnit ?? .ratio
     }
 

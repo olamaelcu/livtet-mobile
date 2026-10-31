@@ -1,6 +1,5 @@
 import Inject
 import LivtetKit
-import LivtetKitFFI
 import os
 import SwiftUI
 
@@ -99,7 +98,7 @@ struct SplashScreenView: View {
 
     private func initializeDatabase() {
         logger.info("Starting database initialization: \(databasePath, privacy: .public)")
-        DispatchQueue.global(qos: .userInitiated).async {
+        Task {
             do {
                 // Ensure the Application Support subdirectory exists
                 logger.debug("Checking/creating Application Support directory")
@@ -114,40 +113,27 @@ struct SplashScreenView: View {
                     try FileManager.default.createDirectory(at: supportDir, withIntermediateDirectories: true)
                 }
 
-                // Clean up any stale WAL files from previous incomplete sessions
-                let dbPath = databasePath
-
                 logger.info("Initializing LivtetCoreBridge")
-                try LivtetCoreBridge.initialize(databasePath: databasePath)
+                try await LivtetCoreBridge.initialize(databasePath: databasePath)
                 logger.info("Database initialization succeeded")
 
                 #if DEBUG
-                Task {
-                    logger.info("Seeding database with demo data (30 works)")
-                    do {
-                        let seedResult = try await LivtetCoreBridge.seedDatabase(works: 30)
-                        logger.info("Seeding complete: \(seedResult.worksCreated) works, \(seedResult.editionsCreated) editions, \(seedResult.authorsCreated) authors")
-                    } catch {
-                        logger.warning("Seeding failed: \(error.localizedDescription, privacy: .public)")
-                    }
+                logger.info("Seeding database with demo data (30 works)")
+                do {
+                    let seedResult = try await LivtetCoreBridge.seedDatabase(works: 30)
+                    logger.info("Seeding complete: \(seedResult.worksCreated) works, \(seedResult.editionsCreated) editions, \(seedResult.authorsCreated) authors")
+                } catch {
+                    logger.warning("Seeding failed: \(error.localizedDescription, privacy: .public)")
                 }
                 #endif
 
-                DispatchQueue.main.async {
-                    logger.info("Transitioning to ready state")
-                    state = .ready
-                }
+                logger.info("Transitioning to ready state")
+                state = .ready
             } catch {
                 logger.error("Database initialization failed: \(error.localizedDescription, privacy: .public)")
-                let fullError = String(describing: error)
-                logger.error("Full error: \(fullError, privacy: .public)")
-                if let mobileError = error as? MobileError {
-                    logger.error("MobileError code: \(String(describing: mobileError), privacy: .public)")
-                }
-                DispatchQueue.main.async {
-                    state = .error
-                    errorMessage = error.localizedDescription
-                }
+                logger.error("Full error: \(String(describing: error), privacy: .public)")
+                state = .error
+                errorMessage = error.localizedDescription
             }
         }
     }

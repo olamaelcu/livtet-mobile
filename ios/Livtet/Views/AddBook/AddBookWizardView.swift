@@ -40,16 +40,6 @@ struct AddBookWizardView: View {
                 .navigationBarHidden(true)
                 .accessibilityLabel(currentPageLabel)
         }
-        .overlay {
-            if viewModel.duplicateSummary != nil && !viewModel.isSaving {
-                ZStack {
-                    Color.black.opacity(0.4).ignoresSafeArea()
-                    DuplicateWorkDialog(viewModel: viewModel)
-                        .accessibilityLabel("Duplicate Found")
-                        .accessibilityHint("A duplicate book was found. Choose how to handle it.")
-                }
-            }
-        }
         .onChange(of: viewModel.didCompleteSave) { _, completed in
             if completed { dismiss() }
         }

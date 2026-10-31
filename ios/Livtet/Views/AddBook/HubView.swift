@@ -24,9 +24,6 @@ struct HubView: View {
 
             ScrollView {
                 VStack(spacing: 24) {
-                    if let warning = viewModel.partialSaveWarning {
-                        ErrorBanner(message: warning, onRetry: {})
-                    }
                     hubSection("Title & Cover") {
                         hubRow("Title",
                                status: viewModel.isItemFilled(.titleAndCover) ? .filled : .required,

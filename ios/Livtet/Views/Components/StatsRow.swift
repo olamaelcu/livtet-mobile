@@ -1,5 +1,4 @@
 import LivtetKit
-import LivtetKitFFI
 import SwiftUI
 
 /// 2x2 grid of reading-stat pills rendered from [DashboardStats].
@@ -68,7 +67,7 @@ private func formatDuration(_ seconds: Int64) -> String {
         booksInProgress: 3,
         finishedBooks: 12,
         totalReadingTimeSecs: 9 * 3600 + 12 * 60,
-        firstReadingAtMillis: nil
+        firstReadingAt: nil
     ))
     .padding()
     .background(Color("surfaceDefault"))

@@ -38,17 +38,17 @@ public struct ClassicOutline: Outline {
         let o = r * insertDepth
         let b = min(s.x, s.y) * bezelDepth
 
-        let b0 = bezelize && structure.left.isNone && structure.up.isNone
-        let b1 = bezelize && structure.left.isNone && structure.down.isNone
-        let b2 = bezelize && structure.right.isNone && structure.down.isNone
-        let b3 = bezelize && structure.right.isNone && structure.up.isNone
+        let b0 = bezelize && structure.left == .none && structure.up == .none
+        let b1 = bezelize && structure.left == .none && structure.down == .none
+        let b2 = bezelize && structure.right == .none && structure.down == .none
+        let b3 = bezelize && structure.right == .none && structure.up == .none
 
         func nx(_ c: Bool) -> CGFloat { c ? b : 0 }
         func ny(_ c: Bool) -> CGFloat { c ? b : 0 }
 
         let pts = generatePoints(
             structure: structure,
-            r: r, s: s, o: o,
+            r: r, s: s, o: o, b: b,
             nx: nx, ny: ny,
             b0: b0, b1: b1, b2: b2, b3: b3
         )
@@ -83,7 +83,7 @@ public struct ClassicOutline: Outline {
     // swiftlint:disable:next function_parameter_count
     private func generatePoints(
         structure: Structure,
-        r: CGFloat, s: Vector, o: CGFloat,
+        r: CGFloat, s: Vector, o: CGFloat, b: CGFloat,
         nx: (Bool) -> CGFloat, ny: (Bool) -> CGFloat,
         b0: Bool, b1: Bool, b2: Bool, b3: Bool
     ) -> [(CGFloat, CGFloat)] {

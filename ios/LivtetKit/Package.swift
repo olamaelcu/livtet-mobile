@@ -14,6 +14,10 @@ let package = Package(
         .library(
             name: "LivtetKit",
             targets: ["LivtetKit"]
+        ),
+        .library(
+            name: "LivtetKitFFI",
+            targets: ["LivtetKitFFI"]
         )
     ],
     dependencies: [
@@ -34,6 +38,12 @@ let package = Package(
                 .headerSearchPath("../LivtetTypesFFI"),
                 .headerSearchPath("../LivtetSearchFFI"),
             ]
+        ),
+        .target(
+            name: "LivtetKitFFI",
+            dependencies: [.target(name: "livtet_ffiFFIBinary")],
+            path: "Sources/LivtetKitFFI",
+            publicHeadersPath: "."
         ),
         .target(
             name: "livtet_ffiFFI",

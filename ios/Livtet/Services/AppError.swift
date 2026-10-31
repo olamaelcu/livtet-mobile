@@ -1,5 +1,5 @@
 import Foundation
-import LivtetKitFFI
+import LivtetKit
 
 enum AppError: LocalizedError, Equatable {
     case database(String)
@@ -29,22 +29,12 @@ enum AppError: LocalizedError, Equatable {
         }
     }
 
-    static func from(ffi: MobileError) -> AppError {
+    static func from(ffi: LivtetError) -> AppError {
         switch ffi {
         case let .Database(msg): return .database(msg)
-        case let .NotFound(msg): return .notFound(msg)
-        case let .Init(msg): return .initFailed(msg)
-        case let .Platform(msg): return .platform(msg)
-        case let .Network(msg): return .network(msg)
-        case let .ProviderError(category: category, retryAfterSeconds: retryAfterSeconds, providerId: providerId):
-            let retry = retryAfterSeconds.map { " retry=\($0)s" } ?? ""
-            return .network("provider=\(providerId) category=\(category)\(retry)")
-        case let .IsbnConflict(workId, _, conflictingIsbn):
-            return .database("ISBN conflict on work \(workId): \(conflictingIsbn)")
-        case .RegistryLocked:
-            return .database("Registry is locked")
-        case let .SaveRolledBack(detail):
-            return .database("Save rolled back: \(detail)")
+        case let .NotFound(entity: entity, id: id): return .notFound("\(entity) not found (id: \(id))")
+        case let .InvalidInput(msg): return .database("Invalid input: \(msg)")
+        case let .Search(msg): return .database(msg)
         }
     }
 }

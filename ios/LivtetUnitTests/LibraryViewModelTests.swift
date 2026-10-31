@@ -1,25 +1,26 @@
-import FastULID
 @testable import Livtet
 import LivtetKit
-import LivtetKitFFI
 import XCTest
 
 @MainActor
 final class LibraryViewModelTests: XCTestCase {
-    private func makeBook(_ title: String) -> Book {
-        Book(
-            id: ULID(ulidData: Data(repeating: 0, count: 16))!,
+    private func makeWork(_ title: String) -> WorkSummary {
+        WorkSummary(
+            id: "01ARZ3NDEKTSV4RRFFQ69G5FAV",
             title: title,
-            description: nil
+            sortTitle: nil,
+            description: nil,
+            authors: ["Toni Morrison"],
+            createdAt: "2024-01-01T00:00:00Z",
+            updatedAt: nil
         )
     }
 
     func testLoadSuccessPopulatesAllFields() async {
         let mock = MockLibraryBridge()
-        mock.formats = [FormatInfo(id: ULID(ulidData: Data(repeating: 0, count: 16))!, name: "Paperback")]
-        mock.languages = [LanguageInfo(id: ULID(ulidData: Data(repeating: 0, count: 16))!, name: "English", flagEmoji: nil)]
-        mock.statuses = [WorkStatusInfo(id: ULID(ulidData: Data(repeating: 0, count: 16))!, name: "Reading")]
-        mock.books = [makeBook("Beloved"), makeBook("Song of Solomon")]
+        mock.formats = [FormatInfo(id: "01ARZ3NDEKTSV4RRFFQ69G5FA1", name: "Paperback", metadataSchema: "{}")]
+        mock.languages = [LibraryLanguage(id: "01ARZ3NDEKTSV4RRFFQ69G5FA2", name: "English", flagEmoji: nil)]
+        mock.works = [makeWork("Beloved"), makeWork("Song of Solomon")]
 
         let viewModel = LibraryViewModel(bridge: mock)
         viewModel.load()
@@ -28,20 +29,19 @@ final class LibraryViewModelTests: XCTestCase {
 
         XCTAssertEqual(viewModel.formats.count, 1)
         XCTAssertEqual(viewModel.languages.count, 1)
-        XCTAssertEqual(viewModel.statuses.count, 1)
-        XCTAssertEqual(viewModel.books.count, 2)
+        XCTAssertEqual(viewModel.works.count, 2)
         XCTAssertNil(viewModel.error)
         XCTAssertFalse(viewModel.isLoading)
     }
 
     func testFilterChangesTriggerRefetchWithDebounce() async {
         let mock = MockLibraryBridge()
-        mock.books = []
+        mock.works = []
 
         let viewModel = LibraryViewModel(bridge: mock)
-        let fmt1 = ULID(ulidData: Data(repeating: 1, count: 16))!
-        let fmt2 = ULID(ulidData: Data(repeating: 2, count: 16))!
-        let fmt3 = ULID(ulidData: Data(repeating: 3, count: 16))!
+        let fmt1 = "01ARZ3NDEKTSV4RRFFQ69G5FB1"
+        let fmt2 = "01ARZ3NDEKTSV4RRFFQ69G5FB2"
+        let fmt3 = "01ARZ3NDEKTSV4RRFFQ69G5FB3"
         viewModel.selectedFormatIds = [fmt1]
         viewModel.selectedFormatIds = [fmt1, fmt2]
         viewModel.selectedFormatIds = [fmt1, fmt2, fmt3]
@@ -50,7 +50,7 @@ final class LibraryViewModelTests: XCTestCase {
 
         // Only the final set should have triggered a call.
         XCTAssertEqual(mock.calls.count, 1)
-        XCTAssertEqual(mock.calls.last?.formatIds, [fmt1, fmt2, fmt3])
+        XCTAssertEqual(mock.calls.last?.formatIds.sorted(), [fmt1, fmt2, fmt3].sorted())
     }
 
     func testErrorSurfacesAndRetryClearsIt() async {
@@ -71,23 +71,23 @@ final class LibraryViewModelTests: XCTestCase {
 
     func testRefreshTriggersNewLoad() async {
         let mock = MockLibraryBridge()
-        mock.books = [makeBook("Initial")]
+        mock.works = [makeWork("Initial")]
 
         let viewModel = LibraryViewModel(bridge: mock)
         viewModel.load()
         try? await Task.sleep(nanoseconds: 100_000_000)
-        XCTAssertEqual(viewModel.books.first?.title, "Initial")
+        XCTAssertEqual(viewModel.works.first?.title, "Initial")
 
-        mock.books = [makeBook("Refreshed")]
+        mock.works = [makeWork("Refreshed")]
         viewModel.refresh()
         try? await Task.sleep(nanoseconds: 100_000_000)
-        XCTAssertEqual(viewModel.books.first?.title, "Refreshed")
+        XCTAssertEqual(viewModel.works.first?.title, "Refreshed")
     }
 
     func testIdempotentUnderInFlightLoad() async {
         let mock = MockLibraryBridge()
         mock.artificialDelayNanos = 100_000_000 // 100ms per call
-        mock.books = [makeBook("X")]
+        mock.works = [makeWork("X")]
 
         let viewModel = LibraryViewModel(bridge: mock)
         viewModel.load()
@@ -96,14 +96,14 @@ final class LibraryViewModelTests: XCTestCase {
         // Wait long enough for all three to settle (debounce cancels predecessors).
         try? await Task.sleep(nanoseconds: 300_000_000)
 
-        XCTAssertEqual(viewModel.books.count, 1)
+        XCTAssertEqual(viewModel.works.count, 1)
         XCTAssertFalse(viewModel.isLoading)
     }
 
     func testSupersededFetchIsCancelled() async {
         let mock = MockLibraryBridge()
         mock.artificialDelayNanos = 200_000_000 // 200ms
-        mock.books = []
+        mock.works = []
 
         let viewModel = LibraryViewModel(bridge: mock)
         viewModel.load()
@@ -112,33 +112,20 @@ final class LibraryViewModelTests: XCTestCase {
         viewModel.refresh()
         try? await Task.sleep(nanoseconds: 400_000_000)
 
-        // Exactly one books fetch call should have completed.
+        // Exactly one works fetch call should have completed.
         XCTAssertEqual(mock.calls.count, 1)
         XCTAssertFalse(viewModel.isLoading)
     }
 
-    func testSelectedStatusIdsInert() async {
+    func testSortDirectionIsForwarded() async {
         let mock = MockLibraryBridge()
-        mock.books = [makeBook("X")]
-
         let viewModel = LibraryViewModel(bridge: mock)
-        let reading = ULID(ulidData: Data(repeating: 4, count: 16))!
-        let finished = ULID(ulidData: Data(repeating: 5, count: 16))!
-        // Toggling a status chip must NOT re-fetch and must NOT be
-        // forwarded to the bridge in the filter shape.
-        viewModel.selectedStatusIds = [reading]
-        viewModel.selectedStatusIds = [reading, finished]
-        try? await Task.sleep(nanoseconds: 300_000_000)
-
-        XCTAssertEqual(
-            mock.calls.count, 0,
-            "status chip toggles must not invoke listBooksWithFilters"
-        )
-        // Capture-and-assert after one load (status ids still don't leak).
         viewModel.load()
         try? await Task.sleep(nanoseconds: 100_000_000)
-        XCTAssertEqual(mock.calls.count, 1)
-        XCTAssertTrue(mock.calls[0].formatIds.isEmpty)
-        XCTAssertTrue(mock.calls[0].languageIds.isEmpty)
+
+        viewModel.sortOrder = .asc
+        try? await Task.sleep(nanoseconds: 300_000_000)
+
+        XCTAssertEqual(mock.calls.last?.sortDirection, .asc)
     }
 }

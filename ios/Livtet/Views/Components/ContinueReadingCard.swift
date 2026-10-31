@@ -1,6 +1,5 @@
 import FastULID
 import LivtetKit
-import LivtetKitFFI
 import os
 import SwiftUI
 
@@ -56,8 +55,8 @@ struct ContinueReadingCard: View {
 
 #if DEBUG
 #Preview {
-    let workId = ULID(ulidData: Data(repeating: 0, count: 16))!
-    let editionId = ULID(ulidData: Data(repeating: 0, count: 16))!
+    let workId = "01ARZ3NDEKTSV4RRFFQ69G5FAV"
+    let editionId = "01ARZ3NDEKTSV4RRFFQ69G5FAW"
     ContinueReadingCard(book: RecentlyReadBook(
         workId: workId,
         editionId: editionId,

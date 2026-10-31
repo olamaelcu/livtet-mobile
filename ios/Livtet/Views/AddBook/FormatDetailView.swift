@@ -1,4 +1,4 @@
-import LivtetKitFFI
+import LivtetKit
 import SwiftUI
 struct FormatDetailView: View {
     @ObservedObject var viewModel: AddBookWizardViewModel
@@ -18,6 +18,6 @@ struct FormatDetailView: View {
                 }.pickerStyle(.menu)
                 Button("Save") { dismiss() }.buttonStyle(.borderedProminent).tint(.brand).frame(maxWidth: .infinity)
             }
-        }.onAppear { viewModel.loadFormats() }
+        }.task { await viewModel.loadFormats() }
     }
 }

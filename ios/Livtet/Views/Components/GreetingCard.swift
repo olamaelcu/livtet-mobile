@@ -1,5 +1,4 @@
 import LivtetKit
-import LivtetKitFFI
 import SwiftUI
 
 /// Time-of-day greeting card drawn from African American and African

@@ -1,130 +1,107 @@
 import Inject
 import LivtetKit
-import LivtetKitFFI
 import os
 import SwiftUI
 
-/// Details view for a single edition — shows cover, metadata, and a
-/// button to open a cover source sheet.
-struct EditionDetailView: View {
-    @State var edition: Edition
+/// Details view for a single work — shows its metadata and the editions that
+/// belong to it.
+struct WorkDetailView: View {
+    let work: WorkSummary
 
-    @State private var showCoverSheet = false
+    @State private var editions: [EditionSummary] = []
+    @State private var loadError: String?
 
     private let libraryBridge: LibraryBridge
 
-    init(edition: Edition, libraryBridge: LibraryBridge = LivtetLibraryBridgeAdapter()) {
-        self.edition = edition
+    init(work: WorkSummary, libraryBridge: LibraryBridge = LivtetLibraryBridgeAdapter()) {
+        self.work = work
         self.libraryBridge = libraryBridge
     }
 
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 16) {
-                if let coverPath = edition.coverPath, let url = URL(string: "file://\(coverPath)") {
-                    CoverImageView(url: url, width: 200, height: 300)
-                        .accessibilityHidden(true)
-                } else {
-                    Color("surfaceDefault")
-                        .frame(width: 200, height: 300)
-                        .overlay {
-                            Image(systemName: "book.closed")
-                                .font(.livtetHeading(size: 60))
-                                .foregroundStyle(Color("textQuiet").opacity(0.6))
-                        }
-                }
-
-                if let source = edition.coverSource {
-                    Text("Cover source: \(source)")
-                        .font(.livtetBody(size: 12))
-                        .foregroundStyle(Color("textQuiet"))
-                }
-
-                Text(edition.editionTitle.nilIfEmpty ?? "Untitled Edition")
-                    .font(.livtetHeading(size: 24, weight: .semibold))
-                    .foregroundStyle(Color("textNormal"))
-
+        List {
+            Section {
                 VStack(alignment: .leading, spacing: 8) {
-                    if let isbn = edition.isbn {
-                        Text("ISBN: \(isbn)")
+                    Text(work.title)
+                        .font(.livtetHeading(size: 24, weight: .semibold))
+                        .foregroundStyle(Color("textNormal"))
+
+                    if !work.authors.isEmpty {
+                        Text(work.authors.joined(separator: ", "))
                             .font(.livtetBody(size: 14))
                             .foregroundStyle(Color("textQuiet"))
                     }
 
-                    if let publishedDate = edition.publishedDate {
-                        Text("Published: \(publishedDate)")
-                            .font(.livtetBody(size: 14))
-                            .foregroundStyle(Color("textQuiet"))
-                    }
-
-                    if let pageCount = edition.pageCount {
-                        Text("\(pageCount) pages")
+                    if let description = work.description.nilIfEmpty {
+                        Text(description)
                             .font(.livtetBody(size: 14))
                             .foregroundStyle(Color("textQuiet"))
                     }
                 }
-
-                if let notes = edition.notes, !notes.isEmpty {
-                    Text(notes)
-                        .font(.livtetBody(size: 14))
-                        .foregroundStyle(Color("textQuiet"))
-                }
-
-                if let description = edition.description, !description.isEmpty {
-                    Text(description)
-                        .font(.livtetBody(size: 16))
-                        .foregroundStyle(Color("textQuiet"))
-                }
-
-                Button("Set Cover") {
-                    showCoverSheet = true
-                }
-                .buttonStyle(.borderedProminent)
-                .tint(.brand)
+                .padding(.vertical, 8)
             }
-            .padding(16)
+
+            Section("Editions") {
+                if let loadError {
+                    Text(loadError)
+                        .font(.livtetBody(size: 13))
+                        .foregroundStyle(Color("textQuiet"))
+                } else if editions.isEmpty {
+                    Text("No editions")
+                        .font(.livtetBody(size: 13))
+                        .foregroundStyle(Color("textQuiet"))
+                } else {
+                    ForEach(editions, id: \.id) { edition in
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text(edition.title.nilIfEmpty ?? "Untitled Edition")
+                                .font(.livtetBody(size: 14, weight: .medium))
+                                .foregroundStyle(Color("textNormal"))
+
+                            HStack(spacing: 8) {
+                                if let format = edition.format, !format.isEmpty {
+                                    Text(format)
+                                }
+                                if let language = edition.languageCode, !language.isEmpty {
+                                    Text(language.uppercased())
+                                }
+                                if edition.hasFile {
+                                    Label("File", systemImage: "doc")
+                                }
+                            }
+                            .font(.livtetBody(size: 12))
+                            .foregroundStyle(Color("textQuiet"))
+                        }
+                        .padding(.vertical, 2)
+                    }
+                }
+            }
         }
+        .listStyle(.insetGrouped)
         .background(Color("surfaceDefault").ignoresSafeArea())
-        .navigationTitle(edition.editionTitle.nilIfEmpty ?? "Edition")
+        .navigationTitle(work.title)
         .navigationBarTitleDisplayMode(.inline)
-        .sheet(isPresented: $showCoverSheet) {
-            SetCoverSheet(
-                edition: edition,
-                libraryBridge: libraryBridge,
-                wizardBridge: LivtetWizardBridgeAdapter()
-            ) {
-                refreshEdition()
-            }
-        }
+        .task { await loadEditions() }
     }
 
-    private func refreshEdition() {
-        Task {
-            do {
-                let refreshed = try libraryBridge.getEditionsWithCoversForWork(workId: edition.workId)
-                if let updated = refreshed.first(where: { $0.id == edition.id }) {
-                    edition = updated
-                }
-            } catch {}
+    private func loadEditions() async {
+        do {
+            editions = try await libraryBridge.getEditionsForWork(workId: work.id)
+            loadError = nil
+        } catch {
+            loadError = error.localizedDescription
         }
-    }
-}
-
-private extension Optional where Wrapped == String {
-    var nilIfEmpty: String? {
-        guard let self, !self.isEmpty else { return nil }
-        return self
     }
 }
 
 /// The Library tab of the Livtet iOS app.
 ///
-/// Shows editions flat — each edition is a row. No work grouping.
+/// Shows works flat — each work is a row. Editions are shown per work on the
+/// detail screen.
 struct LibraryView: View {
     @StateObject private var viewModel = LibraryViewModel()
     @State private var showFilterSheet = false
     @State private var showAddBookWizard = false
-    @State private var selectedEdition: Edition?
+    @State private var selectedWork: WorkSummary?
     @State private var showGrid = false
 
     @ObserveInjection var forceRedraw
@@ -144,8 +121,8 @@ struct LibraryView: View {
                 .fullScreenCover(isPresented: $showAddBookWizard) {
                     AddBookWizardView()
                 }
-                .navigationDestination(item: $selectedEdition) { edition in
-                    EditionDetailView(edition: edition)
+                .navigationDestination(item: $selectedWork) { work in
+                    WorkDetailView(work: work)
                 }
         }
         .enableInjection()
@@ -153,12 +130,12 @@ struct LibraryView: View {
 
     @ViewBuilder
     private var content: some View {
-        if viewModel.editions.isEmpty {
+        if viewModel.works.isEmpty {
             emptyOrErrorState
         } else if showGrid {
-            editionGrid
+            workGrid
         } else {
-            editionList
+            workList
         }
     }
 
@@ -213,7 +190,7 @@ struct LibraryView: View {
         .tint(.brand)
     }
 
-    private var editionList: some View {
+    private var workList: some View {
         List {
             if let error = viewModel.error {
                 ErrorBanner(
@@ -225,23 +202,23 @@ struct LibraryView: View {
                 .listRowBackground(Color.clear)
             }
 
-            ForEach(viewModel.editions, id: \.id) { edition in
-                EditionRow(edition: edition)
+            ForEach(viewModel.works, id: \.id) { work in
+                WorkRow(work: work)
                     .listRowInsets(EdgeInsets(top: 4, leading: 16, bottom: 4, trailing: 16))
                     .listRowSeparator(.hidden)
                     .listRowBackground(Color.clear)
                     .contentShape(Rectangle())
                     .onTapGesture {
                         Logger(subsystem: "net.olamaelcu.livtet", category: "LibraryView")
-                            .debug("Edition tapped: \(edition.workTitle ?? edition.editionTitle ?? "Unknown", privacy: .public)")
-                        selectedEdition = edition
+                            .debug("Work tapped: \(work.title, privacy: .public)")
+                        selectedWork = work
                     }
             }
         }
         .listStyle(.plain)
     }
 
-    private var editionGrid: some View {
+    private var workGrid: some View {
         GeometryReader { geo in
             let screenWidth = geo.size.width
             let padPct = screenWidth * 0.015
@@ -255,24 +232,18 @@ struct LibraryView: View {
             ]
             ScrollView {
                 LazyVGrid(columns: columns, spacing: 0) {
-                    ForEach(viewModel.editions, id: \.id) { edition in
+                    ForEach(viewModel.works, id: \.id) { work in
                         VStack(spacing: 8) {
-                            if let coverPath = edition.coverPath,
-                               let url = URL(string: "file://\(coverPath)") {
-                                CoverImageView(url: url, width: maxCoverWidth, height: coverHeight)
-                                    .clipShape(RoundedRectangle(cornerRadius: LivtetRadius.m, style: .continuous))
-                            } else {
-                                Color("surfaceDefault")
-                                    .frame(width: maxCoverWidth, height: coverHeight)
-                                    .overlay {
-                                        Image(systemName: "book.closed")
-                                            .font(.livtetHeading(size: maxCoverWidth * 0.35))
-                                            .foregroundStyle(Color("textQuiet").opacity(0.4))
-                                    }
-                                    .clipShape(RoundedRectangle(cornerRadius: LivtetRadius.m, style: .continuous))
-                            }
+                            Color("surfaceDefault")
+                                .frame(width: maxCoverWidth, height: coverHeight)
+                                .overlay {
+                                    Image(systemName: "book.closed")
+                                        .font(.livtetHeading(size: maxCoverWidth * 0.35))
+                                        .foregroundStyle(Color("textQuiet").opacity(0.4))
+                                }
+                                .clipShape(RoundedRectangle(cornerRadius: LivtetRadius.m, style: .continuous))
 
-                            Text(edition.workTitle.nilIfEmpty ?? edition.editionTitle.nilIfEmpty ?? "")
+                            Text(work.title)
                                 .font(.livtetBody(size: 11, weight: .medium))
                                 .foregroundStyle(Color("textNormal"))
                                 .lineLimit(2)
@@ -283,8 +254,8 @@ struct LibraryView: View {
                         .contentShape(Rectangle())
                         .onTapGesture {
                             Logger(subsystem: "net.olamaelcu.livtet", category: "LibraryView")
-                                .debug("Edition tapped: \(edition.workTitle ?? edition.editionTitle ?? "Unknown", privacy: .public)")
-                            selectedEdition = edition
+                                .debug("Work tapped: \(work.title, privacy: .public)")
+                            selectedWork = work
                         }
                     }
                 }
@@ -306,8 +277,8 @@ struct LibraryView: View {
         ToolbarItemGroup(placement: .navigationBarTrailing) {
             Menu {
                 Picker("Sort by", selection: $viewModel.sortOrder) {
-                    Text("Newest first").tag(BookSearchSortOrder.descending)
-                    Text("Oldest first").tag(BookSearchSortOrder.ascending)
+                    Text("Newest first").tag(SortDirection.desc)
+                    Text("Oldest first").tag(SortDirection.asc)
                 }
             } label: {
                 Label("Sort", systemImage: "chevron.down")
@@ -321,13 +292,6 @@ struct LibraryView: View {
             .tint(.brand)
             .accessibilityLabel("Filter library")
 
-            NavigationLink {
-                DuplicateManagementView()
-            } label: {
-                Label("Duplicates", systemImage: "doc.on.doc")
-            }
-            .accessibilityLabel("Manage duplicates")
-
             Button {
                 showAddBookWizard = true
             } label: {
@@ -335,6 +299,13 @@ struct LibraryView: View {
             }
             .accessibilityLabel("Add book")
         }
+    }
+}
+
+private extension Optional where Wrapped == String {
+    var nilIfEmpty: String? {
+        guard let self, !self.isEmpty else { return nil }
+        return self
     }
 }
 
