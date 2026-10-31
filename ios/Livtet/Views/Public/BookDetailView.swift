@@ -115,7 +115,7 @@ struct BookDetailView: View {
             MetadataRow(label: "Language", value: book.language),
             MetadataRow(label: "ISBN", value: book.isbn),
         ]
-        let rows = candidates.compactMap { row in
+        let rows: [MetadataRow] = candidates.compactMap { row -> MetadataRow? in
             guard let value = row.value, !value.isEmpty else { return nil }
             return MetadataRow(label: row.label, value: value)
         }

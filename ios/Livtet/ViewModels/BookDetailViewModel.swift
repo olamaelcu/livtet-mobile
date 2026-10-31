@@ -52,8 +52,12 @@ final class BookDetailViewModel: ObservableObject {
                 state = .failed("This book was not found.")
                 return
             }
-            let cover = book.coverImageUrl.flatMap { URL(string: $0) }
-                ?? (try? await client.getImageForBook(atUri: uri))
+            let cover: URL?
+            if let coverImage = book.coverImageUrl, let url = URL(string: coverImage) {
+                cover = url
+            } else {
+                cover = try? await client.getImageForBook(atUri: uri)
+            }
             guard !Task.isCancelled else { return }
             state = .loaded(BookDetailData(book: book, coverURL: cover, reviews: [], reviewers: [:]))
 

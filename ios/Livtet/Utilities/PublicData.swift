@@ -137,8 +137,12 @@ extension BiblioClient {
         guard let atUri = AtUri(string: bookUri) else { return nil }
         guard let response = try? await getEdition(atUri: bookUri) else { return nil }
         let book = response.value
-        let cover = book.coverImageUrl.flatMap { URL(string: $0) }
-            ?? (try? await getImageForBook(atUri: bookUri))
+        let cover: URL?
+        if let coverImage = book.coverImageUrl, let url = URL(string: coverImage) {
+            cover = url
+        } else {
+            cover = try? await getImageForBook(atUri: bookUri)
+        }
         return BookSummary(
             uri: bookUri,
             title: book.title?.nilIfEmpty ?? atUri.rkey,

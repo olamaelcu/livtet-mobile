@@ -142,10 +142,19 @@ final class PublicProfileViewModel: ObservableObject {
             )
             return
         }
-        async let reviewsTask = client.listActorReviews(did: did)
-        async let shelvingTask = client.listActorShelving(did: did)
-        async let shelvesTask = client.listActorShelves(did: did)
-        let (reviews, shelvingRecords, shelfNames) = await (reviewsTask, shelvingTask, shelvesTask)
+        let reviews: [BiblioReview]
+        let shelvingRecords: [BiblioShelving]
+        let shelfNames: [String: String]
+        do {
+            async let reviewsTask = client.listActorReviews(did: did)
+            async let shelvingTask = client.listActorShelving(did: did)
+            async let shelvesTask = client.listActorShelves(did: did)
+            (reviews, shelvingRecords, shelfNames) = try await (reviewsTask, shelvingTask, shelvesTask)
+        } catch {
+            reviews = []
+            shelvingRecords = []
+            shelfNames = [:]
+        }
         guard !Task.isCancelled else { return }
         shelving = shelvingRecords
 
