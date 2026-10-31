@@ -79,10 +79,25 @@ ios/**/Package.resolved
 # xcframework: produced by `mise run ios-build` (mobile/ios/AGENTS.md)
 ios/LivtetKit.xcframework/
 
-# UniFFI-generated Swift bindings (mobile/ios/AGENTS.md)
+# ---- UniFFI-generated Swift / C bindings (mobile/ios/AGENTS.md) ----
+# GENERATED — do not commit; `mise run ios-build` (uniffi-bindgen) rewrites these:
+#   - Swift bindings: Sources/LivtetKit/{livtet_ffi,LivtetTypes,LivtetSearch}.swift
+#   - C bridge headers: Sources/*FFI/*.h and Sources/*FFI/*.modulemap
+# TRACKED — Sources/*FFI/placeholder.c is hand-written, not generated. The C
+# bridge targets are header-only, so SwiftPM would emit no object file and
+# Xcode's required-input list would fail on clean builds; the empty
+# translation unit fixes that. It must therefore stay committable, which is
+# why the FFI dirs are matched by file pattern rather than ignored wholesale.
+ios/LivtetKit/Sources/LivtetKit/livtet_ffi.swift
+ios/LivtetKit/Sources/LivtetKit/LivtetTypes.swift
+ios/LivtetKit/Sources/LivtetKit/LivtetSearch.swift
+ios/LivtetKit/Sources/*FFI/*.h
+ios/LivtetKit/Sources/*FFI/*.modulemap
+
+# Legacy UniFFI output dirs, superseded by the flat Sources/*FFI/ layout.
+# Whole-dir ignores so stale local copies never resurface in the index.
 ios/LivtetKit/Sources/LivtetKitFFI/
 ios/LivtetKit/Sources/LivtetKitFFI_types/
-ios/LivtetKit/Sources/livtet_ffiFFI/
 ios/LivtetKit/Sources/livtet_ffi_typesFFI/
 
 xcuserdata/
