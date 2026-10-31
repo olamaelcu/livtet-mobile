@@ -4,7 +4,9 @@ plugins {
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.ksp)
     alias(libs.plugins.hilt)
-    // The kotlin.android plugin includes compose + serialization
+    // @Serializable models for the public catalog reads. The kotlin.android
+    // plugin does not bring the serialization compiler plugin along.
+    alias(libs.plugins.kotlin.serialization)
     // Pulls in ktfmt + ktlint + detekt and configures them per the
     // shared detekt.yml at `config/detekt/detekt.yml`. See
     // `docs/superpowers/specs/2026-07-11-ktfmt-android-lint-design.md`.
@@ -232,6 +234,22 @@ dependencies {
     implementation("androidx.navigation:navigation-compose:2.9.8")
     implementation("androidx.compose.material:material-icons-extended")
     implementation(libs.coil.compose)
+
+    // Coil 3 ships no network fetcher; the catalog's cover art and the profile
+    // avatars are https URLs, so the OkHttp fetcher has to be on the classpath.
+    implementation(libs.coil.network.okhttp)
+
+    // Public catalog reads for the book/review/profile permalinks. The app
+    // owns this client (see biblio/PublicBiblioModule.kt) so it carries no
+    // session state and cannot outlive the screens that need it.
+    implementation(libs.ktor.client.core)
+    implementation(libs.ktor.client.content.negotiation)
+    implementation(libs.ktor.client.cio)
+    implementation(libs.ktor.serialization.kotlinx.json)
+
+    testImplementation(libs.junit)
+    testImplementation(libs.kotlin.test.junit)
+    testImplementation(libs.ktor.client.mock)
 
     // Instrumented test deps. See
     // `mobile/android/app/src/androidTest/java/net/olamaelcu/livtet/AddBookSearchTest.kt`

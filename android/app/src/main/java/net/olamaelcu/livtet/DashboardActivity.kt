@@ -9,6 +9,7 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.MenuBook
 import androidx.compose.material.icons.filled.People
@@ -25,6 +26,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -34,13 +36,18 @@ import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
 import androidx.navigation.NavDestination.Companion.hierarchy
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.MutableSharedFlow
 import net.olamaelcu.livtet.account.AccountScreen
+import net.olamaelcu.livtet.biblio.BookScreen
+import net.olamaelcu.livtet.biblio.ProfileScreen
+import net.olamaelcu.livtet.biblio.ReviewScreen
 import net.olamaelcu.livtet.core.designsystem.LivtetTheme
 import net.olamaelcu.livtet.settings.SettingsScreen
 import net.olamaelcu.livtet.settings.ThemeManager
@@ -53,6 +60,9 @@ class DashboardActivity : ComponentActivity() {
         val uri = intent.data?.toString() ?: return
         if (uri.startsWith(AtprotoAuthRedirectHandler.REDIRECT_PREFIX)) {
             AtprotoAuthRedirectHandler.emit(uri)
+        } else {
+            // Warm start for a platform permalink; the nav host collects it.
+            AppLinkRouter.handle(uri)
         }
     }
 
@@ -62,6 +72,8 @@ class DashboardActivity : ComponentActivity() {
         intent.data?.toString()?.let { uri ->
             if (uri.startsWith(AtprotoAuthRedirectHandler.REDIRECT_PREFIX)) {
                 AtprotoAuthRedirectHandler.emit(uri)
+            } else {
+                AppLinkRouter.handle(uri)
             }
         }
         enableEdgeToEdge()
@@ -94,12 +106,34 @@ private val bottomNavItems =
         BottomNavItem("account", "Account", null, Icons.Default.Person),
     )
 
+/** Route patterns of the public permalink screens, which are not bottom-nav tabs. */
+private const val BOOK_ROUTE = "book/{did}/{rkey}"
+private const val REVIEW_ROUTE = "review/{did}/{rkey}"
+private const val PROFILE_ROUTE = "profile/{actor}?tab={tab}&shelf={shelf}"
+
+private val detailRoutes = setOf(BOOK_ROUTE, REVIEW_ROUTE, PROFILE_ROUTE)
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun DashboardNavHost() {
     val navController = rememberNavController()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
+
+    // Permalinks arrive through AppLinkRouter (set from the splash on a cold
+    // start, or from onNewIntent when the dashboard is already running).
+    val pendingLink by AppLinkRouter.pending.collectAsState()
+    LaunchedEffect(pendingLink) {
+        val link = pendingLink ?: return@LaunchedEffect
+        // No `launchSingleTop`: a second link to the same destination has to
+        // land on a fresh entry, because the screen's state (selected tab and
+        // shelf) is derived from its navigation arguments once and never
+        // re-read from a reused entry.
+        navController.navigate(link.navigationRoute)
+        AppLinkRouter.consume()
+    }
+
+    val onDetailRoute = currentDestination?.route?.let { it in detailRoutes } == true
 
     Scaffold(
         topBar = {
@@ -108,6 +142,16 @@ private fun DashboardNavHost() {
             // device-pairing and plugin management from anywhere.
             TopAppBar(
                 title = { Text("Livtet") },
+                navigationIcon = {
+                    if (onDetailRoute) {
+                        IconButton(onClick = { navController.navigateUp() }) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                contentDescription = "Back",
+                            )
+                        }
+                    }
+                },
                 actions = {
                     IconButton(
                         onClick = {
@@ -192,6 +236,69 @@ private fun DashboardNavHost() {
             composable("feed") { FeedScreen() }
             composable("account") { AccountScreen() }
             composable("settings") { SettingsScreen() }
+            composable(
+                route = BOOK_ROUTE,
+                arguments =
+                    listOf(
+                        navArgument("did") { type = NavType.StringType },
+                        navArgument("rkey") { type = NavType.StringType },
+                    ),
+            ) {
+                BookScreen(
+                    onReviewClick = { did, rkey ->
+                        navController.navigate("review/$did/$rkey") { launchSingleTop = true }
+                    },
+                    onProfileClick = { actor ->
+                        navController.navigate("profile/$actor?tab=reviews") {
+                            launchSingleTop = true
+                        }
+                    },
+                )
+            }
+            composable(
+                route = REVIEW_ROUTE,
+                arguments =
+                    listOf(
+                        navArgument("did") { type = NavType.StringType },
+                        navArgument("rkey") { type = NavType.StringType },
+                    ),
+            ) {
+                ReviewScreen(
+                    onBookClick = { did, rkey ->
+                        navController.navigate("book/$did/$rkey") { launchSingleTop = true }
+                    },
+                    onProfileClick = { actor ->
+                        navController.navigate("profile/$actor?tab=reviews") {
+                            launchSingleTop = true
+                        }
+                    },
+                )
+            }
+            composable(
+                route = PROFILE_ROUTE,
+                arguments =
+                    listOf(
+                        navArgument("actor") { type = NavType.StringType },
+                        navArgument("tab") {
+                            type = NavType.StringType
+                            defaultValue = AppLinkRouter.TAB_REVIEWS
+                        },
+                        navArgument("shelf") {
+                            type = NavType.StringType
+                            nullable = true
+                            defaultValue = null
+                        },
+                    ),
+            ) {
+                ProfileScreen(
+                    onBookClick = { did, rkey ->
+                        navController.navigate("book/$did/$rkey") { launchSingleTop = true }
+                    },
+                    onReviewClick = { did, rkey ->
+                        navController.navigate("review/$did/$rkey") { launchSingleTop = true }
+                    },
+                )
+            }
         }
     }
 }

@@ -43,6 +43,15 @@ targets:
     resources:
       - path: Livtet/Resources/Fonts
         type: folder
+    # Universal Links for the platform's book/review/profile permalinks. The
+    # file lives outside `Livtet/` so XcodeGen's `sources: Livtet` does not
+    # bundle it as a resource. Requires the Associated Domains capability on
+    # the App ID and a provisioning profile that carries it.
+    entitlements:
+      path: Livtet.entitlements
+      properties:
+        com.apple.developer.associated-domains:
+          - applinks:livtet.olamaelcu.net
     dependencies:
       - package: LivtetKit
         product: LivtetKit

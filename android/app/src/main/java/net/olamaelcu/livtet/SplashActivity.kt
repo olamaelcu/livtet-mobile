@@ -2,6 +2,7 @@ package net.olamaelcu.livtet
 
 import android.content.Intent
 import android.graphics.Color
+import android.net.Uri
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
@@ -36,6 +37,15 @@ import net.olamaelcu.livtet.settings.ThemeManager
 class SplashActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        val deepLink = intent?.dataString?.takeIf { AppLinkRouter.canHandle(it) }
+        // A warm start already has the store open, so an app link can skip the
+        // splash entirely. A cold start must still run `Bridge.init` first:
+        // the dashboard's screens read the store as soon as they compose.
+        if (deepLink != null && Bridge.isInitialized()) {
+            AppLinkRouter.handle(deepLink)
+            openDashboard(deepLink)
+            return
+        }
         enableEdgeToEdge(
             statusBarStyle = SystemBarStyle.auto(Color.TRANSPARENT, Color.TRANSPARENT),
             navigationBarStyle = SystemBarStyle.auto(Color.TRANSPARENT, Color.TRANSPARENT),
@@ -53,18 +63,31 @@ class SplashActivity : ComponentActivity() {
                 SplashContent(
                     context = this,
                     databasePath = File(filesDir, "livtet.db").absolutePath,
-                    onComplete = {
-                        startActivity(
-                            Intent(this, DashboardActivity::class.java).apply {
-                                flags =
-                                    Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-                            }
-                        )
-                        finish()
-                    },
+                    onComplete = { openDashboard(deepLink) },
                 )
             }
         }
+    }
+
+    /**
+     * Hands the dashboard the link (if any) and finishes the splash.
+     *
+     * With a link the dashboard is reused when it is already on the stack, so the app-link handler
+     * there replaces the current screen instead of piling a second dashboard underneath it. Without
+     * one this is a fresh start, so the existing task is cleared.
+     */
+    private fun openDashboard(deepLink: String?) {
+        val intent =
+            Intent(this, DashboardActivity::class.java).apply {
+                if (deepLink != null) {
+                    data = Uri.parse(deepLink)
+                    flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
+                } else {
+                    flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                }
+            }
+        startActivity(intent)
+        finish()
     }
 }
 

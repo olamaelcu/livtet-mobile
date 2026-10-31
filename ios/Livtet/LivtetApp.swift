@@ -69,9 +69,15 @@ struct LivtetApp: App {
                     PairingSheet(syncManager: syncManager)
                 }
                 .onOpenURL { url in
-                    Task {
-                        await syncManager.pairWithURL(url)
-                    }
+                    // Pairing runs from SyncManager's subscription to
+                    // `DeepLinkRouter.pendingRoute`; the router decides whether
+                    // this URL is a pairing link or a public permalink.
+                    _ = DeepLinkRouter.shared.handleURL(url)
+                }
+                .onContinueUserActivity(NSUserActivityTypeBrowsingWeb) { activity in
+                    // Universal Link delivery (https://livtet.olamaelcu.net/...).
+                    guard let url = activity.webpageURL else { return }
+                    _ = DeepLinkRouter.shared.handleURL(url)
                 }
                 .onReceive(syncManager.$state) { state in
                     if case .pairing = state {

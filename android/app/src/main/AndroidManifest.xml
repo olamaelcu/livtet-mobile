@@ -31,6 +31,31 @@
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+            <!-- Platform permalinks for books, reviews, and profiles. These
+                 live on SplashActivity rather than DashboardActivity: a cold
+                 start has to run Bridge.init before any screen can read the
+                 store, and the splash already forwards to the dashboard.
+                 Verification needs /.well-known/assetlinks.json to list this
+                 package's signing fingerprints. -->
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="https" android:host="livtet.olamaelcu.net" android:pathPrefix="/book/" />
+                <data android:scheme="https" android:host="livtet.olamaelcu.net" android:pathPrefix="/review/" />
+                <data android:scheme="https" android:host="livtet.olamaelcu.net" android:pathPrefix="/profile/" />
+            </intent-filter>
+            <!-- Local verification and the fallback when universal links are
+                 not verified. Same routes with the host standing in for the
+                 path prefix. -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="livtet" android:host="book" />
+                <data android:scheme="livtet" android:host="review" />
+                <data android:scheme="livtet" android:host="profile" />
+            </intent-filter>
         </activity>
         <activity android:name=".DashboardActivity"
             android:exported="true"

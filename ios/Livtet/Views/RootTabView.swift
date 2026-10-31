@@ -24,13 +24,32 @@ enum AppTab: Hashable, Identifiable {
 struct RootTabView: View {
     @State private var selectedTab: AppTab = .dashboard
 
+    @ObservedObject private var deepLinks = DeepLinkRouter.shared
+
     @ObserveInjection var forceRedraw
 
     var body: some View {
-        if #available(iOS 18.0, *) {
-            modernTabView
-        } else {
-            legacyTabView
+        Group {
+            if #available(iOS 18.0, *) {
+                modernTabView
+            } else {
+                legacyTabView
+            }
+        }
+        // Public permalinks (book, review, profile) present as a sheet so the
+        // tab's own navigation stack is left untouched. Internal links push
+        // inside the sheet's NavigationStack.
+        .sheet(item: $deepLinks.presentedPublicRoute) { route in
+            NavigationStack {
+                PublicRouteView(route: route)
+                    .toolbar {
+                        ToolbarItem(placement: .cancellationAction) {
+                            Button("Done") {
+                                deepLinks.presentedPublicRoute = nil
+                            }
+                        }
+                    }
+            }
         }
     }
 
