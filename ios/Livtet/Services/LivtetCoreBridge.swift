@@ -107,11 +107,26 @@ enum LivtetCoreBridge {
     static private(set) var store: LivtetStore?
 
     /// Open the store (creating and migrating if needed).
+    ///
+    /// `databasePath` points at the SQLite **file**. Tantivy needs a real
+    /// directory for the search index and cannot create it under a file, so
+    /// when no explicit `indexDir` is supplied the index lives in a
+    /// `search-index` directory *next to* the database file, created up front.
     static func initialize(databasePath: String, indexDir: String = "") async throws {
-        store = try await LivtetStore.open(
-            dbPath: databasePath,
-            indexDir: indexDir.isEmpty ? databasePath + "/search-index" : indexDir
+        let resolvedIndexDir: String
+        if indexDir.isEmpty {
+            resolvedIndexDir = URL(fileURLWithPath: databasePath)
+                .deletingLastPathComponent()
+                .appendingPathComponent("search-index", isDirectory: true)
+                .path
+        } else {
+            resolvedIndexDir = indexDir
+        }
+        try FileManager.default.createDirectory(
+            atPath: resolvedIndexDir,
+            withIntermediateDirectories: true
         )
+        store = try await LivtetStore.open(dbPath: databasePath, indexDir: resolvedIndexDir)
     }
 
     /// Flush and close the store.

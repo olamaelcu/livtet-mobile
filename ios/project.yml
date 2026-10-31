@@ -59,7 +59,6 @@ targets:
         product: Sentry
       - package: Inject
         product: Inject
-
     settings:
       base:
         TARGETED_DEVICE_FAMILY: "1,2"
@@ -71,8 +70,9 @@ targets:
       configs:
         Debug:
           GOOGLE_BOOKS_IOS_API_KEY: "$(GOOGLE_BOOKS_IOS_API_KEY)"
-          OTHER_LDFLAGS: "$(inherited) -Xlinker -interposable"
+          OTHER_LDFLAGS: "$(inherited)"
           EMIT_FRONTEND_COMMAND_LINES: "YES"
+          ENABLE_DEBUG_DYLIB: "NO"
         Release:
           GOOGLE_BOOKS_IOS_API_KEY: "$(GOOGLE_BOOKS_IOS_API_KEY)"
 

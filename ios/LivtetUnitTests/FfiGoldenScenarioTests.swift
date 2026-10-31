@@ -58,9 +58,12 @@ final class FfiGoldenScenarioTests: XCTestCase {
             fileFormat: "epub",
             fileSizeBytes: 1234
         )
-        XCTAssertNotNil(try await store.getEdition(id: editionId)?.file)
-        XCTAssertTrue(try await store.removeEditionFile(editionId: editionId))
-        XCTAssertNil(try await store.getEdition(id: editionId)?.file)
+        let attachedFile = try await store.getEdition(id: editionId)?.file
+        XCTAssertNotNil(attachedFile)
+        let removedFile = try await store.removeEditionFile(editionId: editionId)
+        XCTAssertTrue(removedFile)
+        let detachedFile = try await store.getEdition(id: editionId)?.file
+        XCTAssertNil(detachedFile)
 
         // 5. Identifier attachment is idempotent.
         _ = try await store.addEditionIdentifier(
@@ -83,8 +86,8 @@ final class FfiGoldenScenarioTests: XCTestCase {
             )
         )
         XCTAssertEqual(patched.title, "Golden Renamed")
-        XCTAssertThrowsError(
-            try await store.updateEdition(
+        do {
+            _ = try await store.updateEdition(
                 editionId: editionId,
                 patch: EditionPatch(
                     title: nil,
@@ -95,10 +98,13 @@ final class FfiGoldenScenarioTests: XCTestCase {
                     languageId: nil
                 )
             )
-        ) { error in
-            guard case LivtetError.InvalidInput = error else {
+            XCTFail("expected LivtetError.InvalidInput for a partial published date")
+        } catch let error as LivtetError {
+            guard case .InvalidInput = error else {
                 return XCTFail("expected LivtetError.invalidInput, got \(error)")
             }
+        } catch {
+            XCTFail("expected LivtetError.invalidInput, got \(error)")
         }
 
         // 7. Search: editions + collapsed works + facets.
@@ -119,7 +125,8 @@ final class FfiGoldenScenarioTests: XCTestCase {
             editionId: editionId, content: "Golden highlight", location: "ch1")
         let annotations = try await store.listAnnotations(editionId: editionId)
         XCTAssertTrue(annotations.contains { $0.id == annotation.id })
-        XCTAssertTrue(try await store.deleteAnnotation(id: annotation.id))
+        let deletedAnnotation = try await store.deleteAnnotation(id: annotation.id)
+        XCTAssertTrue(deletedAnnotation)
 
         // 10. Reading lists.
         let list = try await store.createReadingList(name: "Golden", description: nil)
@@ -127,8 +134,10 @@ final class FfiGoldenScenarioTests: XCTestCase {
         let lists = try await store.listReadingLists()
         XCTAssertTrue(
             lists.first { $0.id == list.id }?.editionIds.contains(editionId) ?? false)
-        XCTAssertTrue(try await store.removeEditionFromList(listId: list.id, editionId: editionId))
-        XCTAssertTrue(try await store.deleteReadingList(listId: list.id))
+        let removedFromList = try await store.removeEditionFromList(listId: list.id, editionId: editionId)
+        XCTAssertTrue(removedFromList)
+        let deletedList = try await store.deleteReadingList(listId: list.id)
+        XCTAssertTrue(deletedList)
 
         try await store.shutdown()
         self.store = nil

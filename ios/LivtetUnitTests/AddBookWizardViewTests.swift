@@ -51,6 +51,7 @@ final class AddBookWizardViewTests: XCTestCase {
     func testStep2ContinueEnabledWhenAuthorPresent() throws {
         let vm = AddBookWizardViewModel(bridge: MockWizardBridge())
         vm.data.authors = [AuthorEntry(name: "Alice", role: "author")]
+        vm.goToPage(.contributors)
         XCTAssertTrue(vm.canContinueFromContributors)
         vm.goToNext()
         XCTAssertEqual(vm.currentPage, .genres)

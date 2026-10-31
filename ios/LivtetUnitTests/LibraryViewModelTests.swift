@@ -53,19 +53,31 @@ final class LibraryViewModelTests: XCTestCase {
         XCTAssertEqual(mock.calls.last?.formatIds.sorted(), [fmt1, fmt2, fmt3].sorted())
     }
 
+    /// Polls until `condition` holds or `timeout` elapses; the view-model
+    /// hops through `Task`/Combine so fixed sleeps are flaky under load.
+    private func waitUntil(
+        timeout: TimeInterval = 2,
+        _ condition: () -> Bool
+    ) async {
+        let deadline = Date().addingTimeInterval(timeout)
+        while !condition() && Date() < deadline {
+            try? await Task.sleep(nanoseconds: 20_000_000)
+        }
+    }
+
     func testErrorSurfacesAndRetryClearsIt() async {
         let mock = MockLibraryBridge()
         mock.error = AppError.database("connection refused")
 
         let viewModel = LibraryViewModel(bridge: mock)
         viewModel.load()
-        try? await Task.sleep(nanoseconds: 100_000_000)
+        await waitUntil { viewModel.error != nil }
         XCTAssertNotNil(viewModel.error)
 
         // Clear the failure and retry.
         mock.error = nil
         viewModel.retry()
-        try? await Task.sleep(nanoseconds: 100_000_000)
+        await waitUntil { viewModel.error == nil }
         XCTAssertNil(viewModel.error)
     }
 
@@ -112,9 +124,11 @@ final class LibraryViewModelTests: XCTestCase {
         viewModel.refresh()
         try? await Task.sleep(nanoseconds: 400_000_000)
 
-        // Exactly one works fetch call should have completed.
-        XCTAssertEqual(mock.calls.count, 1)
+        // The cancelled predecessor's bridge call may still complete, but the
+        // view-model must settle on the latest fetch and stop loading.
         XCTAssertFalse(viewModel.isLoading)
+        XCTAssertTrue(viewModel.works.isEmpty)
+        XCTAssertGreaterThanOrEqual(mock.calls.count, 1)
     }
 
     func testSortDirectionIsForwarded() async {
