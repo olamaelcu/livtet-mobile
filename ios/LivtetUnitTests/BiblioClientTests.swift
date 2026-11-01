@@ -243,7 +243,8 @@ final class BiblioClientTests: XCTestCase {
         let client = makeClient()
         StubURLProtocol.handler = { request in try self.respond("{}", status: 404, url: request.url!) }
 
-        XCTAssertNil(try await client.getReview(did: "did:plc:missing", rkey: "3rk1"))
+        let review = try await client.getReview(did: "did:plc:missing", rkey: "3rk1")
+        XCTAssertNil(review)
         let reviews = try await client.listActorReviews(did: "did:plc:missing")
         XCTAssertTrue(reviews.isEmpty)
     }

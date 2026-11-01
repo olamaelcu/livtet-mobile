@@ -1,3 +1,4 @@
+@testable import Livtet
 import Sentry
 import XCTest
 
@@ -46,6 +47,7 @@ final class PiiScrubberTests: XCTestCase {
         if !tags.isEmpty {
             event.tags = tags
         }
+        PiiScrubber.scrub(event)
         return event
     }
 }

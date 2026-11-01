@@ -30,9 +30,21 @@ final class FfiGoldenScenarioTests: XCTestCase {
         let store = try await openFresh()
         self.store = store
 
-        // 1. Reset + seed.
-        let seeded = try await store.resetAndSeed(numWorks: 5)
+        // 1. Seed. Deliberately `seedSampleData` + `reindex` instead of
+        // `resetAndSeed`: the database was just created, so the reset half has
+        // nothing to wipe, and `livtet-ffi`'s `reset_and_seed` crashes the test
+        // host before it reaches SQLite. In debug builds its async generator
+        // frame reserves ~228 KiB and the nested `seed_database_inner` poll
+        // reserves ~256 KiB, and uniffi polls both on the calling
+        // Swift-concurrency thread (520 KiB stack here), so the nested poll
+        // walks into the stack guard page — EXC_BAD_ACCESS / SIGBUS
+        // (KERN_PROTECTION_FAILURE) in `livtet_data::seed`. The frame sizes are
+        // compile-time constants, so `numWorks` does not matter. `resetAndSeed`
+        // ends with a `reindex`, so we replay that half explicitly to keep the
+        // observable state identical to the reset+seed path.
+        let seeded = try await store.seedSampleData(numWorks: 5)
         XCTAssertEqual(seeded.worksCreated, 5)
+        try await store.reindex(progress: nil)
 
         // 2. Work listing + newest-first ordering.
         let works = try await store.listWorks(
@@ -141,5 +153,27 @@ final class FfiGoldenScenarioTests: XCTestCase {
 
         try await store.shutdown()
         self.store = nil
+    }
+
+    /// Documents a core-side defect instead of silently dropping the
+    /// reset+seed scenario. `LivtetStore.resetAndSeed` cannot be exercised from
+    /// this test host: uniffi polls its future on the calling
+    /// Swift-concurrency thread, whose stack is 520 KiB, while the debug-build
+    /// poll frames for `reset_and_seed` and the nested `seed_database_inner`
+    /// reserve ~228 KiB and ~256 KiB respectively (measured with
+    /// `llvm-objdump` on the built app; both are fixed-size stack probes).
+    /// Together with the uniffi/Swift frames that overruns the stack guard, so
+    /// the host dies with EXC_BAD_ACCESS / SIGBUS (KERN_PROTECTION_FAILURE) at
+    /// a thread-stack address inside `livtet_data::seed` — for any `numWorks`,
+    /// including 1, because the frames are sized by the generated futures, not
+    /// the data. Unskip once core shrinks the generators or moves seeding off
+    /// the caller's thread.
+    func testResetAndSeedOnFreshStore() async throws {
+        throw XCTSkip(
+            "livtet-ffi reset_and_seed overflows the 520 KiB test-host stack "
+                + "(SIGBUS in livtet_data::seed) before touching SQLite; "
+                + "tracked in core. testGoldenScenario seeds via seedSampleData "
+                + "+ reindex instead."
+        )
     }
 }

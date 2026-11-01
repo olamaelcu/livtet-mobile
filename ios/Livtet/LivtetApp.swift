@@ -2,7 +2,6 @@ import LivtetKit
 import Sentry
 import SwiftUI
 import Inject
-import LivtetKit
 import os
 #if canImport(CoreText)
 import CoreText
@@ -24,6 +23,10 @@ struct LivtetApp: App {
         if !BuildConfig.sentryDSN.isEmpty {
             SentrySDK.start { options in
                 options.dsn = BuildConfig.sentryDSN
+                options.beforeSend = { event in
+                    PiiScrubber.scrub(event)
+                    return event
+                }
             }
         }
     }

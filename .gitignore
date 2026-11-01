@@ -110,10 +110,11 @@ DerivedData/
 *.dSYM.zip
 *.ipa
 
-# ---- SnapshotTesting reference images ----
+# ---- SnapshotTesting generated artifacts ----
 # Checked-in reference sources live in ios/LivtetUnitTests/Snapshots/*.swift;
-# rendered PNGs land in __Snapshots__/ and should not be tracked.
-**/__Snapshots__/*.png
+# SnapshotTesting renders reference PNGs into a generated __Snapshots__/<TestClass>/
+# tree beneath them, which is machine-specific output and should not be tracked.
+**/__Snapshots__/
 
 # ---- Fastlane transient output ----
 fastlane/report.xml
