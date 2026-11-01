@@ -24,7 +24,7 @@ python = "3.12"  # used by _cargo_marker.py, ios-dev-init inline Python, scripts
 
 # Linux: Android toolchain
 "cargo:cargo-ndk" = { version = "4.1.2", os = ["linux"] }
-android-sdk = { version = "35.0.2", os = ["linux"], postinstall = "mise run android-dev-init" }
+android-sdk = { version = "latest", postinstall = "mise run android-dev-init", os = ["linux"] }
 gradle = { version = "8.14.5", os = ["linux"] }
 kotlin = { version = "2.3.21", os = ["linux"] }
 java = { version = "20", os = ["linux"] }
