@@ -43,6 +43,12 @@ class BiblioClient @Inject constructor(@PublicBiblioHttp private val http: HttpC
 
         const val EDITION_COLLECTION = "community.lexicon.book.edition"
 
+        /** Catalog edition search backing the add-book flow. */
+        const val SEARCH_EDITIONS = "community.lexicon.book.searchEditions"
+
+        /** Search page size; the lexicon caps `limit` at 100. */
+        const val SEARCH_EDITIONS_LIMIT = 25
+
         const val REVIEW_COLLECTION = "net.olamaelcu.livtet.bookReview"
 
         const val SHELVING_COLLECTION = "net.olamaelcu.livtet.biblio.bookShelving"
@@ -82,6 +88,28 @@ class BiblioClient @Inject constructor(@PublicBiblioHttp private val http: HttpC
                 listOf("repo" to did, "collection" to EDITION_COLLECTION, "rkey" to rkey),
             )
             .value
+
+    /**
+     * Catalog editions matching [query], newest first.
+     *
+     * Answers `community.lexicon.book.searchEditions` with raw edition records, so callers get the
+     * title, `coverImageUrl`, and inline-named `contributors` the add-book flow renders. A blank
+     * query is allowed and returns the most recent editions.
+     */
+    suspend fun searchEditions(
+        query: String,
+        limit: Int = SEARCH_EDITIONS_LIMIT,
+        cursor: String? = null,
+    ): BiblioEditionSearch =
+        fetch<BiblioEditionSearch>(
+            BIBLIO_BASE,
+            "/xrpc/$SEARCH_EDITIONS",
+            buildList {
+                add("q" to query)
+                add("limit" to limit.toString())
+                cursor?.takeIf { it.isNotBlank() }?.let { add("cursor" to it) }
+            },
+        )
 
     /** Cover URL Bibliograph derives from the edition's identifiers. */
     suspend fun getImageForBook(atUri: String): String? =

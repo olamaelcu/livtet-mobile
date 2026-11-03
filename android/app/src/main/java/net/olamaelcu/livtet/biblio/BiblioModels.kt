@@ -45,6 +45,11 @@ data class BiblioContributor(
     val role: String? = null,
     /** Raw-record spelling of a contribution; the AppView uses `contributor`. */
     val subject: BiblioContributorRef? = null,
+    /**
+     * Name written inline on the contribution. `community.lexicon.book.searchEditions` returns
+     * `{ subject, role, name }`, whereas `getRecord` hydration puts the name on the ref itself.
+     */
+    val name: String? = null,
 )
 
 @Serializable
@@ -170,6 +175,13 @@ data class BiblioBacklink(val did: String = "", val collection: String = "", val
 
 /** `net.olamaelcu.livtet.biblio.getImageForBook` response. */
 @Serializable data class BiblioImageResponse(val url: String? = null)
+
+/** `community.lexicon.book.searchEditions` response: raw edition records, newest first. */
+@Serializable
+data class BiblioEditionSearch(
+    val items: List<BiblioBook> = emptyList(),
+    val cursor: String? = null,
+)
 
 /** `{biblio}.getReviewsByBook` response. */
 @Serializable

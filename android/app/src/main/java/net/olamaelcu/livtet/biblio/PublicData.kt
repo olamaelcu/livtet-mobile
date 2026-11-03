@@ -38,13 +38,22 @@ data class ShelfBookRow(
     val status: String?,
 )
 
+/**
+ * The display name of a contribution, wherever the source put it.
+ *
+ * `getRecord` hydration hangs the name on the ref (`contributor.name` / `subject.name`), while
+ * `searchEditions` writes it inline on the contribution itself.
+ */
+fun BiblioContributor.contributorName(): String? =
+    name?.takeIf { it.isNotBlank() } ?: person()?.name?.takeIf { it.isNotBlank() }
+
 /** The author line for a book view: the contributor roles the catalog treats as authorship. */
 fun BiblioBook.authorLine(): String? {
     val names =
         contributors
             .orEmpty()
             .filter { it.role != null && AUTHOR_LIKE_ROLES.contains(it.role) }
-            .mapNotNull { it.person()?.name?.takeIf { name -> name.isNotBlank() } }
+            .mapNotNull { it.contributorName() }
     return names.takeIf { it.isNotEmpty() }?.joinToString(", ")
 }
 

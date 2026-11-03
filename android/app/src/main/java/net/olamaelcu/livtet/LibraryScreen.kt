@@ -41,14 +41,14 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import net.olamaelcu.livtet.core.designsystem.LivtetRadius
 import net.olamaelcu.livtet.ffi.EmptyMessage
-import net.olamaelcu.livtet.wizard.AddBookWizard
+import net.olamaelcu.livtet.biblio.SearchEditionsScreen
 
 /**
  * Library screen — paginated list of the user's stored works.
  *
  * Wires through `Bridge.listBooks` (50 per page, newest first) and
  * `Bridge.getEmptyStateQuotation` (literary filler for the empty state).
- * The FloatingActionButton opens the 5-step AddBook wizard.
+ * The FloatingActionButton opens the XRPC edition search experience.
  *
  * Filters, search, pull-to-refresh, and cover thumbnails are deferred
  * to follow-up commits.
@@ -60,7 +60,7 @@ fun LibraryScreen(
     onAddBook: () -> Unit = {},
 ) {
     val state by viewModel.state.collectAsState()
-    var showWizard by remember { mutableStateOf(false) }
+    var showSearch by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) { viewModel.load() }
 
@@ -101,7 +101,7 @@ fun LibraryScreen(
         FloatingActionButton(
             onClick = {
                 onAddBook()
-                showWizard = true
+                showSearch = true
             },
             modifier = Modifier
                 .align(Alignment.BottomEnd)
@@ -109,13 +109,18 @@ fun LibraryScreen(
         ) {
             Icon(
                 Icons.Default.Add,
-                contentDescription = "Add book",
+                contentDescription = "Search editions (XRPC)",
             )
         }
     }
 
-    if (showWizard) {
-        AddBookWizard(onDismiss = { showWizard = false })
+    if (showSearch) {
+        SearchEditionsScreen(
+            onDismiss = { showSearch = false },
+            // Persisting a catalog edition needs an FFI import mutation; `Bridge` exposes none yet,
+            // so selecting only closes the sheet.
+            onSelect = { showSearch = false },
+        )
     }
 }
 
