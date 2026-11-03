@@ -13,6 +13,7 @@ import net.olamaelcu.livtet.ffi.EmptyMessage
 import net.olamaelcu.livtet.ffi.Greeting
 import net.olamaelcu.livtet.ffi.LivtetStore
 import net.olamaelcu.livtet.ffi.NewEdition
+import net.olamaelcu.livtet.ffi.ReadingList
 import net.olamaelcu.livtet.ffi.SeedStats
 import net.olamaelcu.livtet.ffi.WorkSummary
 import net.olamaelcu.livtet.types.SortDirection
@@ -29,6 +30,8 @@ data class Book(
     val coverUrl: String? = null,
     /** Reading status; null for a work that was never shelved. */
     val status: WorkStatus? = null,
+    /** Edition a shelf entry files: the work's preferred edition, else its oldest. */
+    val primaryEditionId: String? = null,
 )
 
 /** A contributor to attach while importing an edition. */
@@ -221,6 +224,49 @@ object Bridge {
     suspend fun resetAndSeed(numWorks: Int): SeedResultMobile =
         withContext(Dispatchers.IO) { requireStore().resetAndSeed(numWorks.toUInt()) }
 
+    // ── Shelves (named reading lists) ────────────────────────────────
+
+    /** Named shelf. Membership is edition-scoped: `editionIds` in shelf order. */
+    data class Shelf(
+        val id: String,
+        val name: String,
+        val description: String?,
+        val editionIds: List<String>,
+    )
+
+    private fun ReadingList.toShelf(): Shelf =
+        Shelf(
+            id = id.toString(),
+            name = name,
+            description = description,
+            editionIds = editionIds.map { it.toString() },
+        )
+
+    suspend fun listShelves(): List<Shelf> =
+        withContext(Dispatchers.IO) { requireStore().listReadingLists().map { it.toShelf() } }
+
+    suspend fun createShelf(name: String): Shelf =
+        withContext(Dispatchers.IO) {
+            requireStore().createReadingList(name = name, description = null).toShelf()
+        }
+
+    suspend fun renameShelf(shelfId: String, name: String): Shelf =
+        withContext(Dispatchers.IO) {
+            requireStore().updateReadingList(shelfId, name, null).toShelf()
+        }
+
+    /** File a book on a shelf. No-op when it is already there. */
+    suspend fun addToShelf(shelfId: String, editionId: String) =
+        withContext(Dispatchers.IO) { requireStore().addEditionToList(shelfId, editionId) }
+
+    suspend fun removeFromShelf(shelfId: String, editionId: String): Boolean =
+        withContext(Dispatchers.IO) {
+            requireStore().removeEditionFromList(shelfId, editionId)
+        }
+
+    suspend fun deleteShelf(shelfId: String): Boolean =
+        withContext(Dispatchers.IO) { requireStore().deleteReadingList(shelfId) }
+
     private fun WorkSummary.toBook(): Book =
         Book(
             id = id.toString(),
@@ -228,6 +274,7 @@ object Bridge {
             description = description,
             coverUrl = coverUrl,
             status = status,
+            primaryEditionId = primaryEditionId?.toString(),
         )
 
     // ── Import (catalog edition → library) ────────────────────────

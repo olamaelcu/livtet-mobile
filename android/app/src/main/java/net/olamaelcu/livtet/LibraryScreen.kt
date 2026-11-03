@@ -1,7 +1,8 @@
 package net.olamaelcu.livtet
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -18,11 +19,14 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -68,6 +72,7 @@ fun LibraryScreen(
 ) {
     val state by viewModel.state.collectAsState()
     var showSearch by remember { mutableStateOf(false) }
+    var shelfTarget by remember { mutableStateOf<Book?>(null) }
 
     LaunchedEffect(Unit) { viewModel.load() }
 
@@ -80,7 +85,12 @@ fun LibraryScreen(
             }
             state.error != null -> ErrorView(message = state.error!!)
             state.books.isEmpty() -> EmptyView(message = state.emptyMessage)
-            else -> ShelfLanes(books = state.books)
+            else ->
+                ShelfLanes(
+                    books = state.books,
+                    shelves = state.shelves,
+                    onLongPress = { shelfTarget = it },
+                )
         }
 
         FloatingActionButton(
@@ -92,6 +102,22 @@ fun LibraryScreen(
         ) {
             Icon(Icons.Default.Add, contentDescription = "Search editions (XRPC)")
         }
+    }
+
+    shelfTarget?.let { book ->
+        ShelfPicker(
+            book = book,
+            shelves = state.shelves,
+            onPick = { shelf ->
+                viewModel.addToShelf(book, shelf.id)
+                shelfTarget = null
+            },
+            onCreate = { name ->
+                viewModel.addToShelf(book, shelfId = null, newShelfName = name)
+                shelfTarget = null
+            },
+            onDismiss = { shelfTarget = null },
+        )
     }
 
     if (showSearch) {
@@ -133,18 +159,27 @@ private fun shelvesOf(books: List<Book>): List<Shelf> {
 }
 
 @Composable
-private fun ShelfLanes(books: List<Book>) {
-    val shelves = remember(books) { shelvesOf(books) }
+private fun ShelfLanes(
+    books: List<Book>,
+    shelves: List<Bridge.Shelf>,
+    onLongPress: (Book) -> Unit,
+) {
+    val lanes = remember(books) { shelvesOf(books) }
 
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
         contentPadding = PaddingValues(top = 8.dp, bottom = 120.dp),
     ) {
-        shelves.forEach { shelf ->
+        if (shelves.isNotEmpty()) {
+            item(key = "named-shelves") { NamedShelfStrip(shelves = shelves) }
+        }
+        lanes.forEach { shelf ->
             item(key = "header-${shelf.key}") {
                 ShelfHeader(label = shelf.label, count = shelf.books.size)
             }
-            item(key = "row-${shelf.key}") { ShelfRow(books = shelf.books) }
+            item(key = "row-${shelf.key}") {
+                ShelfRow(books = shelf.books, onLongPress = onLongPress)
+            }
             item(key = "shelf-${shelf.key}") { ShelfEdge() }
         }
     }
@@ -159,7 +194,7 @@ private fun ShelfLanes(books: List<Book>) {
  * cover fully visible without fighting a scroll the reader started.
  */
 @Composable
-private fun ShelfRow(books: List<Book>) {
+private fun ShelfRow(books: List<Book>, onLongPress: (Book) -> Unit) {
     val listState = rememberLazyListState()
     LaunchedEffect(books.firstOrNull()?.id) {
         if (listState.firstVisibleItemIndex != 0) listState.scrollToItem(0)
@@ -170,7 +205,9 @@ private fun ShelfRow(books: List<Book>) {
         contentPadding = PaddingValues(horizontal = 16.dp),
         horizontalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-        items(books, key = { it.id }) { book -> CoverTile(book = book) }
+        items(books, key = { it.id }) { book ->
+            CoverTile(book = book, onLongPress = { onLongPress(book) })
+        }
     }
 }
 
@@ -205,8 +242,9 @@ private fun ShelfEdge() {
     )
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
-private fun CoverTile(book: Book) {
+private fun CoverTile(book: Book, onLongPress: () -> Unit) {
     val context = LocalContext.current
     val haptics = LocalHapticFeedback.current
     val koreaderInstalled by
@@ -215,12 +253,15 @@ private fun CoverTile(book: Book) {
     Column(modifier = Modifier.width(104.dp)) {
         Box(
             modifier =
-                Modifier.clickable {
-                        if (koreaderInstalled) {
+                Modifier.combinedClickable(
+                        onLongClick = {
                             haptics.performHapticFeedback(HapticFeedbackType.LongPress)
-                            OpenInKoreader.launchKoreader(context)
-                        }
-                    }
+                            onLongPress()
+                        },
+                        onClick = {
+                            if (koreaderInstalled) OpenInKoreader.launchKoreader(context)
+                        },
+                    )
                     .semantics {
                         contentDescription =
                             if (koreaderInstalled) "${book.title}, open in KOReader"
@@ -243,6 +284,92 @@ private fun CoverTile(book: Book) {
             modifier = Modifier.padding(top = 6.dp),
         )
     }
+}
+
+/** Named shelves, so what a long-press can file into is visible. */
+@Composable
+private fun NamedShelfStrip(shelves: List<Bridge.Shelf>) {
+    Column(modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 20.dp)) {
+        Text(
+            text = "Shelves",
+            style = MaterialTheme.typography.titleSmall,
+            fontWeight = FontWeight.SemiBold,
+            color = MaterialTheme.colorScheme.onSurface,
+        )
+        LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            items(shelves, key = { it.id }) { shelf ->
+                Text(
+                    text = "${shelf.name} · ${shelf.editionIds.size}",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(top = 6.dp),
+                )
+            }
+        }
+    }
+}
+
+/**
+ * Where a long-press files a book: an existing shelf, or a new one.
+ *
+ * A shelf stores editions, so a book that has no primary edition cannot be
+ * filed and the dialog says so instead of silently doing nothing.
+ */
+@Composable
+private fun ShelfPicker(
+    book: Book,
+    shelves: List<Bridge.Shelf>,
+    onPick: (Bridge.Shelf) -> Unit,
+    onCreate: (String) -> Unit,
+    onDismiss: () -> Unit,
+) {
+    var newName by remember { mutableStateOf("") }
+    val canFile = book.primaryEditionId != null
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(if (canFile) "Add to shelf" else "No edition to file") },
+        text = {
+            Column {
+                if (!canFile) {
+                    Text(
+                        text = "\"${book.title}\" has no edition of its own, and a shelf stores editions.",
+                        style = MaterialTheme.typography.bodyMedium,
+                    )
+                } else {
+                    Text(
+                        text = book.title,
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.SemiBold,
+                    )
+                    shelves.forEach { shelf ->
+                        TextButton(onClick = { onPick(shelf) }) {
+                            val here = shelf.editionIds.contains(book.primaryEditionId)
+                            Text(if (here) "${shelf.name} (already filed)" else shelf.name)
+                        }
+                    }
+                    OutlinedTextField(
+                        value = newName,
+                        onValueChange = { newName = it },
+                        label = { Text("New shelf") },
+                        singleLine = true,
+                        modifier = Modifier.padding(top = 8.dp),
+                    )
+                }
+            }
+        },
+        confirmButton = {
+            if (canFile) {
+                TextButton(
+                    onClick = { onCreate(newName) },
+                    enabled = newName.isNotBlank(),
+                ) {
+                    Text("Create and add")
+                }
+            }
+        },
+        dismissButton = { TextButton(onClick = onDismiss) { Text("Cancel") } },
+    )
 }
 
 @Composable

@@ -11,6 +11,7 @@ import net.olamaelcu.livtet.ffi.EmptyMessage
 /** UI state for the Library screen. */
 data class LibraryUiState(
     val books: List<Book> = emptyList(),
+    val shelves: List<Bridge.Shelf> = emptyList(),
     val emptyMessage: EmptyMessage? = null,
     val isLoading: Boolean = false,
     val error: String? = null,
@@ -37,8 +38,10 @@ class LibraryViewModel : ViewModel() {
                     order = BookSearchSortOrder.DESCENDING,
                 )
                 val empty = Bridge.getEmptyStateQuotation()
+                val shelves = Bridge.listShelves()
                 _state.value = LibraryUiState(
                     books = books,
+                    shelves = shelves,
                     emptyMessage = empty,
                     isLoading = false,
                     error = null,
@@ -48,6 +51,30 @@ class LibraryViewModel : ViewModel() {
                     isLoading = false,
                     error = e.message ?: e.toString(),
                 )
+            }
+        }
+    }
+
+    /**
+     * File a book on a shelf, creating the shelf first when [newShelfName] is
+     * given. A book without a primary edition cannot be filed — a shelf stores
+     * editions, so there is nothing to name.
+     */
+    fun addToShelf(book: Book, shelfId: String?, newShelfName: String? = null) {
+        val editionId = book.primaryEditionId ?: return
+        viewModelScope.launch {
+            try {
+                val target =
+                    when {
+                        shelfId != null -> shelfId
+                        !newShelfName.isNullOrBlank() -> Bridge.createShelf(newShelfName.trim()).id
+                        else -> return@launch
+                    }
+                Bridge.addToShelf(target, editionId)
+                load()
+            } catch (e: Exception) {
+                _state.value =
+                    _state.value.copy(error = e.message ?: "Could not add this book to a shelf.")
             }
         }
     }
