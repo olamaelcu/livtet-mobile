@@ -206,6 +206,22 @@ fun parseAtUri(value: String?): AtUri? {
     return AtUri(did, collection, rkey)
 }
 
+/**
+ * A catalog identifier as the storage URN the edition-identifier table keeps.
+ *
+ * ISBNs drop the catalog's `isbn:` prefix so the URN reads
+ * `urn:isbn:<digits>`. Every other resource keeps its own scheme and the
+ * full URI as the value, so the source survives the round trip.
+ */
+fun BiblioIdentifier.toUrn(): String? {
+    val value = uri.trim()
+    if (value.isEmpty() || resource.isBlank()) return null
+    return when (resource) {
+        "isbn13", "isbn10" -> "urn:isbn:" + value.removePrefix("isbn:").trim()
+        else -> "urn:$resource:$value"
+    }
+}
+
 /** The edition URI a review points at, accepting both the string and the strongRef spelling. */
 fun BiblioReviewRecord.bookUri(): String? =
     when (val element = book) {

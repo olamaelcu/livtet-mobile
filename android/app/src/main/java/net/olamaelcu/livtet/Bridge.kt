@@ -12,6 +12,7 @@ import kotlinx.coroutines.withContext
 import net.olamaelcu.livtet.ffi.EmptyMessage
 import net.olamaelcu.livtet.ffi.Greeting
 import net.olamaelcu.livtet.ffi.LivtetStore
+import net.olamaelcu.livtet.ffi.NewEdition
 import net.olamaelcu.livtet.ffi.SeedStats
 import net.olamaelcu.livtet.ffi.WorkSummary
 import net.olamaelcu.livtet.types.SortDirection
@@ -213,6 +214,54 @@ object Bridge {
 
     private fun WorkSummary.toBook(): Book =
         Book(id = id.toString(), title = title, description = description)
+
+    // ── Import (catalog edition → library) ────────────────────────
+
+    /**
+     * Create a work with one edition and attach [identifiers] (URN
+     * strings), returning the new edition id.
+     *
+     * Contributors are not persisted: the FFI has no author-creation
+     * method, so a catalog contributor cannot become an `authors` row
+     * yet. The work title is what the Library list renders.
+     */
+    suspend fun importEdition(
+        title: String,
+        description: String?,
+        identifiers: List<String>,
+    ): String =
+        withContext(Dispatchers.IO) {
+            val store = requireStore()
+            val work =
+                store.createWork(
+                    title = title,
+                    sortTitle = null,
+                    description = description,
+                )
+            val edition =
+                store.createEdition(
+                    NewEdition(
+                        workId = work.id,
+                        title = title,
+                        description = description,
+                        publishedDate = null,
+                        formatId = null,
+                        languageId = null,
+                        notes = null,
+                    )
+                )
+            identifiers.distinct().forEach { urn ->
+                store.addEditionIdentifier(editionId = edition.id, identifier = urn)
+            }
+            edition.id.toString()
+        }
+
+    /** True when any of [urns] already sits on an edition in the library. */
+    suspend fun isInLibrary(urns: List<String>): Boolean =
+        withContext(Dispatchers.IO) {
+            val store = requireStore()
+            urns.any { urn -> store.findEditionsByIdentifier(urn).isNotEmpty() }
+        }
 
     private const val TAG = "Bridge"
 }

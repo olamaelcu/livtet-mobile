@@ -277,6 +277,72 @@ class BiblioClientTest {
         assertNull(client.didDocumentUrl("did:key:zabc"))
     }
 
+    @Test
+    fun `searchEditions asks the catalog query and decodes editions`() = runBlocking {
+        val payload =
+            """
+            {
+              "items": [
+                {
+                  "uri": "at://did:web:biblio.livtet.olamaelcu.net/community.lexicon.book.edition/ol.OL1M",
+                  "title": "Cool Machine",
+                  "coverImageUrl": "https://covers.example/cool.jpg",
+                  "publishedYear": 2026,
+                  "contributors": [
+                    {
+                      "subject": { "uri": "at://did:plc:c/community.lexicon.book.contributor/x" },
+                      "role": "author",
+                      "name": "Colson Whitehead"
+                    }
+                  ],
+                  "identifiers": [
+                    { "resource": "isbn13", "uri": "isbn:9780385698573" },
+                    { "resource": "openlibrary", "uri": "https://openlibrary.org/books/OL1M" }
+                  ]
+                }
+              ]
+            }
+            """
+        val client = client { request ->
+            assertEquals("/xrpc/community.lexicon.book.searchEditions", request.url.encodedPath)
+            assertEquals("cool machine", request.url.parameters["q"])
+            assertEquals("25", request.url.parameters["limit"])
+            respond(payload, HttpStatusCode.OK, jsonHeaders)
+        }
+
+        val result = client.searchEditions("cool machine")
+
+        assertEquals(1, result.items.size)
+        val edition = result.items.first()
+        assertEquals("Cool Machine", edition.title)
+        assertEquals("Colson Whitehead", edition.authorLine())
+        assertEquals(
+            listOf(
+                "urn:isbn:9780385698573",
+                "urn:openlibrary:https://openlibrary.org/books/OL1M",
+            ),
+            edition.identifiers.orEmpty().mapNotNull { it.toUrn() },
+        )
+    }
+
+    @Test
+    fun `identifier resources become storage urns`() {
+        assertEquals(
+            "urn:isbn:9780385698573",
+            BiblioIdentifier("isbn13", "isbn:9780385698573").toUrn(),
+        )
+        assertEquals(
+            "urn:isbn:0385698577",
+            BiblioIdentifier("isbn10", "isbn:0385698577").toUrn(),
+        )
+        assertEquals(
+            "urn:openlibrary:https://openlibrary.org/books/OL27277435M",
+            BiblioIdentifier("openlibrary", "https://openlibrary.org/books/OL27277435M").toUrn(),
+        )
+        assertNull(BiblioIdentifier("isbn13", "  ").toUrn())
+        assertNull(BiblioIdentifier("", "isbn:1").toUrn())
+    }
+
     private companion object {
         const val BOOK_URI =
             "at://did:web:biblio.livtet.olamaelcu.net/community.lexicon.book.edition/ol.OL3425796M"

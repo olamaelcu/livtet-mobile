@@ -117,9 +117,10 @@ fun LibraryScreen(
     if (showSearch) {
         SearchEditionsScreen(
             onDismiss = { showSearch = false },
-            // Persisting a catalog edition needs an FFI import mutation; `Bridge` exposes none yet,
-            // so selecting only closes the sheet.
-            onSelect = { showSearch = false },
+            onImported = {
+                showSearch = false
+                viewModel.load()
+            },
         )
     }
 }

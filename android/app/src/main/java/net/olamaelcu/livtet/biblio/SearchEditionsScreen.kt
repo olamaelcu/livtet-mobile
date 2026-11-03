@@ -26,6 +26,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.ImeAction
@@ -36,17 +37,25 @@ import androidx.hilt.navigation.compose.hiltViewModel
 /**
  * Add-book search over `community.lexicon.book.searchEditions`.
  *
- * Each result shows the edition's title, cover, and author line. Selecting one hands the edition
- * back to the caller, which owns whatever adding it means.
+ * Each result shows the edition's title, cover, and author line. "Add" writes the
+ * work, its edition, and the edition's identifiers through the FFI, then asks the
+ * caller to close and reload the library.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SearchEditionsScreen(
     onDismiss: () -> Unit,
-    onSelect: (BiblioBook) -> Unit,
+    onImported: () -> Unit,
     viewModel: SearchEditionsViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsState()
+
+    LaunchedEffect(state.importedUri) {
+        if (state.importedUri != null) {
+            viewModel.consumeImported()
+            onImported()
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -77,6 +86,15 @@ fun SearchEditionsScreen(
                         onSearch = { viewModel.submit() }
                     ),
             )
+
+            if (state.importError != null) {
+                Text(
+                    text = state.importError ?: "",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.error,
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp),
+                )
+            }
 
             when {
                 state.isLoading && state.editions.isEmpty() -> {
@@ -119,7 +137,11 @@ fun SearchEditionsScreen(
                         contentPadding = PaddingValues(vertical = 8.dp),
                     ) {
                         items(state.editions, key = { it.uri }) { edition ->
-                            EditionResultRow(edition = edition, onClick = { onSelect(edition) })
+                            EditionResultRow(
+                                edition = edition,
+                                isImporting = state.importingUri == edition.uri,
+                                onClick = { viewModel.import(edition) },
+                            )
                         }
                     }
                 }
@@ -129,7 +151,7 @@ fun SearchEditionsScreen(
 }
 
 @Composable
-private fun EditionResultRow(edition: BiblioBook, onClick: () -> Unit) {
+private fun EditionResultRow(edition: BiblioBook, isImporting: Boolean, onClick: () -> Unit) {
     Row(
         modifier =
             Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
@@ -169,7 +191,7 @@ private fun EditionResultRow(edition: BiblioBook, onClick: () -> Unit) {
                 )
             }
             TextButton(onClick = onClick, modifier = Modifier.padding(top = 4.dp)) {
-                Text("Add")
+                Text(if (isImporting) "Adding…" else "Add")
             }
         }
     }

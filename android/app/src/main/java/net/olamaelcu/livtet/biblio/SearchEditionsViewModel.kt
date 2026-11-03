@@ -10,6 +10,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import net.olamaelcu.livtet.Bridge
 
 /** UI state for the edition search sheet. */
 data class SearchEditionsUiState(
@@ -17,6 +18,12 @@ data class SearchEditionsUiState(
     val isLoading: Boolean = false,
     val error: String? = null,
     val editions: List<BiblioBook> = emptyList(),
+    /** Edition URI currently being written to the library. */
+    val importingUri: String? = null,
+    /** Shown when an add was refused; the sheet stays open. */
+    val importError: String? = null,
+    /** Set once an edition is stored, so the caller can close and reload. */
+    val importedUri: String? = null,
 )
 
 /**
@@ -62,6 +69,59 @@ class SearchEditionsViewModel @Inject constructor(private val client: BiblioClie
     private fun search(query: String) {
         job?.cancel()
         job = viewModelScope.launch { runSearch(query) }
+    }
+
+    /**
+     * Clears the imported marker once the caller has closed the sheet.
+     *
+     * The view model outlives the sheet, so leaving the marker set would make the next
+     * open look like a completed import and close immediately.
+     */
+    fun consumeImported() {
+        if (_state.value.importedUri != null) {
+            _state.value = _state.value.copy(importedUri = null)
+        }
+    }
+
+    /**
+     * Store a catalog edition in the library: the work, its edition, then every
+     * identifier the catalog listed. An edition whose identifiers already exist
+     * is refused rather than duplicated, because the identifier table is shared
+     * library-wide and a second copy would be invisible.
+     */
+    fun import(edition: BiblioBook) {
+        if (_state.value.importingUri != null) return
+        viewModelScope.launch {
+            _state.value =
+                _state.value.copy(
+                    importingUri = edition.uri,
+                    importError = null,
+                    importedUri = null,
+                )
+            val urns = edition.identifiers.orEmpty().mapNotNull { it.toUrn() }
+            try {
+                if (urns.isNotEmpty() && Bridge.isInLibrary(urns)) {
+                    _state.value =
+                        _state.value.copy(
+                            importingUri = null,
+                            importError = "This edition is already in your library.",
+                        )
+                    return@launch
+                }
+                Bridge.importEdition(
+                    title = edition.title,
+                    description = edition.description,
+                    identifiers = urns,
+                )
+                _state.value = _state.value.copy(importingUri = null, importedUri = edition.uri)
+            } catch (e: Exception) {
+                _state.value =
+                    _state.value.copy(
+                        importingUri = null,
+                        importError = "This edition could not be added.",
+                    )
+            }
+        }
     }
 
     private suspend fun runSearch(query: String) {
