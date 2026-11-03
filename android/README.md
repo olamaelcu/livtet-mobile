@@ -101,15 +101,14 @@ top-level sections, plus a debug-only "Developer tools" panel:
 - **Developer tools** (`BuildConfig.DEBUG` only) — wipes the local SQLite
   database and re-seeds it with N demo works via `Bridge.resetAndSeed`,
   with two-tap confirmation and a `SeedResultMobile` summary.
-
-The Settings screen also spins up `DiscoveryService` (mDNS
-`_livtet-sync._tcp` browsing via NsdManager) in the background, but its
-results are not surfaced in the UI yet. The Paired Devices,
-Discovered on this network, and Plugins sections are gone — they depended
-on FFI calls (`getPairedDevices`, `listInstalledPlugins`,
-`getNetworkAddresses`, `pairDevice`, `unpairDevice`, `setPluginEnabled`)
-that are not in the current `core/livtet-ffi` build. The screen shows an
-"unavailable in this build" hint at the top.
+- **Sync & Discovery** — lists the peers `DiscoveryService` found over mDNS
+  (`_livtet-sync._tcp` via NsdManager) and pairs with any of them over
+  iroh. Pairing (`sync/SyncPairing.kt`) reads the peer's node id from the
+  TXT record, files a claim through the FFI (`pairSyncDevice`), waits for
+  the reader to approve it on the desktop, and stores the session token
+  (DataStore) keyed by peer. The Plugins section is gone — it needed
+  `listInstalledPlugins`, `setPluginEnabled`, and plugin FFI that the
+  current `core/livtet-ffi` build does not export.
 
 ### What is NOT exposed to end users yet
 
@@ -121,10 +120,6 @@ do the following on Android at this time:
   `get_reading_progress` exist in FFI but have no Kotlin caller.
 - **Local files / file cache** — `register_local_file`, `list_cached_files`,
   `get_cached_file_path`, `delete_cached_file` exist; no UI.
-- **Pair with another device** — `Bridge.pairWithDesktop`,
-  `Bridge.syncOnce`, `Bridge.cancelSync` are exposed but no UI surfaces
-  them; `DiscoveryService` collects peers in the background but the
-  Settings screen does not render them.
 - **Browse OPDS catalogs** — no `:feature:opds` module, no UI surface.
 - **Scan ISBN barcodes with the camera** — no CameraX/ML Kit wired, no
   `CAMERA` permission in `AndroidManifest.xml`.

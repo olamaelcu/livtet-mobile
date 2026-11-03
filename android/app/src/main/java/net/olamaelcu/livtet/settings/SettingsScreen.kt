@@ -1,5 +1,6 @@
 package net.olamaelcu.livtet.settings
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -14,6 +15,7 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.HorizontalDivider
@@ -43,6 +45,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import net.olamaelcu.livtet.BuildConfig
 import net.olamaelcu.livtet.DiscoveredSyncDevice
 import net.olamaelcu.livtet.SeedResultMobile
+import net.olamaelcu.livtet.sync.PairedPeer
 
 /**
  * Settings screen. Four sections previously existed — Paired Devices, Discovered on this network,
@@ -52,9 +55,8 @@ import net.olamaelcu.livtet.SeedResultMobile
  * present in the current `core/livtet-ffi` crate. Those sections are removed until upstream catches
  * up.
  *
- * Sync & Discovery is back, but read-only: it renders whatever `DiscoveryService` found over mDNS,
- * which needs no FFI. The pairing action behind it is still gated on the core exposing a pair call,
- * so the dialog says so instead of pretending a request was sent.
+ * Sync & Discovery renders whatever `DiscoveryService` found over mDNS and pairs with those peers
+ * over iroh via `sync.SyncPairing`: claim, desktop approval, session token.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -62,7 +64,6 @@ fun SettingsScreen(viewModel: SettingsViewModel = viewModel()) {
     val state by viewModel.state.collectAsState()
     val context = LocalContext.current
     val themeMode by ThemeManager.mode(context).collectAsState(initial = ThemeManager.Mode.SYSTEM)
-    var pairDialogOpen by rememberSaveable { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
         viewModel.load()
@@ -78,7 +79,8 @@ fun SettingsScreen(viewModel: SettingsViewModel = viewModel()) {
                 item {
                     SyncDiscoverySection(
                         devices = state.discoveredDevices,
-                        onPairNewDevice = { pairDialogOpen = true },
+                        pairedPeers = state.pairedPeers,
+                        onPairDevice = viewModel::beginPairing,
                     )
                 }
 
@@ -123,8 +125,14 @@ fun SettingsScreen(viewModel: SettingsViewModel = viewModel()) {
                 }
             }
         }
-        if (pairDialogOpen) {
-            PairNewDeviceDialog(onDismiss = { pairDialogOpen = false })
+        state.pairing?.let { pairing ->
+            PairingDialog(
+                pairing = pairing,
+                onNameChange = viewModel::updatePairingName,
+                onSend = { viewModel.pairDevice(pairing.peer, pairing.name) },
+                onCheckAgain = viewModel::checkPairingAgain,
+                onDismiss = viewModel::dismissPairing,
+            )
         }
     }
 }
@@ -153,13 +161,15 @@ private fun EmptyStateHint(text: String) {
 /**
  * Discovered peers on the LAN, plus the entry point to pairing.
  *
- * Read-only on purpose: `DiscoveryService` fills this from mDNS, while pairing needs an FFI call the
- * core does not expose yet, so rows are not clickable and nothing here claims a peer is paired.
+ * `DiscoveryService` fills the list from mDNS; tapping a peer opens the pairing dialog, which files a
+ * real claim over iroh. Approved peers carry a "Paired" tag, so the section never claims a pairing
+ * the desktop did not make.
  */
 @Composable
 private fun SyncDiscoverySection(
     devices: List<DiscoveredSyncDevice>,
-    onPairNewDevice: () -> Unit,
+    pairedPeers: Map<String, PairedPeer>,
+    onPairDevice: (DiscoveredSyncDevice) -> Unit,
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -176,24 +186,57 @@ private fun SyncDiscoverySection(
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             } else {
-                devices.forEach { device -> DeviceRow(device) }
-            }
-            Spacer(Modifier.size(8.dp))
-            FilledTonalButton(onClick = onPairNewDevice, modifier = Modifier.fillMaxWidth()) {
-                Text("Pair new device")
+                devices.forEach { device ->
+                    DeviceRow(
+                        device = device,
+                        paired = pairedPeers.containsKey(device.nodeId),
+                        onPair = { onPairDevice(device) },
+                    )
+                }
+                Spacer(Modifier.size(4.dp))
+                Text(
+                    text = "Tap a device to send a pairing request. Approve it on the desktop.",
+                    fontSize = 11.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
             }
         }
     }
 }
 
-/** One discovered peer: friendly name, then the id/version/flavor the TXT record carried. */
+/**
+ * One discovered peer: friendly name, then the id/version/flavor the TXT record carried.
+ *
+ * A record with no node id cannot be paired (pairing dials that id), so the row stays inert rather
+ * than opening a dialog that could only fail.
+ */
 @Composable
-private fun DeviceRow(device: DiscoveredSyncDevice) {
-    Column(modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp)) {
-        Text(device.name, fontWeight = FontWeight.Medium)
+private fun DeviceRow(device: DiscoveredSyncDevice, paired: Boolean, onPair: () -> Unit) {
+    val canPair = device.nodeId.isNotBlank()
+    val modifier =
+        if (canPair) Modifier.fillMaxWidth().clickable { onPair() } else Modifier.fillMaxWidth()
+    Column(modifier = modifier.padding(vertical = 6.dp)) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(device.name, fontWeight = FontWeight.Medium, modifier = Modifier.weight(1f))
+            if (paired) {
+                Text(
+                    text = "Paired",
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = MaterialTheme.colorScheme.primary,
+                )
+            } else if (!canPair) {
+                Text(
+                    text = "No node id",
+                    fontSize = 11.sp,
+                    color = MaterialTheme.colorScheme.error,
+                )
+            }
+        }
         val meta =
             buildList {
                 if (device.deviceId.isNotBlank()) add(device.deviceId.take(8))
+                if (device.nodeId.isNotBlank()) add("node ${device.nodeId.take(8)}")
                 device.appVersion?.takeIf { it.isNotBlank() }?.let { add("v$it") }
                 device.deviceFlavor?.takeIf { it.isNotBlank() }?.let(::add)
             }
@@ -209,43 +252,96 @@ private fun DeviceRow(device: DiscoveredSyncDevice) {
 }
 
 /**
- * Pairing dialog. Pairing this peer needs a channel to the core that is not wired yet.
+ * Pairs this device with one discovered peer over iroh.
  *
- * The name field is the part of the flow that has an agreed shape — it is what the peer would be
- * saved as — so it stays editable and the confirm button stays disabled, rather than reporting a
- * request that was never sent. Once `core/livtet-ffi` exposes a pair call for
- * `DiscoveredSyncDevice.nodeId`, this dialog hands it `name` and closes.
+ * The flow is a claim the desktop approves by hand: the name stays editable until the request is
+ * sent, then the dialog reports what the peer actually decided — waiting, approved, or refused.
  */
 @Composable
-private fun PairNewDeviceDialog(onDismiss: () -> Unit) {
-    var name by rememberSaveable { mutableStateOf("") }
+private fun PairingDialog(
+    pairing: PairingUiState,
+    onNameChange: (String) -> Unit,
+    onSend: () -> Unit,
+    onCheckAgain: () -> Unit,
+    onDismiss: () -> Unit,
+) {
+    val stage = pairing.stage
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Pair new device") },
+        title = { Text("Pair with ${pairing.peer.name}") },
         text = {
             Column {
                 OutlinedTextField(
-                    value = name,
-                    onValueChange = { name = it },
+                    value = pairing.name,
+                    onValueChange = onNameChange,
                     singleLine = true,
-                    label = { Text("Device name") },
+                    label = { Text("Name this device for the desktop") },
+                    enabled = stage is PairingStage.Ready,
                     modifier = Modifier.fillMaxWidth(),
                 )
                 Spacer(Modifier.size(8.dp))
-                Text(
-                    text = "Pairing needs a sync call the Livtet core has not published yet. Devices " +
-                        "found on your network are listed above, but no pairing request is sent from " +
-                        "this build.",
-                    fontSize = 12.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
+                PairingStageBody(stage)
             }
         },
         confirmButton = {
-            TextButton(onClick = {}, enabled = false) { Text("Pair") }
+            when (stage) {
+                is PairingStage.Ready -> TextButton(onClick = onSend) { Text("Send request") }
+                is PairingStage.AwaitingDecision ->
+                    TextButton(onClick = onCheckAgain) { Text("Check again") }
+                else -> Unit
+            }
         },
-        dismissButton = { TextButton(onClick = onDismiss) { Text("Close") } },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text(if (stage is PairingStage.Sending) "Cancel" else "Close")
+            }
+        },
     )
+}
+
+@Composable
+private fun PairingStageBody(stage: PairingStage) {
+    val muted = MaterialTheme.colorScheme.onSurfaceVariant
+    when (stage) {
+        is PairingStage.Ready ->
+            Text(
+                text = "The desktop shows a request to approve. Nothing is paired until it is " +
+                    "accepted there.",
+                fontSize = 12.sp,
+                color = muted,
+            )
+        is PairingStage.Sending ->
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                CircularProgressIndicator(modifier = Modifier.size(16.dp), strokeWidth = 2.dp)
+                Spacer(Modifier.size(8.dp))
+                Text("Contacting the desktop…", fontSize = 12.sp, color = muted)
+            }
+        is PairingStage.AwaitingDecision ->
+            Text(
+                text = "Request filed. Waiting for approval on the desktop — claim " +
+                    "${stage.claim.take(8)}.",
+                fontSize = 12.sp,
+                color = muted,
+            )
+        is PairingStage.Paired ->
+            Text(
+                text = "Paired. The session token is stored, so this device can sync.",
+                fontSize = 12.sp,
+                color = MaterialTheme.colorScheme.primary,
+            )
+        is PairingStage.Refused ->
+            Text(
+                text = "Refused: ${stage.reason}",
+                fontSize = 12.sp,
+                color = MaterialTheme.colorScheme.error,
+            )
+        is PairingStage.Failed ->
+            Text(
+                text = "Could not pair: ${stage.message}",
+                fontSize = 12.sp,
+                color = MaterialTheme.colorScheme.error,
+            )
+    }
 }
 
 @Composable
