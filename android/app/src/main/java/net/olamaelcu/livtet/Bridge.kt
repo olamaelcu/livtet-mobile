@@ -224,6 +224,80 @@ object Bridge {
     suspend fun resetAndSeed(numWorks: Int): SeedResultMobile =
         withContext(Dispatchers.IO) { requireStore().resetAndSeed(numWorks.toUInt()) }
 
+    // ── Covers (disk cache) ──────────────────────────────────────────
+
+    /**
+     * Where cached covers live. Inside the app's own cache directory, so the
+     * system may evict it; the loader treats a miss as "download again".
+     */
+    private fun coverCacheRoot(): String =
+        File(LivtetApp.getInstance().cacheDir, "livtet-covers").absolutePath
+
+    /**
+     * A local file for the edition's cover, downloading it once if needed.
+     *
+     * `livtet-covers` owns the on-disk layout, so the FFI answers every hit.
+     * A miss returns null from the lookup and the image is fetched here and
+     * handed back for storage; the next call is then served from disk.
+     */
+    suspend fun resolveCoverPath(editionId: String, remoteUrl: String?): String? =
+        withContext(Dispatchers.IO) {
+            val store = requireStore()
+            val root = coverCacheRoot()
+
+            store
+                .coverCachePath(editionId, root)
+                ?.takeIf { it.isNotBlank() }
+                ?.let { return@withContext it }
+
+            val url = remoteUrl?.takeIf { it.isNotBlank() } ?: return@withContext null
+            val download = downloadImage(url) ?: return@withContext null
+            runCatching { store.storeCover(editionId, root, download.ext, download.bytes) }
+                .getOrNull()
+        }
+
+    private class DownloadedImage(val bytes: ByteArray, val ext: String)
+
+    /**
+     * Fetch an image and guess its extension from the response, falling back
+     * to the URL's suffix. Returns null on any failure: a missing cover is a
+     * degraded row, not an error screen.
+     */
+    private fun downloadImage(url: String): DownloadedImage? =
+        try {
+            val connection =
+                (java.net.URL(url).openConnection() as java.net.HttpURLConnection).apply {
+                    connectTimeout = 10_000
+                    readTimeout = 20_000
+                    instanceFollowRedirects = true
+                    setRequestProperty("Accept", "image/*")
+                }
+            try {
+                if (connection.responseCode !in 200..299) return null
+                val bytes = connection.inputStream.use { it.readBytes() }
+                if (bytes.isEmpty()) return null
+                DownloadedImage(bytes, extensionFor(connection.contentType, url))
+            } finally {
+                connection.disconnect()
+            }
+        } catch (_: Exception) {
+            null
+        }
+
+    private fun extensionFor(contentType: String?, url: String): String =
+        when (contentType?.substringBefore(';')?.trim()?.lowercase()) {
+            "image/jpeg", "image/jpg" -> "jpg"
+            "image/png" -> "png"
+            "image/webp" -> "webp"
+            "image/avif" -> "avif"
+            "image/gif" -> "gif"
+            else ->
+                url.substringAfterLast('/').substringBefore('?').substringAfterLast('.', "jpg")
+                    .lowercase()
+                    .takeIf { it in setOf("jpg", "jpeg", "png", "webp", "avif", "gif") }
+                    ?: "jpg"
+        }
+
     // ── Shelves (named reading lists) ────────────────────────────────
 
     /** Named shelf. Membership is edition-scoped: `editionIds` in shelf order. */

@@ -12,6 +12,8 @@ import net.olamaelcu.livtet.ffi.EmptyMessage
 data class LibraryUiState(
     val books: List<Book> = emptyList(),
     val shelves: List<Bridge.Shelf> = emptyList(),
+    /** Book id → local cover file, for the covers already on disk. */
+    val coverPaths: Map<String, String> = emptyMap(),
     val emptyMessage: EmptyMessage? = null,
     val isLoading: Boolean = false,
     val error: String? = null,
@@ -39,9 +41,18 @@ class LibraryViewModel : ViewModel() {
                 )
                 val empty = Bridge.getEmptyStateQuotation()
                 val shelves = Bridge.listShelves()
+                // Resolving here rather than in composition keeps the network
+                // off the frame and lets a hit be served from disk.
+                val coverPaths =
+                    books.mapNotNull { book ->
+                        val editionId = book.primaryEditionId ?: return@mapNotNull null
+                        val cover = book.coverUrl ?: return@mapNotNull null
+                        Bridge.resolveCoverPath(editionId, cover)?.let { book.id to it }
+                    }.toMap()
                 _state.value = LibraryUiState(
                     books = books,
                     shelves = shelves,
+                    coverPaths = coverPaths,
                     emptyMessage = empty,
                     isLoading = false,
                     error = null,

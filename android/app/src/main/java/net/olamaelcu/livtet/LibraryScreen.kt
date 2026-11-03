@@ -90,6 +90,7 @@ fun LibraryScreen(
                 ShelfLanes(
                     books = state.books,
                     shelves = state.shelves,
+                    coverPaths = state.coverPaths,
                     onLongPress = { shelfTarget = it },
                 )
         }
@@ -172,6 +173,7 @@ private fun shelvesOf(books: List<Book>, filedEditionIds: Set<String>): List<She
 private fun ShelfLanes(
     books: List<Book>,
     shelves: List<Bridge.Shelf>,
+    coverPaths: Map<String, String>,
     onLongPress: (Book) -> Unit,
 ) {
     val filedEditionIds = remember(shelves) { shelves.flatMap { it.editionIds }.toSet() }
@@ -211,7 +213,7 @@ private fun ShelfLanes(
                     }
                 } else {
                     item(key = "shelf-open-row-${open.id}") {
-                        ShelfRow(books = filed, onLongPress = onLongPress)
+                        ShelfRow(books = filed, coverPaths = coverPaths, onLongPress = onLongPress)
                     }
                 }
                 item(key = "shelf-open-edge-${open.id}") { ShelfEdge() }
@@ -222,7 +224,11 @@ private fun ShelfLanes(
                 ShelfHeader(label = shelf.label, count = shelf.books.size)
             }
             item(key = "row-${shelf.key}") {
-                ShelfRow(books = shelf.books, onLongPress = onLongPress)
+                ShelfRow(
+                    books = shelf.books,
+                    coverPaths = coverPaths,
+                    onLongPress = onLongPress,
+                )
             }
             item(key = "shelf-${shelf.key}") { ShelfEdge() }
         }
@@ -238,7 +244,11 @@ private fun ShelfLanes(
  * cover fully visible without fighting a scroll the reader started.
  */
 @Composable
-private fun ShelfRow(books: List<Book>, onLongPress: (Book) -> Unit) {
+private fun ShelfRow(
+    books: List<Book>,
+    coverPaths: Map<String, String>,
+    onLongPress: (Book) -> Unit,
+) {
     val listState = rememberLazyListState()
     LaunchedEffect(books.firstOrNull()?.id) {
         if (listState.firstVisibleItemIndex != 0) listState.scrollToItem(0)
@@ -250,7 +260,11 @@ private fun ShelfRow(books: List<Book>, onLongPress: (Book) -> Unit) {
         horizontalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         items(books, key = { it.id }) { book ->
-            CoverTile(book = book, onLongPress = { onLongPress(book) })
+            CoverTile(
+                book = book,
+                localCover = coverPaths[book.id],
+                onLongPress = { onLongPress(book) },
+            )
         }
     }
 }
@@ -288,7 +302,7 @@ private fun ShelfEdge() {
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-private fun CoverTile(book: Book, onLongPress: () -> Unit) {
+private fun CoverTile(book: Book, localCover: String?, onLongPress: () -> Unit) {
     val context = LocalContext.current
     val haptics = LocalHapticFeedback.current
     val koreaderInstalled by
@@ -313,7 +327,7 @@ private fun CoverTile(book: Book, onLongPress: () -> Unit) {
                     }
         ) {
             BookCover(
-                url = book.coverUrl,
+                url = localCover ?: book.coverUrl,
                 title = book.title,
                 width = 104.dp,
                 height = 156.dp,
