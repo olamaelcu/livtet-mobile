@@ -22,6 +22,7 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -165,13 +166,46 @@ private fun ShelfLanes(
     onLongPress: (Book) -> Unit,
 ) {
     val lanes = remember(books) { shelvesOf(books) }
+    var openShelfId by remember { mutableStateOf<String?>(null) }
 
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
         contentPadding = PaddingValues(top = 8.dp, bottom = 120.dp),
     ) {
         if (shelves.isNotEmpty()) {
-            item(key = "named-shelves") { NamedShelfStrip(shelves = shelves) }
+            item(key = "named-shelves") {
+                NamedShelfStrip(
+                    shelves = shelves,
+                    openShelfId = openShelfId,
+                    onToggle = { shelf ->
+                        openShelfId = if (openShelfId == shelf.id) null else shelf.id
+                    },
+                )
+            }
+            val open = shelves.firstOrNull { it.id == openShelfId }
+            if (open != null) {
+                // A shelf stores editions; a row is a work, so only books whose
+                // primary edition is on the shelf can appear here.
+                val filed = books.filter { book -> book.primaryEditionId in open.editionIds }
+                item(key = "shelf-open-header-${open.id}") {
+                    ShelfHeader(label = open.name, count = filed.size)
+                }
+                if (filed.isEmpty()) {
+                    item(key = "shelf-open-empty-${open.id}") {
+                        Text(
+                            text = "Nothing from this shelf is in the library view.",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 8.dp),
+                        )
+                    }
+                } else {
+                    item(key = "shelf-open-row-${open.id}") {
+                        ShelfRow(books = filed, onLongPress = onLongPress)
+                    }
+                }
+                item(key = "shelf-open-edge-${open.id}") { ShelfEdge() }
+            }
         }
         lanes.forEach { shelf ->
             item(key = "header-${shelf.key}") {
@@ -286,9 +320,17 @@ private fun CoverTile(book: Book, onLongPress: () -> Unit) {
     }
 }
 
-/** Named shelves, so what a long-press can file into is visible. */
+/**
+ * Named shelves. A chip opens that shelf's covers inline, directly under the
+ * strip, so a shelf reads like any other lane instead of a separate screen.
+ */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun NamedShelfStrip(shelves: List<Bridge.Shelf>) {
+private fun NamedShelfStrip(
+    shelves: List<Bridge.Shelf>,
+    openShelfId: String?,
+    onToggle: (Bridge.Shelf) -> Unit,
+) {
     Column(modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 20.dp)) {
         Text(
             text = "Shelves",
@@ -298,10 +340,10 @@ private fun NamedShelfStrip(shelves: List<Bridge.Shelf>) {
         )
         LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             items(shelves, key = { it.id }) { shelf ->
-                Text(
-                    text = "${shelf.name} · ${shelf.editionIds.size}",
-                    style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                FilterChip(
+                    selected = shelf.id == openShelfId,
+                    onClick = { onToggle(shelf) },
+                    label = { Text("${shelf.name} · ${shelf.editionIds.size}") },
                     modifier = Modifier.padding(top = 6.dp),
                 )
             }
