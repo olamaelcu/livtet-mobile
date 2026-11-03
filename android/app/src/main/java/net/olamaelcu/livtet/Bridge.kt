@@ -18,12 +18,17 @@ import net.olamaelcu.livtet.ffi.WorkSummary
 import net.olamaelcu.livtet.types.SortDirection
 import net.olamaelcu.livtet.types.PublishedDate
 import net.olamaelcu.livtet.types.WorkSortBy
+import net.olamaelcu.livtet.types.WorkStatus
 
 /** A book (work) row for the Library screen (`Bridge.listBooks`). */
 data class Book(
     val id: String,
     val title: String,
     val description: String?,
+    /** Catalog cover URL, or a local cover file path; null when the edition has neither. */
+    val coverUrl: String? = null,
+    /** Reading status; null for a work that was never shelved. */
+    val status: WorkStatus? = null,
 )
 
 /** A contributor to attach while importing an edition. */
@@ -217,7 +222,13 @@ object Bridge {
         withContext(Dispatchers.IO) { requireStore().resetAndSeed(numWorks.toUInt()) }
 
     private fun WorkSummary.toBook(): Book =
-        Book(id = id.toString(), title = title, description = description)
+        Book(
+            id = id.toString(),
+            title = title,
+            description = description,
+            coverUrl = coverUrl,
+            status = status,
+        )
 
     // ── Import (catalog edition → library) ────────────────────────
 
@@ -233,6 +244,7 @@ object Bridge {
         title: String,
         description: String?,
         publishedYear: Int? = null,
+        coverImageUrl: String? = null,
         contributors: List<ContributorInput> = emptyList(),
         identifiers: List<String> = emptyList(),
     ): String =
@@ -251,6 +263,7 @@ object Bridge {
                         title = title,
                         description = description,
                         publishedDate = publishedYear?.let { PublishedDate.Year(it) },
+                        coverImageUrl = coverImageUrl,
                         formatId = null,
                         languageId = null,
                         notes = null,

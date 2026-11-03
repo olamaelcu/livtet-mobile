@@ -113,6 +113,7 @@ class SearchEditionsViewModel @Inject constructor(private val client: BiblioClie
                     title = edition.title,
                     description = edition.description,
                     publishedYear = edition.publishedYear,
+                    coverImageUrl = edition.coverImageUrl,
                     contributors =
                         edition.contributors.orEmpty().mapNotNull { contribution ->
                             val name = contribution.contributorName() ?: return@mapNotNull null
