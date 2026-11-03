@@ -90,6 +90,37 @@ class LibraryViewModel : ViewModel() {
         }
     }
 
+    /** Move a book one place earlier or later on its shelf. */
+    fun moveInShelf(shelf: Bridge.Shelf, book: Book, offset: Int) {
+        val editionId = book.primaryEditionId ?: return
+        val current = shelf.editionIds.indexOf(editionId)
+        val target = current + offset
+        if (current < 0 || target !in shelf.editionIds.indices) return
+        viewModelScope.launch {
+            try {
+                Bridge.moveInShelf(shelf.id, editionId, target)
+                load()
+            } catch (e: Exception) {
+                _state.value =
+                    _state.value.copy(error = e.message ?: "Could not reorder this shelf.")
+            }
+        }
+    }
+
+    /** Take a book off a shelf. */
+    fun removeFromShelf(shelf: Bridge.Shelf, book: Book) {
+        val editionId = book.primaryEditionId ?: return
+        viewModelScope.launch {
+            try {
+                Bridge.removeFromShelf(shelf.id, editionId)
+                load()
+            } catch (e: Exception) {
+                _state.value =
+                    _state.value.copy(error = e.message ?: "Could not remove this book.")
+            }
+        }
+    }
+
     companion object {
         const val PAGE_SIZE = 50
     }

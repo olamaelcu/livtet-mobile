@@ -74,6 +74,7 @@ fun LibraryScreen(
     val state by viewModel.state.collectAsState()
     var showSearch by remember { mutableStateOf(false) }
     var shelfTarget by remember { mutableStateOf<Book?>(null) }
+    var shelfAction by remember { mutableStateOf<Pair<Bridge.Shelf, Book>?>(null) }
 
     LaunchedEffect(Unit) { viewModel.load() }
 
@@ -92,6 +93,7 @@ fun LibraryScreen(
                     shelves = state.shelves,
                     coverPaths = state.coverPaths,
                     onLongPress = { shelfTarget = it },
+                    onShelfLongPress = { shelf, book -> shelfAction = shelf to book },
                 )
         }
 
@@ -119,6 +121,29 @@ fun LibraryScreen(
                 shelfTarget = null
             },
             onDismiss = { shelfTarget = null },
+        )
+    }
+
+    shelfAction?.let { (shelf, book) ->
+        ShelfBookActions(
+            book = book,
+            canMoveEarlier = shelf.editionIds.indexOf(book.primaryEditionId) > 0,
+            canMoveLater =
+                shelf.editionIds.indexOf(book.primaryEditionId) in
+                    0 until (shelf.editionIds.size - 1),
+            onMoveEarlier = {
+                viewModel.moveInShelf(shelf, book, -1)
+                shelfAction = null
+            },
+            onMoveLater = {
+                viewModel.moveInShelf(shelf, book, +1)
+                shelfAction = null
+            },
+            onRemove = {
+                viewModel.removeFromShelf(shelf, book)
+                shelfAction = null
+            },
+            onDismiss = { shelfAction = null },
         )
     }
 
@@ -175,6 +200,7 @@ private fun ShelfLanes(
     shelves: List<Bridge.Shelf>,
     coverPaths: Map<String, String>,
     onLongPress: (Book) -> Unit,
+    onShelfLongPress: (Bridge.Shelf, Book) -> Unit,
 ) {
     val filedEditionIds = remember(shelves) { shelves.flatMap { it.editionIds }.toSet() }
     val lanes = remember(books, filedEditionIds) { shelvesOf(books, filedEditionIds) }
@@ -197,8 +223,12 @@ private fun ShelfLanes(
             val open = shelves.firstOrNull { it.id == openShelfId }
             if (open != null) {
                 // A shelf stores editions; a row is a work, so only books whose
-                // primary edition is on the shelf can appear here.
-                val filed = books.filter { book -> book.primaryEditionId in open.editionIds }
+                // primary edition is on the shelf can appear here. The shelf's own
+                // order decides the lane: sorting by library order would hide a move.
+                val filed =
+                    books
+                        .filter { book -> book.primaryEditionId in open.editionIds }
+                        .sortedBy { book -> open.editionIds.indexOf(book.primaryEditionId) }
                 item(key = "shelf-open-header-${open.id}") {
                     ShelfHeader(label = open.name, count = filed.size)
                 }
@@ -213,7 +243,11 @@ private fun ShelfLanes(
                     }
                 } else {
                     item(key = "shelf-open-row-${open.id}") {
-                        ShelfRow(books = filed, coverPaths = coverPaths, onLongPress = onLongPress)
+                        ShelfRow(
+                            books = filed,
+                            coverPaths = coverPaths,
+                            onLongPress = { book -> onShelfLongPress(open, book) },
+                        )
                     }
                 }
                 item(key = "shelf-open-edge-${open.id}") { ShelfEdge() }
@@ -373,6 +407,44 @@ private fun NamedShelfStrip(
             }
         }
     }
+}
+
+/**
+ * What a long-press on a shelved cover offers: move it along the shelf, or take
+ * it off. Positions are the shelf's own order, so both moves are one step.
+ */
+@Composable
+private fun ShelfBookActions(
+    book: Book,
+    canMoveEarlier: Boolean,
+    canMoveLater: Boolean,
+    onMoveEarlier: () -> Unit,
+    onMoveLater: () -> Unit,
+    onRemove: () -> Unit,
+    onDismiss: () -> Unit,
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Shelf order") },
+        text = {
+            Column {
+                Text(
+                    text = book.title,
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.SemiBold,
+                )
+                TextButton(onClick = onMoveEarlier, enabled = canMoveEarlier) {
+                    Text("Move earlier")
+                }
+                TextButton(onClick = onMoveLater, enabled = canMoveLater) {
+                    Text("Move later")
+                }
+                TextButton(onClick = onRemove) { Text("Remove from this shelf") }
+            }
+        },
+        confirmButton = {},
+        dismissButton = { TextButton(onClick = onDismiss) { Text("Cancel") } },
+    )
 }
 
 /**

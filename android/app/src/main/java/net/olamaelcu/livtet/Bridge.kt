@@ -333,6 +333,14 @@ object Bridge {
     suspend fun addToShelf(shelfId: String, editionId: String) =
         withContext(Dispatchers.IO) { requireStore().addEditionToList(shelfId, editionId) }
 
+    /** Move a book to [position] (0-based) on its shelf; returns the new order. */
+    suspend fun moveInShelf(shelfId: String, editionId: String, position: Int): List<String> =
+        withContext(Dispatchers.IO) {
+            requireStore()
+                .moveEditionInList(shelfId, editionId, position.coerceAtLeast(0).toUInt())
+                .map { it.toString() }
+        }
+
     suspend fun removeFromShelf(shelfId: String, editionId: String): Boolean =
         withContext(Dispatchers.IO) {
             requireStore().removeEditionFromList(shelfId, editionId)
