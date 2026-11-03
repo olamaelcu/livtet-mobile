@@ -19,6 +19,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -32,6 +33,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -47,7 +49,7 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import net.olamaelcu.livtet.biblio.BookCover
 import net.olamaelcu.livtet.biblio.SearchEditionsScreen
 import net.olamaelcu.livtet.ffi.EmptyMessage
@@ -68,17 +70,28 @@ import net.olamaelcu.livtet.types.WorkStatus
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LibraryScreen(
-    viewModel: LibraryViewModel = viewModel(),
+    viewModel: LibraryViewModel = hiltViewModel(),
     onAddBook: () -> Unit = {},
 ) {
     val state by viewModel.state.collectAsState()
     var showSearch by remember { mutableStateOf(false) }
     var shelfTarget by remember { mutableStateOf<Book?>(null) }
     var shelfAction by remember { mutableStateOf<Pair<Bridge.Shelf, Book>?>(null) }
+    var deleteTarget by remember { mutableStateOf<Book?>(null) }
 
     LaunchedEffect(Unit) { viewModel.load() }
 
-    Box(modifier = Modifier.fillMaxSize()) {
+    Column(modifier = Modifier.fillMaxSize()) {
+        OutlinedTextField(
+            value = state.query,
+            onValueChange = viewModel::onQueryChange,
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
+            placeholder = { Text("Search your library") },
+            leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
+            singleLine = true,
+        )
+
+        Box(modifier = Modifier.fillMaxSize()) {
         when {
             state.isLoading && state.books.isEmpty() -> {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -92,8 +105,10 @@ fun LibraryScreen(
                     books = state.books,
                     shelves = state.shelves,
                     coverPaths = state.coverPaths,
+                    isLoadingMore = state.isLoadingMore,
                     onLongPress = { shelfTarget = it },
                     onShelfLongPress = { shelf, book -> shelfAction = shelf to book },
+                    onLoadMore = viewModel::loadMore,
                 )
         }
 
@@ -105,6 +120,7 @@ fun LibraryScreen(
             modifier = Modifier.align(Alignment.BottomEnd).padding(end = 16.dp, bottom = 96.dp),
         ) {
             Icon(Icons.Default.Add, contentDescription = "Search editions (XRPC)")
+        }
         }
     }
 
@@ -120,7 +136,35 @@ fun LibraryScreen(
                 viewModel.addToShelf(book, shelfId = null, newShelfName = name)
                 shelfTarget = null
             },
+            onDelete = {
+                deleteTarget = book
+                shelfTarget = null
+            },
             onDismiss = { shelfTarget = null },
+        )
+    }
+
+    deleteTarget?.let { book ->
+        AlertDialog(
+            onDismissRequest = { deleteTarget = null },
+            title = { Text("Remove from library?") },
+            text = {
+                Text(
+                    "\"${book.title}\" and its editions, shelves and reading status go with it.",
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        viewModel.deleteBook(book)
+                        deleteTarget = null
+                    }
+                ) {
+                    Text("Remove")
+                }
+            },
+            dismissButton = { TextButton(onClick = { deleteTarget = null }) { Text("Cancel") } },
         )
     }
 
@@ -199,14 +243,28 @@ private fun ShelfLanes(
     books: List<Book>,
     shelves: List<Bridge.Shelf>,
     coverPaths: Map<String, String>,
+    isLoadingMore: Boolean,
     onLongPress: (Book) -> Unit,
     onShelfLongPress: (Bridge.Shelf, Book) -> Unit,
+    onLoadMore: () -> Unit,
 ) {
     val filedEditionIds = remember(shelves) { shelves.flatMap { it.editionIds }.toSet() }
     val lanes = remember(books, filedEditionIds) { shelvesOf(books, filedEditionIds) }
     var openShelfId by remember { mutableStateOf<String?>(null) }
 
+    // Fetch the next page once the reader is a screen away from the end, so the
+    // list does not stall on a spinner in the middle of a scroll.
+    val listState = rememberLazyListState()
+    val nearEnd by remember {
+        derivedStateOf {
+            val last = listState.layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: 0
+            last >= listState.layoutInfo.totalItemsCount - LOAD_MORE_THRESHOLD
+        }
+    }
+    LaunchedEffect(nearEnd) { if (nearEnd) onLoadMore() }
+
     LazyColumn(
+        state = listState,
         modifier = Modifier.fillMaxSize(),
         contentPadding = PaddingValues(top = 8.dp, bottom = 120.dp),
     ) {
@@ -266,8 +324,18 @@ private fun ShelfLanes(
             }
             item(key = "shelf-${shelf.key}") { ShelfEdge() }
         }
+        if (isLoadingMore) {
+            item(key = "loading-more") {
+                Box(modifier = Modifier.fillMaxWidth().padding(16.dp), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator()
+                }
+            }
+        }
     }
 }
+
+/** How close to the end of the list the next page starts loading. */
+private const val LOAD_MORE_THRESHOLD = 3
 
 /**
  * One lane's covers.
@@ -459,6 +527,7 @@ private fun ShelfPicker(
     shelves: List<Bridge.Shelf>,
     onPick: (Bridge.Shelf) -> Unit,
     onCreate: (String) -> Unit,
+    onDelete: () -> Unit,
     onDismiss: () -> Unit,
 ) {
     var newName by remember { mutableStateOf("") }
@@ -493,6 +562,7 @@ private fun ShelfPicker(
                         singleLine = true,
                         modifier = Modifier.padding(top = 8.dp),
                     )
+                    TextButton(onClick = onDelete) { Text("Remove from library") }
                 }
             }
         },

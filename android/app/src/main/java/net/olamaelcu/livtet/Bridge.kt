@@ -151,6 +151,7 @@ object Bridge {
         limit: Int = 50,
         offset: Int = 0,
         order: BookSearchSortOrder = BookSearchSortOrder.DESCENDING,
+        query: String? = null,
     ): List<Book> =
         withContext(Dispatchers.IO) {
             val sortDirection =
@@ -164,6 +165,7 @@ object Bridge {
                     offset = offset.toUInt(),
                     sortBy = WorkSortBy.CREATED_AT,
                     sortDirection = sortDirection,
+                    query = query?.takeIf { it.isNotBlank() },
                 )
                 .map { w -> w.toBook() }
         }
@@ -255,6 +257,18 @@ object Bridge {
             runCatching { store.storeCover(editionId, root, download.ext, download.bytes) }
                 .getOrNull()
         }
+
+    /** Remove a work, its editions, and its shelf/status rows. */
+    suspend fun deleteBook(workId: String): Boolean =
+        withContext(Dispatchers.IO) { requireStore().deleteWork(workId) }
+
+    /** Identifier URNs stored against an edition, used when backfilling a cover. */
+    suspend fun listEditionIdentifiers(editionId: String): List<String> =
+        withContext(Dispatchers.IO) { requireStore().listEditionIdentifiers(editionId) }
+
+    /** Record a catalog cover URL for an edition that was imported without one. */
+    suspend fun setEditionCoverUrl(editionId: String, coverUrl: String) =
+        withContext(Dispatchers.IO) { requireStore().setEditionCoverUrl(editionId, coverUrl) }
 
     private class DownloadedImage(val bytes: ByteArray, val ext: String)
 
