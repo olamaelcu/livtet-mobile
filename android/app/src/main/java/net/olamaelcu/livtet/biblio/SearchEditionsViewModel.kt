@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import net.olamaelcu.livtet.Bridge
+import net.olamaelcu.livtet.ContributorInput
 
 /** UI state for the edition search sheet. */
 data class SearchEditionsUiState(
@@ -111,6 +112,13 @@ class SearchEditionsViewModel @Inject constructor(private val client: BiblioClie
                 Bridge.importEdition(
                     title = edition.title,
                     description = edition.description,
+                    publishedYear = edition.publishedYear,
+                    contributors =
+                        edition.contributors.orEmpty().mapNotNull { contribution ->
+                            val name = contribution.contributorName() ?: return@mapNotNull null
+                            val role = contribution.role ?: return@mapNotNull null
+                            ContributorInput(name = name, role = role)
+                        },
                     identifiers = urns,
                 )
                 _state.value = _state.value.copy(importingUri = null, importedUri = edition.uri)

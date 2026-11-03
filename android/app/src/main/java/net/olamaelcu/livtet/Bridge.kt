@@ -16,6 +16,7 @@ import net.olamaelcu.livtet.ffi.NewEdition
 import net.olamaelcu.livtet.ffi.SeedStats
 import net.olamaelcu.livtet.ffi.WorkSummary
 import net.olamaelcu.livtet.types.SortDirection
+import net.olamaelcu.livtet.types.PublishedDate
 import net.olamaelcu.livtet.types.WorkSortBy
 
 /** A book (work) row for the Library screen (`Bridge.listBooks`). */
@@ -24,6 +25,9 @@ data class Book(
     val title: String,
     val description: String?,
 )
+
+/** A contributor to attach while importing an edition. */
+data class ContributorInput(val name: String, val role: String)
 
 enum class BookSearchSortOrder {
     ASCENDING,
@@ -228,7 +232,9 @@ object Bridge {
     suspend fun importEdition(
         title: String,
         description: String?,
-        identifiers: List<String>,
+        publishedYear: Int? = null,
+        contributors: List<ContributorInput> = emptyList(),
+        identifiers: List<String> = emptyList(),
     ): String =
         withContext(Dispatchers.IO) {
             val store = requireStore()
@@ -244,7 +250,7 @@ object Bridge {
                         workId = work.id,
                         title = title,
                         description = description,
-                        publishedDate = null,
+                        publishedDate = publishedYear?.let { PublishedDate.Year(it) },
                         formatId = null,
                         languageId = null,
                         notes = null,
@@ -253,8 +259,32 @@ object Bridge {
             identifiers.distinct().forEach { urn ->
                 store.addEditionIdentifier(editionId = edition.id, identifier = urn)
             }
+            contributors
+                .distinctBy { it.name.lowercase() to it.role.lowercase() }
+                .forEach { contribution ->
+                    store.addEditionContributor(
+                        editionId = edition.id,
+                        contributorId = contributorId(store, contribution.name),
+                        role = contribution.role,
+                    )
+                }
             edition.id.toString()
         }
+
+    /**
+     * The contributor with exactly this name, or a new row.
+     *
+     * `authors` has no unique constraint, so importing the same person twice
+     * would otherwise leave two rows that a rename could not keep in step.
+     */
+    private suspend fun contributorId(
+        store: net.olamaelcu.livtet.ffi.LivtetStore,
+        name: String,
+    ): String {
+        val existing =
+            store.findContributors(name).firstOrNull { it.name.equals(name, ignoreCase = true) }
+        return existing?.id ?: store.createContributor(name.trim()).id
+    }
 
     /** True when any of [urns] already sits on an edition in the library. */
     suspend fun isInLibrary(urns: List<String>): Boolean =
