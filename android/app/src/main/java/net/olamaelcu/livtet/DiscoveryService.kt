@@ -11,11 +11,17 @@ import kotlinx.coroutines.flow.asStateFlow
 /**
  * A discovered livtet/koreader sync peer on the local network.
  *
- * `deviceId` is the stable ULID advertised in the mDNS TXT `id` record by the desktop sync server.
- * `host` and `port` identify the endpoint; `appVersion` and `deviceFlavor` come from the other TXT
- * fields.
+ * The TXT record carries two distinct identifiers (`core/livtet-sync-server/src/mdns.rs`):
+ * `id` is the iroh node id that pairing dials, and `device_id` is the stable device ULID. They are
+ * kept apart deliberately — `nodeId` is what a future pairing flow hands to the core, `deviceId` is
+ * what identifies the device to the user and to stored state.
+ *
+ * `name` is the peer's friendly display name from the TXT `name` record, falling back to the mDNS
+ * instance label. `host` and `port` identify the endpoint; `appVersion` and `deviceFlavor` come from
+ * the other TXT fields.
  */
 data class DiscoveredSyncDevice(
+    val nodeId: String,
     val deviceId: String,
     val name: String,
     val host: String,
@@ -65,8 +71,14 @@ class DiscoveryService(private val context: Context) {
                             val attrs = info.attributes
                             val discovered =
                                 DiscoveredSyncDevice(
-                                    deviceId = attrs["id"]?.toString(Charsets.UTF_8).orEmpty(),
-                                    name = instance,
+                                    nodeId = attrs["id"]?.toString(Charsets.UTF_8).orEmpty(),
+                                    deviceId =
+                                        attrs["device_id"]?.toString(Charsets.UTF_8).orEmpty(),
+                                    name =
+                                        attrs["name"]
+                                            ?.toString(Charsets.UTF_8)
+                                            ?.takeIf { it.isNotBlank() }
+                                            ?: instance,
                                     host = info.host?.hostAddress.orEmpty(),
                                     port = info.port,
                                     appVersion = attrs["version"]?.toString(Charsets.UTF_8),

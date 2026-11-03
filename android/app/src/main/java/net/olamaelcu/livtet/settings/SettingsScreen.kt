@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -40,15 +41,20 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import net.olamaelcu.livtet.BuildConfig
+import net.olamaelcu.livtet.DiscoveredSyncDevice
 import net.olamaelcu.livtet.SeedResultMobile
 
 /**
- * Settings screen. Three sections previously existed — Paired Devices, Plugins, and
- * Labs/Appearance. The Paired Devices and Plugins sections depended on `Bridge.getPairedDevices`,
- * `Bridge.listInstalledPlugins`, `Bridge.getNetworkAddresses`, `Bridge.pairDevice`,
- * `Bridge.unpairDevice`, and `Bridge.setPluginEnabled` — none of which are present in the current
- * `core/livtet-ffi` crate. Those sections are removed until upstream catches up; Labs and
- * Appearance remain.
+ * Settings screen. Four sections previously existed — Paired Devices, Discovered on this network,
+ * Plugins, and Labs/Appearance. The Paired Devices and Plugins sections depended on
+ * `Bridge.getPairedDevices`, `Bridge.listInstalledPlugins`, `Bridge.getNetworkAddresses`,
+ * `Bridge.pairDevice`, `Bridge.unpairDevice`, and `Bridge.setPluginEnabled` — none of which are
+ * present in the current `core/livtet-ffi` crate. Those sections are removed until upstream catches
+ * up.
+ *
+ * Sync & Discovery is back, but read-only: it renders whatever `DiscoveryService` found over mDNS,
+ * which needs no FFI. The pairing action behind it is still gated on the core exposing a pair call,
+ * so the dialog says so instead of pretending a request was sent.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -56,6 +62,7 @@ fun SettingsScreen(viewModel: SettingsViewModel = viewModel()) {
     val state by viewModel.state.collectAsState()
     val context = LocalContext.current
     val themeMode by ThemeManager.mode(context).collectAsState(initial = ThemeManager.Mode.SYSTEM)
+    var pairDialogOpen by rememberSaveable { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
         viewModel.load()
@@ -69,10 +76,9 @@ fun SettingsScreen(viewModel: SettingsViewModel = viewModel()) {
                 verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 item {
-                    EmptyStateHint(
-                        "Paired Devices, Plugins, and Pair New Device are unavailable in this build — " +
-                            "the Rust core does not yet expose the supporting FFI calls." +
-                            " They will return when upstream livtet-ffi is restored."
+                    SyncDiscoverySection(
+                        devices = state.discoveredDevices,
+                        onPairNewDevice = { pairDialogOpen = true },
                     )
                 }
 
@@ -117,6 +123,9 @@ fun SettingsScreen(viewModel: SettingsViewModel = viewModel()) {
                 }
             }
         }
+        if (pairDialogOpen) {
+            PairNewDeviceDialog(onDismiss = { pairDialogOpen = false })
+        }
     }
 }
 
@@ -138,6 +147,104 @@ private fun EmptyStateHint(text: String) {
         fontSize = 13.sp,
         color = MaterialTheme.colorScheme.onSurfaceVariant,
         modifier = Modifier.padding(12.dp),
+    )
+}
+
+/**
+ * Discovered peers on the LAN, plus the entry point to pairing.
+ *
+ * Read-only on purpose: `DiscoveryService` fills this from mDNS, while pairing needs an FFI call the
+ * core does not expose yet, so rows are not clickable and nothing here claims a peer is paired.
+ */
+@Composable
+private fun SyncDiscoverySection(
+    devices: List<DiscoveredSyncDevice>,
+    onPairNewDevice: () -> Unit,
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+    ) {
+        Column(modifier = Modifier.padding(12.dp)) {
+            Text("Sync & Discovery", fontWeight = FontWeight.Medium)
+            Spacer(Modifier.size(4.dp))
+            if (devices.isEmpty()) {
+                Text(
+                    text = "No devices on this network yet. Open Livtet on a desktop that is on the " +
+                        "same Wi-Fi.",
+                    fontSize = 12.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            } else {
+                devices.forEach { device -> DeviceRow(device) }
+            }
+            Spacer(Modifier.size(8.dp))
+            FilledTonalButton(onClick = onPairNewDevice, modifier = Modifier.fillMaxWidth()) {
+                Text("Pair new device")
+            }
+        }
+    }
+}
+
+/** One discovered peer: friendly name, then the id/version/flavor the TXT record carried. */
+@Composable
+private fun DeviceRow(device: DiscoveredSyncDevice) {
+    Column(modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp)) {
+        Text(device.name, fontWeight = FontWeight.Medium)
+        val meta =
+            buildList {
+                if (device.deviceId.isNotBlank()) add(device.deviceId.take(8))
+                device.appVersion?.takeIf { it.isNotBlank() }?.let { add("v$it") }
+                device.deviceFlavor?.takeIf { it.isNotBlank() }?.let(::add)
+            }
+        if (meta.isNotEmpty()) {
+            Spacer(Modifier.size(2.dp))
+            Text(
+                text = meta.joinToString(" · "),
+                fontSize = 11.sp,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+    }
+}
+
+/**
+ * Pairing dialog. Pairing this peer needs a channel to the core that is not wired yet.
+ *
+ * The name field is the part of the flow that has an agreed shape — it is what the peer would be
+ * saved as — so it stays editable and the confirm button stays disabled, rather than reporting a
+ * request that was never sent. Once `core/livtet-ffi` exposes a pair call for
+ * `DiscoveredSyncDevice.nodeId`, this dialog hands it `name` and closes.
+ */
+@Composable
+private fun PairNewDeviceDialog(onDismiss: () -> Unit) {
+    var name by rememberSaveable { mutableStateOf("") }
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Pair new device") },
+        text = {
+            Column {
+                OutlinedTextField(
+                    value = name,
+                    onValueChange = { name = it },
+                    singleLine = true,
+                    label = { Text("Device name") },
+                    modifier = Modifier.fillMaxWidth(),
+                )
+                Spacer(Modifier.size(8.dp))
+                Text(
+                    text = "Pairing needs a sync call the Livtet core has not published yet. Devices " +
+                        "found on your network are listed above, but no pairing request is sent from " +
+                        "this build.",
+                    fontSize = 12.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = {}, enabled = false) { Text("Pair") }
+        },
+        dismissButton = { TextButton(onClick = onDismiss) { Text("Close") } },
     )
 }
 

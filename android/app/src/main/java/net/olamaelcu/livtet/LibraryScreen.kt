@@ -137,10 +137,13 @@ private data class Shelf(val key: String, val label: String, val books: List<Boo
 
 /**
  * Lane order follows a reader's attention: what is being read, what is next,
- * then what is done. Works that were never shelved still have to appear, so
- * they get their own lane at the end rather than being dropped.
+ * then what is done. Works that sit on no shelf at all still have to appear, so
+ * they get the catch-all lane at the end rather than being dropped.
+ *
+ * A work counts as shelved when it has a reading status or is filed on a named
+ * shelf; either way it is listed where it was put, not in the catch-all.
  */
-private fun shelvesOf(books: List<Book>): List<Shelf> {
+private fun shelvesOf(books: List<Book>, filedEditionIds: Set<String>): List<Shelf> {
     val lanes =
         listOf(
             WorkStatus.READING to "Reading",
@@ -155,7 +158,13 @@ private fun shelvesOf(books: List<Book>): List<Shelf> {
             val lane = books.filter { it.status == status }
             if (lane.isEmpty()) null else Shelf(status.name, label, lane)
         }
-    val unshelved = books.filter { it.status == null }
+    // A book filed on a named shelf is shelved, so it belongs on that shelf and
+    // not in the catch-all: leaving it in both made the lane's name a lie.
+    val unshelved =
+        books.filter { book ->
+            book.status == null &&
+                book.primaryEditionId?.let { it !in filedEditionIds } != false
+        }
     return if (unshelved.isEmpty()) shelved else shelved + Shelf("unshelved", "Unshelved", unshelved)
 }
 
@@ -165,7 +174,8 @@ private fun ShelfLanes(
     shelves: List<Bridge.Shelf>,
     onLongPress: (Book) -> Unit,
 ) {
-    val lanes = remember(books) { shelvesOf(books) }
+    val filedEditionIds = remember(shelves) { shelves.flatMap { it.editionIds }.toSet() }
+    val lanes = remember(books, filedEditionIds) { shelvesOf(books, filedEditionIds) }
     var openShelfId by remember { mutableStateOf<String?>(null) }
 
     LazyColumn(

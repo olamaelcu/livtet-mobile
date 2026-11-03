@@ -23,8 +23,8 @@ import net.olamaelcu.livtet.SeedResultMobile
  * present in the current `core/livtet-ffi` crate. Those sections are dropped from the screen until
  * upstream catches up. Labs (DataStore) and Appearance (DataStore) still work and remain.
  *
- * `discoveredDevices` is kept so the mDNS DiscoveryService can still populate state; it's just not
- * surfaced in the UI yet.
+ * `discoveredDevices` is populated by the mDNS `DiscoveryService` and rendered read-only by the
+ * Sync & Discovery section until the core exposes a pairing call.
  */
 data class SettingsUiState(
     val discoveredDevices: List<DiscoveredSyncDevice> = emptyList(),
