@@ -11,6 +11,15 @@ import net.olamaelcu.livtet.ffi.LivtetStore
 import net.olamaelcu.livtet.ffi.NewEdition
 import net.olamaelcu.livtet.ffi.ReadingList
 import net.olamaelcu.livtet.ffi.SeedStats
+import net.olamaelcu.livtet.ffi.SyncOffer
+import net.olamaelcu.livtet.ffi.SyncPairedDevice
+import net.olamaelcu.livtet.ffi.SyncPairLink
+import net.olamaelcu.livtet.ffi.SyncPairingResult
+import net.olamaelcu.livtet.ffi.SyncPendingPairing
+import net.olamaelcu.livtet.ffi.SyncPullReport
+import net.olamaelcu.livtet.ffi.SyncReceivedBook
+import net.olamaelcu.livtet.ffi.SyncSentBook
+import net.olamaelcu.livtet.ffi.TransferProgressListener
 import net.olamaelcu.livtet.ffi.WorkSummary
 import net.olamaelcu.livtet.types.PublishedDate
 import net.olamaelcu.livtet.types.SortDirection
@@ -96,23 +105,17 @@ data class PluginHitMobile(
     val coverUrl: String?,
 )
 
-data class SyncConfig(val placeholder: String = "")
-
-enum class SyncState {
-    IDLE,
-}
-
 /**
  * Kotlin-facing library facade. Thin wrapper around the UniFFI [`LivtetStore`]; owns initialization
  * and presents the API surface the screens consume.
  *
- * Plugin lookup and peer sync are intentionally stubbed: the upstream plugin runtime and sync
- * engine do not exist in core right now. The call sites keep their exact API shape so only this
- * object changes when those subsystems return.
+ * Plugin lookup is still stubbed: the upstream plugin runtime does not exist in core yet.
  */
 object Bridge {
     @Volatile private var store: LivtetStore? = null
     private val initMutex = kotlinx.coroutines.sync.Mutex()
+    /** The database path handed to [init], which peer sync reopens per call. */
+    @Volatile private var databaseFile: String? = null
 
     suspend fun init(databasePath: String) {
         if (store != null) return
@@ -127,6 +130,7 @@ object Bridge {
             }
             val indexDir = File(dbDir, "search-index").absolutePath
             store = LivtetStore.open(databasePath, indexDir)
+            databaseFile = databasePath
             Log.i(TAG, "Bridge.init() COMPLETE")
         }
     }
@@ -179,15 +183,164 @@ object Bridge {
 
     // ── Sync (pair-with-desktop, sync-once, cancel) ────────────────
     //
-    // The sync engine does not exist upstream yet.
+    // Peer sync is the FFI's own client and server: the phone pairs *outward*
+    // by claiming a peer and *inward* by approving a claim, and it serves the
+    // books it holds to whoever it approved. Every call below reopens the
+    // library by path, so nothing here outlives [init].
 
-    suspend fun pairWithDesktop(config: SyncConfig) {
-        throw UnsupportedOperationException("Pairing is unavailable in this build")
+    /** This device's iroh secret key. Its node id derives from it, so it must persist. */
+    private fun secretKeyPath(): String =
+        File(LivtetApp.getInstance().filesDir, "sync/node.key").absolutePath
+
+    private fun requireDatabaseFile(): String =
+        checkNotNull(databaseFile) { "Bridge.init() was not called before peer sync" }
+
+    /**
+     * This device's stable id, created on first use.
+     *
+     * A peer records this id when the pairing is approved, so it has to survive
+     * reinstall-free restarts: it lives beside the sync key rather than in memory.
+     * The store accepts either of its textual forms, so the 32 hex digits of a
+     * UUID serve without pulling in an id crate.
+     */
+    private fun deviceIdForPeer(): String {
+        val file = File(LivtetApp.getInstance().filesDir, "sync/device.id")
+        file.parentFile?.mkdirs()
+        val existing = runCatching { file.readText().trim() }.getOrNull()
+        if (!existing.isNullOrEmpty()) return existing
+        val generated = java.util.UUID.randomUUID().toString().replace("-", "")
+        file.writeText(generated)
+        return generated
     }
 
-    suspend fun syncOnce(config: SyncConfig): SyncState = SyncState.IDLE
+    /**
+     * Announce this device on `_livtet-sync._tcp` and start answering peers.
+     *
+     * Returns the node id peers dial. Idempotent: a second call returns the id
+     * already advertised rather than binding another endpoint.
+     */
+    suspend fun advertiseForSync(deviceId: String, name: String): String =
+        net.olamaelcu.livtet.ffi.advertiseSyncDevice(
+            secretKeyPath = secretKeyPath(),
+            dbPath = requireDatabaseFile(),
+            deviceId = deviceId,
+            name = name,
+            deviceType = "android",
+        )
 
-    suspend fun cancelSync(deviceId: String) = Unit
+    /** Stop advertising; a no-op when this device is not. */
+    fun stopAdvertising() = net.olamaelcu.livtet.ffi.stopAdvertisingSyncDevice(secretKeyPath())
+
+    /** The pairing link a QR code renders, for the peer to scan. */
+    suspend fun pairingLink(name: String?): String =
+        net.olamaelcu.livtet.ffi.pairLink(advertiseForSync(deviceIdForPeer(), name ?: ""), name)
+
+    /** Read a scanned pairing link. Throws [LivtetException.InvalidInput] when it is not one. */
+    fun parsePairingLink(link: String): SyncPairLink = net.olamaelcu.livtet.ffi.parsePairLink(link)
+
+    /** Claim the peer at `peerNodeId`; [waitSeconds] 0 returns while it is still pending. */
+    suspend fun pairWithPeer(
+        peerNodeId: String,
+        name: String,
+        waitSeconds: UInt = 0u,
+    ): SyncPairingResult =
+        net.olamaelcu.livtet.ffi.pairSyncDevice(
+            secretKeyPath = secretKeyPath(),
+            peerNodeId = peerNodeId,
+            deviceId = deviceIdForPeer(),
+            name = name,
+            deviceType = "android",
+            waitSecs = waitSeconds,
+        )
+
+    /** Keep waiting on a claim [pairWithPeer] left pending. */
+    suspend fun pairingStatus(
+        peerNodeId: String,
+        claim: String,
+        waitSeconds: UInt = 30u,
+    ): SyncPairingResult =
+        net.olamaelcu.livtet.ffi.syncPairingStatus(
+            secretKeyPath = secretKeyPath(),
+            peerNodeId = peerNodeId,
+            claim = claim,
+            waitSecs = waitSeconds,
+        )
+
+    /** Peers waiting on this device to approve them. */
+    suspend fun pendingPairings(): List<SyncPendingPairing> =
+        net.olamaelcu.livtet.ffi.syncPendingPairings(secretKeyPath())
+
+    /**
+     * Answer a claim. Approving returns the token the peer must present, which
+     * is worth recording alongside the device; rejecting returns `null`.
+     */
+    suspend fun decidePairing(nodeId: String, accept: Boolean): String? =
+        net.olamaelcu.livtet.ffi.syncDecidePairing(secretKeyPath(), nodeId, accept)
+
+    /** The devices this one is paired with, in either direction. */
+    suspend fun pairedDevices(): List<SyncPairedDevice> =
+        net.olamaelcu.livtet.ffi.syncPairedDevices(secretKeyPath())
+
+    /** Offer a book this device holds to a paired peer. */
+    suspend fun sendBook(editionId: String, deviceId: String): SyncSentBook =
+        net.olamaelcu.livtet.ffi.syncSendBook(secretKeyPath(), editionId, deviceId)
+
+    /**
+     * Pull a peer's changes into this library and record any books it offered.
+     *
+     * `sessionToken` is the one the peer issued this device when the pairing
+     * was approved; `booksDir`/`coversDir` are where an accepted offer lands.
+     */
+    suspend fun syncOnce(
+        peerNodeId: String,
+        sessionToken: String,
+        deviceId: String,
+        sinceVersion: Long = 0L,
+        limit: Long = 0L,
+    ): SyncPullReport =
+        net.olamaelcu.livtet.ffi.syncPull(
+            secretKeyPath = secretKeyPath(),
+            sessionToken = sessionToken,
+            dbPath = requireDatabaseFile(),
+            deviceId = deviceId,
+            peerNodeId = peerNodeId,
+            sinceVersion = sinceVersion,
+            limit = limit,
+        )
+
+    /** Accept an offered book, streaming it to `booksDir`. */
+    suspend fun acceptOffer(
+        peerNodeId: String,
+        sessionToken: String,
+        deviceId: String,
+        offer: SyncOffer,
+        booksDir: String,
+        coversDir: String,
+        progress: TransferProgressListener? = null,
+    ): SyncReceivedBook =
+        net.olamaelcu.livtet.ffi.syncOfferAccept(
+            secretKeyPath = secretKeyPath(),
+            sessionToken = sessionToken,
+            dbPath = requireDatabaseFile(),
+            deviceId = deviceId,
+            peerNodeId = peerNodeId,
+            offer = offer,
+            booksDir = booksDir,
+            coversDir = coversDir,
+            progress = progress,
+        )
+
+    /** Decline an offered book. */
+    suspend fun rejectOffer(
+        peerNodeId: String,
+        sessionToken: String,
+        offerId: String,
+    ) = net.olamaelcu.livtet.ffi.syncOfferReject(
+        secretKeyPath = secretKeyPath(),
+        sessionToken = sessionToken,
+        peerNodeId = peerNodeId,
+        offerId = offerId,
+    )
 
     // ── Dashboard ────────────────────────────────────────
 
