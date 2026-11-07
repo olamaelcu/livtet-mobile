@@ -28,16 +28,15 @@ sealed class ReaderError(message: String) : Exception(message) {
 /**
  * One publication open for reading.
  *
- * Owns the [`Publication`] the toolkit parsed and the navigator factory that
- * renders it. The session is UI-free on purpose: the app supplies the fragment
- * host, so this module stays testable without an Activity and the reading
- * screen can be rebuilt without touching how a file is opened.
+ * Owns the [`Publication`] the toolkit parsed and the navigator factory that renders it. The
+ * session is UI-free on purpose: the app supplies the fragment host, so this module stays testable
+ * without an Activity and the reading screen can be rebuilt without touching how a file is opened.
  *
- * Books reach this class one way: a peer offered one, `syncOfferAccept` wrote it
- * to `booksDir` and the store recorded the path on the edition. [open] takes that
- * path verbatim; it never fetches.
+ * Books reach this class one way: a peer offered one, `syncOfferAccept` wrote it to `booksDir` and
+ * the store recorded the path on the edition. [open] takes that path verbatim; it never fetches.
  */
-class ReaderSession private constructor(
+class ReaderSession
+private constructor(
     /// The parsed publication: metadata, table of contents, reading order.
     val publication: Publication,
     /// The file it was opened from.
@@ -62,8 +61,8 @@ class ReaderSession private constructor(
     /**
      * How many resources the reading order has.
      *
-     * A publication with none opens to a blank screen, so the reading screen
-     * treats zero as "nothing to show here" rather than rendering an empty host.
+     * A publication with none opens to a blank screen, so the reading screen treats zero as
+     * "nothing to show here" rather than rendering an empty host.
      */
     val readingOrderSize: Int
         get() = publication.readingOrder.size
@@ -76,9 +75,8 @@ class ReaderSession private constructor(
         /**
          * Parse the book at [path] into a [ReaderSession].
          *
-         * Runs the toolkit's own EPUB parser: it is the step that proves a
-         * received file is a book this app can actually show, rather than a
-         * file whose name ends in `.epub`.
+         * Runs the toolkit's own EPUB parser: it is the step that proves a received file is a book
+         * this app can actually show, rather than a file whose name ends in `.epub`.
          */
         suspend fun open(context: Context, path: String): ReaderSession =
             withContext(Dispatchers.IO) {
@@ -96,7 +94,7 @@ class ReaderSession private constructor(
                             // No PDF support: nothing this app receives is a PDF, and
                             // the Pdfium adapter would link a second renderer.
                             pdfFactory = null,
-                        ),
+                        )
                     )
 
                 val asset =

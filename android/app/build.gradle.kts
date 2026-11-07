@@ -110,6 +110,8 @@ dependencies {
     // so the app also has to desugar (see the compileOptions block above).
     implementation(project(":core:reader"))
     coreLibraryDesugaring(libs.desugar.jdk.libs)
+    // Hosts Readium's EpubNavigatorFragment; the toolkit ships it as a Fragment.
+    implementation(libs.androidx.fragment.ktx)
 
     // Hilt
     implementation(libs.hilt.android)

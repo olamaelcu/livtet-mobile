@@ -7,9 +7,9 @@ import java.util.zip.ZipOutputStream
 /**
  * A tiny, valid EPUB 3 written on demand.
  *
- * Generated rather than checked in: the file is a container format, so a
- * binary fixture hides what the parser is actually being fed, and a diff cannot
- * show whether the test still covers the spine it claims to.
+ * Generated rather than checked in: the file is a container format, so a binary fixture hides what
+ * the parser is actually being fed, and a diff cannot show whether the test still covers the spine
+ * it claims to.
  */
 internal object EpubFixture {
     const val TITLE = "The Reverse Direction"
@@ -58,7 +58,8 @@ internal object EpubFixture {
             <itemref idref="ch1"/>
           </spine>
         </package>
-        """.trimIndent()
+        """
+            .trimIndent()
 
     private fun navDocument() =
         """
@@ -71,7 +72,8 @@ internal object EpubFixture {
             </nav>
           </body>
         </html>
-        """.trimIndent()
+        """
+            .trimIndent()
 
     private fun chapter() =
         """
@@ -80,7 +82,8 @@ internal object EpubFixture {
           <head><title>One</title></head>
           <body><p>The book a peer offered, opened on the phone that received it.</p></body>
         </html>
-        """.trimIndent()
+        """
+            .trimIndent()
 
     private fun containerDocument() =
         """
@@ -90,5 +93,6 @@ internal object EpubFixture {
             <rootfile full-path="OEBPS/content.opf" media-type="application/oebps-package+xml"/>
           </rootfiles>
         </container>
-        """.trimIndent()
+        """
+            .trimIndent()
 }

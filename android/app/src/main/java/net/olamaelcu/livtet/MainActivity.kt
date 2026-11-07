@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -26,6 +27,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -62,7 +64,9 @@ private sealed interface LauncherPhase {
 
 @Composable
 private fun LauncherScreen(databasePath: String) {
+    val context = LocalContext.current
     var phase: LauncherPhase by remember { mutableStateOf(LauncherPhase.Loading) }
+    var readable: List<Book> by remember { mutableStateOf(emptyList()) }
 
     LaunchedEffect(databasePath) {
         phase =
@@ -71,6 +75,21 @@ private fun LauncherScreen(databasePath: String) {
                     onSuccess = { LauncherPhase.Ready },
                     onFailure = { LauncherPhase.Failed(it.message ?: it.toString()) },
                 )
+    }
+
+    // Only books with a file to point at can be opened, so the launcher lists
+    // exactly those: an entry here is a book the reader screen can resolve.
+    LaunchedEffect(phase) {
+        if (phase !is LauncherPhase.Ready) return@LaunchedEffect
+        readable =
+            runCatching {
+                    Bridge.listBooks(limit = 50).mapNotNull { book ->
+                        val editionId = book.primaryEditionId ?: return@mapNotNull null
+                        val path = Bridge.editionFilePath(editionId) ?: return@mapNotNull null
+                        if (java.io.File(path).isFile) book else null
+                    }
+                }
+                .getOrDefault(emptyList())
     }
 
     Column(
@@ -101,12 +120,33 @@ private fun LauncherScreen(databasePath: String) {
                 )
             }
             LauncherPhase.Ready ->
-                Text(
-                    text = "Mobile client under reconstruction",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
-                    textAlign = TextAlign.Center,
-                )
+                if (readable.isEmpty()) {
+                    Text(
+                        text = "Mobile client under reconstruction",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
+                        textAlign = TextAlign.Center,
+                    )
+                } else {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text(
+                            text = "Read something",
+                            style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        readable.take(5).forEach { book ->
+                            val editionId = book.primaryEditionId ?: return@forEach
+                            TextButton(
+                                onClick = {
+                                    context.startActivity(ReaderActivity.intent(context, editionId))
+                                }
+                            ) {
+                                Text(text = book.title, style = MaterialTheme.typography.bodyMedium)
+                            }
+                        }
+                    }
+                }
             is LauncherPhase.Failed ->
                 Text(
                     text = current.message,

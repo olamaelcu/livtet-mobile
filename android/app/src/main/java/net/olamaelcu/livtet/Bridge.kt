@@ -1,6 +1,10 @@
 package net.olamaelcu.livtet
 
 import android.util.Log
+import java.io.File
+import java.text.SimpleDateFormat
+import java.util.Locale
+import java.util.TimeZone
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -10,10 +14,11 @@ import net.olamaelcu.livtet.ffi.Greeting
 import net.olamaelcu.livtet.ffi.LivtetStore
 import net.olamaelcu.livtet.ffi.NewEdition
 import net.olamaelcu.livtet.ffi.ReadingList
+import net.olamaelcu.livtet.ffi.ReadingProgress
 import net.olamaelcu.livtet.ffi.SeedStats
 import net.olamaelcu.livtet.ffi.SyncOffer
-import net.olamaelcu.livtet.ffi.SyncPairedDevice
 import net.olamaelcu.livtet.ffi.SyncPairLink
+import net.olamaelcu.livtet.ffi.SyncPairedDevice
 import net.olamaelcu.livtet.ffi.SyncPairingResult
 import net.olamaelcu.livtet.ffi.SyncPendingPairing
 import net.olamaelcu.livtet.ffi.SyncPullReport
@@ -21,14 +26,11 @@ import net.olamaelcu.livtet.ffi.SyncReceivedBook
 import net.olamaelcu.livtet.ffi.SyncSentBook
 import net.olamaelcu.livtet.ffi.TransferProgressListener
 import net.olamaelcu.livtet.ffi.WorkSummary
+import net.olamaelcu.livtet.types.ProgressUnit
 import net.olamaelcu.livtet.types.PublishedDate
 import net.olamaelcu.livtet.types.SortDirection
 import net.olamaelcu.livtet.types.WorkSortBy
 import net.olamaelcu.livtet.types.WorkStatus
-import java.io.File
-import java.text.SimpleDateFormat
-import java.util.Locale
-import java.util.TimeZone
 
 /** A book (work) row for the Library screen (`Bridge.listBooks`). */
 data class Book(
@@ -137,7 +139,8 @@ object Bridge {
 
     fun isInitialized(): Boolean = store != null
 
-    private fun requireStore(): LivtetStore = checkNotNull(store) { "Bridge.init() was not called before accessing the store" }
+    private fun requireStore(): LivtetStore =
+        checkNotNull(store) { "Bridge.init() was not called before accessing the store" }
 
     // ── Dashboard surfaces ────────────────────────────────────────
 
@@ -198,10 +201,9 @@ object Bridge {
     /**
      * This device's stable id, created on first use.
      *
-     * A peer records this id when the pairing is approved, so it has to survive
-     * reinstall-free restarts: it lives beside the sync key rather than in memory.
-     * The store accepts either of its textual forms, so the 32 hex digits of a
-     * UUID serve without pulling in an id crate.
+     * A peer records this id when the pairing is approved, so it has to survive reinstall-free
+     * restarts: it lives beside the sync key rather than in memory. The store accepts either of its
+     * textual forms, so the 32 hex digits of a UUID serve without pulling in an id crate.
      */
     private fun deviceIdForPeer(): String {
         val file = File(LivtetApp.getInstance().filesDir, "sync/device.id")
@@ -216,8 +218,8 @@ object Bridge {
     /**
      * Announce this device on `_livtet-sync._tcp` and start answering peers.
      *
-     * Returns the node id peers dial. Idempotent: a second call returns the id
-     * already advertised rather than binding another endpoint.
+     * Returns the node id peers dial. Idempotent: a second call returns the id already advertised
+     * rather than binding another endpoint.
      */
     suspend fun advertiseForSync(deviceId: String, name: String): String =
         net.olamaelcu.livtet.ffi.advertiseSyncDevice(
@@ -271,8 +273,8 @@ object Bridge {
         net.olamaelcu.livtet.ffi.syncPendingPairings(secretKeyPath())
 
     /**
-     * Answer a claim. Approving returns the token the peer must present, which
-     * is worth recording alongside the device; rejecting returns `null`.
+     * Answer a claim. Approving returns the token the peer must present, which is worth recording
+     * alongside the device; rejecting returns `null`.
      */
     suspend fun decidePairing(nodeId: String, accept: Boolean): String? =
         net.olamaelcu.livtet.ffi.syncDecidePairing(secretKeyPath(), nodeId, accept)
@@ -288,8 +290,8 @@ object Bridge {
     /**
      * Pull a peer's changes into this library and record any books it offered.
      *
-     * `sessionToken` is the one the peer issued this device when the pairing
-     * was approved; `booksDir`/`coversDir` are where an accepted offer lands.
+     * `sessionToken` is the one the peer issued this device when the pairing was approved;
+     * `booksDir`/`coversDir` are where an accepted offer lands.
      */
     suspend fun syncOnce(
         peerNodeId: String,
@@ -331,16 +333,13 @@ object Bridge {
         )
 
     /** Decline an offered book. */
-    suspend fun rejectOffer(
-        peerNodeId: String,
-        sessionToken: String,
-        offerId: String,
-    ) = net.olamaelcu.livtet.ffi.syncOfferReject(
-        secretKeyPath = secretKeyPath(),
-        sessionToken = sessionToken,
-        peerNodeId = peerNodeId,
-        offerId = offerId,
-    )
+    suspend fun rejectOffer(peerNodeId: String, sessionToken: String, offerId: String) =
+        net.olamaelcu.livtet.ffi.syncOfferReject(
+            secretKeyPath = secretKeyPath(),
+            sessionToken = sessionToken,
+            peerNodeId = peerNodeId,
+            offerId = offerId,
+        )
 
     // ── Dashboard ────────────────────────────────────────
 
@@ -380,7 +379,8 @@ object Bridge {
 
     // ── Seed helper (used by smoke tests) ───────────────────────────
 
-    suspend fun seedDatabase(works: Int): SeedResultMobile = withContext(Dispatchers.IO) { requireStore().seedSampleData(works.toUInt()) }
+    suspend fun seedDatabase(works: Int): SeedResultMobile =
+        withContext(Dispatchers.IO) { requireStore().seedSampleData(works.toUInt()) }
 
     suspend fun resetAndSeed(numWorks: Int): SeedResultMobile =
         withContext(Dispatchers.IO) { requireStore().resetAndSeed(numWorks.toUInt()) }
@@ -391,7 +391,8 @@ object Bridge {
      * Where cached covers live. Inside the app's own cache directory, so the system may evict it;
      * the loader treats a miss as "download again".
      */
-    private fun coverCacheRoot(): String = File(LivtetApp.getInstance().cacheDir, "livtet-covers").absolutePath
+    private fun coverCacheRoot(): String =
+        File(LivtetApp.getInstance().cacheDir, "livtet-covers").absolutePath
 
     /**
      * A local file for the edition's cover, downloading it once if needed.
@@ -400,10 +401,7 @@ object Bridge {
      * from the lookup and the image is fetched here and handed back for storage; the next call is
      * then served from disk.
      */
-    suspend fun resolveCoverPath(
-        editionId: String,
-        remoteUrl: String?,
-    ): String? =
+    suspend fun resolveCoverPath(editionId: String, remoteUrl: String?): String? =
         withContext(Dispatchers.IO) {
             val store = requireStore()
             val root = coverCacheRoot()
@@ -422,7 +420,8 @@ object Bridge {
         }
 
     /** Remove a work, its editions, and its shelf/status rows. */
-    suspend fun deleteBook(workId: String): Boolean = withContext(Dispatchers.IO) { requireStore().deleteWork(workId) }
+    suspend fun deleteBook(workId: String): Boolean =
+        withContext(Dispatchers.IO) { requireStore().deleteWork(workId) }
 
     /** Identifier URNs stored against an edition, used when backfilling a cover. */
     suspend fun listEditionIdentifiers(editionId: String): List<String> =
@@ -431,6 +430,68 @@ object Bridge {
     /** The file on disk for an edition, or null when the library holds none. */
     suspend fun editionFilePath(editionId: String): String? =
         withContext(Dispatchers.IO) { requireStore().getEdition(editionId)?.file?.filePath }
+
+    /**
+     * The format row named [name] (`"epub"`, `"pdf"`).
+     *
+     * `reading_progress.format_id` is a foreign key, so the reader resolves the row once before it
+     * can record anything; null means the library has no such format, and then there is nothing to
+     * write against.
+     */
+    suspend fun formatId(name: String): String? =
+        withContext(Dispatchers.IO) {
+            requireStore().listFormats().firstOrNull { it.name.equals(name, ignoreCase = true) }?.id
+        }
+
+    /**
+     * Point an edition at a file on disk.
+     *
+     * This is what a received book leaves behind: `syncOfferAccept` writes the bytes and this
+     * records where they landed, which is the row the reader screen resolves before it can open
+     * anything.
+     */
+    suspend fun attachFile(editionId: String, path: String, format: String?, sizeBytes: Long?) =
+        withContext(Dispatchers.IO) {
+            requireStore()
+                .setEditionFile(
+                    editionId = editionId,
+                    filePath = path,
+                    fileFormat = format,
+                    fileSizeBytes = sizeBytes,
+                )
+            Unit
+        }
+
+    suspend fun readingProgress(editionId: String): ReadingProgress? =
+        withContext(Dispatchers.IO) { requireStore().getReadingProgress(editionId) }
+
+    /**
+     * Record where the reader is now.
+     *
+     * [lastLocation] is the toolkit's `Locator` JSON: the store keeps it verbatim and the sync
+     * change log carries it to the reader's other devices, so the desktop resumes at the same
+     * passage this phone stopped at. [additionalSeconds] is time spent reading since the previous
+     * save.
+     */
+    suspend fun recordProgress(
+        editionId: String,
+        formatId: String,
+        progression: Double,
+        lastLocation: String?,
+        additionalSeconds: Long,
+    ) =
+        withContext(Dispatchers.IO) {
+            requireStore()
+                .recordReadingProgress(
+                    editionId = editionId,
+                    formatId = formatId,
+                    progress = progression,
+                    unit = ProgressUnit.PERCENTAGE,
+                    lastLocation = lastLocation,
+                    additionalSeconds = additionalSeconds,
+                )
+            Unit
+        }
 
     /** One edition for the detail sheet, or null when the id is unknown. */
     suspend fun editionDetail(editionId: String): EditionDetailView? =
@@ -460,10 +521,8 @@ object Bridge {
         }
 
     /** Record a catalog cover URL for an edition that was imported without one. */
-    suspend fun setEditionCoverUrl(
-        editionId: String,
-        coverUrl: String,
-    ) = withContext(Dispatchers.IO) { requireStore().setEditionCoverUrl(editionId, coverUrl) }
+    suspend fun setEditionCoverUrl(editionId: String, coverUrl: String) =
+        withContext(Dispatchers.IO) { requireStore().setEditionCoverUrl(editionId, coverUrl) }
 
     private class DownloadedImage(val bytes: ByteArray, val ext: String)
 
@@ -492,14 +551,10 @@ object Bridge {
             null
         }
 
-    private fun extensionFor(
-        contentType: String?,
-        url: String,
-    ): String =
+    private fun extensionFor(contentType: String?, url: String): String =
         when (contentType?.substringBefore(';')?.trim()?.lowercase()) {
             "image/jpeg",
-            "image/jpg",
-            -> "jpg"
+            "image/jpg" -> "jpg"
             "image/png" -> "png"
             "image/webp" -> "webp"
             "image/avif" -> "avif"
@@ -530,45 +585,36 @@ object Bridge {
             editionIds = editionIds.map { it.toString() },
         )
 
-    suspend fun listShelves(): List<Shelf> = withContext(Dispatchers.IO) { requireStore().listReadingLists().map { it.toShelf() } }
+    suspend fun listShelves(): List<Shelf> =
+        withContext(Dispatchers.IO) { requireStore().listReadingLists().map { it.toShelf() } }
 
     suspend fun createShelf(name: String): Shelf =
         withContext(Dispatchers.IO) {
             requireStore().createReadingList(name = name, description = null).toShelf()
         }
 
-    suspend fun renameShelf(
-        shelfId: String,
-        name: String,
-    ): Shelf =
+    suspend fun renameShelf(shelfId: String, name: String): Shelf =
         withContext(Dispatchers.IO) {
             requireStore().updateReadingList(shelfId, name, null).toShelf()
         }
 
     /** File a book on a shelf. No-op when it is already there. */
-    suspend fun addToShelf(
-        shelfId: String,
-        editionId: String,
-    ) = withContext(Dispatchers.IO) { requireStore().addEditionToList(shelfId, editionId) }
+    suspend fun addToShelf(shelfId: String, editionId: String) =
+        withContext(Dispatchers.IO) { requireStore().addEditionToList(shelfId, editionId) }
 
     /** Move a book to [position] (0-based) on its shelf; returns the new order. */
-    suspend fun moveInShelf(
-        shelfId: String,
-        editionId: String,
-        position: Int,
-    ): List<String> =
+    suspend fun moveInShelf(shelfId: String, editionId: String, position: Int): List<String> =
         withContext(Dispatchers.IO) {
             requireStore()
                 .moveEditionInList(shelfId, editionId, position.coerceAtLeast(0).toUInt())
                 .map { it.toString() }
         }
 
-    suspend fun removeFromShelf(
-        shelfId: String,
-        editionId: String,
-    ): Boolean = withContext(Dispatchers.IO) { requireStore().removeEditionFromList(shelfId, editionId) }
+    suspend fun removeFromShelf(shelfId: String, editionId: String): Boolean =
+        withContext(Dispatchers.IO) { requireStore().removeEditionFromList(shelfId, editionId) }
 
-    suspend fun deleteShelf(shelfId: String): Boolean = withContext(Dispatchers.IO) { requireStore().deleteReadingList(shelfId) }
+    suspend fun deleteShelf(shelfId: String): Boolean =
+        withContext(Dispatchers.IO) { requireStore().deleteReadingList(shelfId) }
 
     private fun WorkSummary.toBook(): Book =
         Book(
@@ -612,7 +658,7 @@ object Bridge {
                         formatId = null,
                         languageId = null,
                         notes = null,
-                    ),
+                    )
                 )
             identifiers.distinct().forEach { urn ->
                 store.addEditionIdentifier(editionId = edition.id, identifier = urn)
