@@ -180,7 +180,9 @@ private fun ReaderRoute(editionId: String, onBack: () -> Unit) {
                     modifier = Modifier.fillMaxWidth().padding(horizontal = 4.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    TextButton(onClick = onBack) { Text("\u2039  Library") }
+                    // The reader is reached from the home shelf and from the library,
+                    // so the way out is named for the action rather than a screen.
+                    TextButton(onClick = onBack) { Text("\u2039  Back") }
                     Spacer(modifier = Modifier.weight(1f))
                     Text(
                         text = (state as? ReaderState.Ready)?.title.orEmpty(),

@@ -36,6 +36,11 @@
         <activity android:name=".SyncActivity"
             android:exported="false"
             android:theme="@style/Theme.Livtet" />
+        <!-- Every book on this device, filterable. Reached from the home
+             shelf's "See all"; not exported. -->
+        <activity android:name=".LibraryActivity"
+            android:exported="false"
+            android:theme="@style/Theme.Livtet" />
         <!-- Books a peer offered, waiting on a decision. -->
         <activity android:name=".OffersActivity"
             android:exported="false"
