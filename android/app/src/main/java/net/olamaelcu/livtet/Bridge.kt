@@ -17,6 +17,7 @@ import net.olamaelcu.livtet.ffi.ReadingList
 import net.olamaelcu.livtet.ffi.ReadingProgress
 import net.olamaelcu.livtet.ffi.SeedStats
 import net.olamaelcu.livtet.ffi.SyncOffer
+import net.olamaelcu.livtet.ffi.SyncOfferSummary
 import net.olamaelcu.livtet.ffi.SyncPairLink
 import net.olamaelcu.livtet.ffi.SyncPairedDevice
 import net.olamaelcu.livtet.ffi.SyncPairingResult
@@ -314,10 +315,13 @@ object Bridge {
         peerNodeId: String,
         sessionToken: String? = null,
         deviceId: String,
-        sinceVersion: Long = 0L,
+        sinceVersion: Long = FROM_STORED_CURSOR,
         limit: Long = 0L,
-    ): SyncPullReport =
-        net.olamaelcu.livtet.ffi.syncPull(
+    ): SyncPullReport {
+        // A negative value means "wherever this peer left off", which is the
+        // stored cursor; 0 asks for a fresh bootstrap on purpose.
+        val since = if (sinceVersion == FROM_STORED_CURSOR) syncCursor(peerNodeId) else sinceVersion
+        return net.olamaelcu.livtet.ffi.syncPull(
             secretKeyPath = secretKeyPath(),
             sessionToken =
                 sessionToken
@@ -326,42 +330,99 @@ object Bridge {
             dbPath = requireDatabaseFile(),
             deviceId = deviceId,
             peerNodeId = peerNodeId,
-            sinceVersion = sinceVersion,
+            sinceVersion = since,
             limit = limit,
         )
+    }
 
     /** Accept an offered book, streaming it to `booksDir`. */
     suspend fun acceptOffer(
-        peerNodeId: String,
-        sessionToken: String,
-        deviceId: String,
-        offer: SyncOffer,
-        booksDir: String,
-        coversDir: String,
+        from: SyncOfferSummary,
         progress: TransferProgressListener? = null,
-    ): SyncReceivedBook =
-        net.olamaelcu.livtet.ffi.syncOfferAccept(
+    ): SyncReceivedBook {
+        val peer = peerFor(from.fromDeviceId)
+        val nodeId = peer.nodeId ?: error("that device has no node id to dial")
+        return net.olamaelcu.livtet.ffi.syncOfferAccept(
             secretKeyPath = secretKeyPath(),
-            sessionToken = sessionToken,
+            sessionToken = tokenFor(peer),
             dbPath = requireDatabaseFile(),
-            deviceId = deviceId,
-            peerNodeId = peerNodeId,
-            offer = offer,
-            booksDir = booksDir,
-            coversDir = coversDir,
+            deviceId = deviceIdForPeer(),
+            peerNodeId = nodeId,
+            offer =
+                SyncOffer(
+                    offerId = from.offerId,
+                    inventoryId = from.inventoryId,
+                    editionId = from.editionId,
+                    workId = from.workId,
+                    fileName = from.fileName ?: "",
+                    hasCover = from.hasCover,
+                    deferredChanges = from.deferredChanges,
+                ),
+            booksDir = booksDir(),
+            coversDir = coversDir(),
             progress = progress,
         )
+    }
 
     /** Decline an offered book. */
-    suspend fun rejectOffer(peerNodeId: String, sessionToken: String, offerId: String) =
+    suspend fun rejectOffer(from: SyncOfferSummary) {
+        val peer = peerFor(from.fromDeviceId)
+        val nodeId = peer.nodeId ?: error("that device has no node id to dial")
         net.olamaelcu.livtet.ffi.syncOfferReject(
             secretKeyPath = secretKeyPath(),
-            sessionToken = sessionToken,
-            peerNodeId = peerNodeId,
-            offerId = offerId,
+            sessionToken = tokenFor(peer),
+            dbPath = requireDatabaseFile(),
+            peerNodeId = nodeId,
+            offerId = from.offerId,
         )
+    }
 
-    // ── Dashboard ────────────────────────────────────────
+    /** Books a peer offered and nobody has decided yet, newest first. */
+    suspend fun pendingOffers(): List<SyncOfferSummary> =
+        net.olamaelcu.livtet.ffi.syncOffers(requireDatabaseFile())
+
+    /** Where the next pull from `peerNodeId` resumes; 0 means never pulled. */
+    suspend fun syncCursor(peerNodeId: String): Long =
+        net.olamaelcu.livtet.ffi.syncCursor(requireDatabaseFile(), peerNodeId)
+
+    /**
+     * Pull every paired peer once, so the inbox is current when it opens.
+     *
+     * Each pull resumes from that peer's stored cursor, which is what keeps an open from
+     * re-fetching the whole library every time.
+     */
+    suspend fun refreshOffers(): List<SyncOfferSummary> {
+        pairedDevices()
+            .filter { it.nodeId != null }
+            .forEach { device ->
+                val nodeId = device.nodeId ?: return@forEach
+                runCatching { syncOnce(peerNodeId = nodeId, deviceId = deviceIdForPeer()) }
+            }
+        return pendingOffers()
+    }
+
+    /** Where received books and covers land, created on first use. */
+    private fun booksDir(): String =
+        File(LivtetApp.getInstance().filesDir, "books").apply { mkdirs() }.absolutePath
+
+    private fun coversDir(): String =
+        File(LivtetApp.getInstance().filesDir, "covers").apply { mkdirs() }.absolutePath
+
+    /** The paired device that offered `deviceId`, or the only one if it is unknown. */
+    private suspend fun peerFor(deviceId: String): SyncPairedDevice {
+        val paired = pairedDevices().filter { it.nodeId != null }
+        return paired.firstOrNull { it.deviceId == deviceId }
+            ?: paired.singleOrNull()
+            ?: error("no paired device to answer: $deviceId")
+    }
+
+    private suspend fun tokenFor(peer: SyncPairedDevice): String {
+        val nodeId = peer.nodeId ?: error("that device has no node id to dial")
+        return peerToken(nodeId) ?: error("no session token for $nodeId; pair with it again")
+    }
+
+    /** Pass as `sinceVersion` to resume from the peer's stored cursor. */
+    const val FROM_STORED_CURSOR: Long = -1L
 
     suspend fun getDashboardStats(): DashboardStats? =
         withContext(Dispatchers.IO) {

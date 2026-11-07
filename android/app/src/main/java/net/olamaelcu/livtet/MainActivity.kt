@@ -67,6 +67,9 @@ private fun LauncherScreen(databasePath: String) {
     val context = LocalContext.current
     var phase: LauncherPhase by remember { mutableStateOf(LauncherPhase.Loading) }
     var readable: List<Book> by remember { mutableStateOf(emptyList()) }
+    // What is waiting on a decision, so the inbox is one tap away instead of a
+    // screen the reader has to remember to visit.
+    var offersWaiting: Int by remember { mutableStateOf(0) }
 
     LaunchedEffect(databasePath) {
         phase =
@@ -90,6 +93,7 @@ private fun LauncherScreen(databasePath: String) {
                     }
                 }
                 .getOrDefault(emptyList())
+        offersWaiting = runCatching { Bridge.pendingOffers().size }.getOrDefault(0)
     }
 
     Column(
@@ -123,6 +127,13 @@ private fun LauncherScreen(databasePath: String) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     TextButton(onClick = { context.startActivity(SyncActivity.intent(context)) }) {
                         Text("Sync & Devices")
+                    }
+                    if (offersWaiting > 0) {
+                        TextButton(
+                            onClick = { context.startActivity(OffersActivity.intent(context)) }
+                        ) {
+                            Text("Books waiting ($offersWaiting)")
+                        }
                     }
                     LauncherBody(readable = readable, context = context)
                 }

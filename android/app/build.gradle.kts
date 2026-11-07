@@ -128,6 +128,8 @@ dependencies {
 
     // FFI golden-scenario instrumented test.
     androidTestImplementation(libs.junit)
+    // The offer-inbox presentation rule is plain Kotlin and tested on the JVM.
+    testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.test.runner)
     androidTestImplementation(libs.androidx.test.ext.junit)
 }

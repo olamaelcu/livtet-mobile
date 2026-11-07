@@ -399,15 +399,6 @@ private fun ThisDeviceCard(name: String, nodeId: String?, link: String?, onCopy:
     }
 }
 
-/**
- * An exception as a line a reader can act on.
- *
- * UniFFI renders a thrown error as its enum encoding (`v1=…`), which is an implementation detail;
- * the sentence after it is the part worth showing.
- */
-private fun readable(error: Throwable): String =
-    (error.message ?: error.toString()).replace(Regex("^v\\d+="), "")
-
 @Composable
 private fun Section(title: String) {
     Spacer(modifier = Modifier.height(20.dp))

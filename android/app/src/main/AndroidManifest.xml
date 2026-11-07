@@ -36,5 +36,9 @@
         <activity android:name=".SyncActivity"
             android:exported="false"
             android:theme="@style/Theme.Livtet" />
+        <!-- Books a peer offered, waiting on a decision. -->
+        <activity android:name=".OffersActivity"
+            android:exported="false"
+            android:theme="@style/Theme.Livtet" />
     </application>
 </manifest>
