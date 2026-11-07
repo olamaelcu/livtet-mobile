@@ -50,7 +50,7 @@ fi
 echo "=== android-install: flavor=$FLAVOR profile=$PROFILE device=$DEVICE_SERIAL ==="
 adb -s "$DEVICE_SERIAL" install -r "$APK_PATH"
 
-# Launch the splash activity after install.
+# Launch the launcher activity after install.
 # Application IDs differ per flavor (see android/app/build.gradle.kts).
 # `playstore` has no applicationIdSuffix, so its package is identical to the
 # base namespace; appending the flavor naively (as we used to) yields
@@ -65,5 +65,5 @@ generic) PKG="net.olamaelcu.livtet.generic" ;;
 	exit 1
 	;;
 esac
-ACTIVITY="net.olamaelcu.livtet.SplashActivity"
+ACTIVITY="net.olamaelcu.livtet.MainActivity"
 adb -s "$DEVICE_SERIAL" shell am start -n "${PKG}/${ACTIVITY}"

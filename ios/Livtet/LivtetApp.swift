@@ -1,7 +1,5 @@
-import LivtetKit
 import Sentry
 import SwiftUI
-import Inject
 import os
 #if canImport(CoreText)
 import CoreText
@@ -9,16 +7,8 @@ import CoreText
 
 @main
 struct LivtetApp: App {
-    @StateObject private var syncManager = SyncManager.shared
-    @State private var showPairingSheet = false
-
     init() {
         Self.registerBrandFonts()
-
-#if false // DEBUG - InjectionIII disabled (causes EXC_BAD_ACCESS on Intel macOS)
-        Bundle(path: "/Applications/InjectionIII.app/Contents/Resources/iOSInjection.bundle")?.load()
-#endif
-
 
         if !BuildConfig.sentryDSN.isEmpty {
             SentrySDK.start { options in
@@ -58,8 +48,8 @@ struct LivtetApp: App {
         let allNames = CTFontManagerCopyAvailablePostScriptNames() as? [String] ?? []
         let interesting = allNames.filter {
             $0.localizedCaseInsensitiveContains("ork") ||
-            $0.localizedCaseInsensitiveContains("eist") ||
-            $0.localizedCaseInsensitiveContains("etBrains")
+                $0.localizedCaseInsensitiveContains("eist") ||
+                $0.localizedCaseInsensitiveContains("etBrains")
         }
         log.error("registered PostScript names (filtered): \(interesting.joined(separator: ", "), privacy: .public)")
     }
@@ -67,30 +57,6 @@ struct LivtetApp: App {
     var body: some Scene {
         WindowGroup {
             SplashScreenView()
-                .environmentObject(syncManager)
-                .sheet(isPresented: $showPairingSheet) {
-                    PairingSheet(syncManager: syncManager)
-                }
-                .onOpenURL { url in
-                    // Pairing runs from SyncManager's subscription to
-                    // `DeepLinkRouter.pendingRoute`; the router decides whether
-                    // this URL is a pairing link or a public permalink.
-                    _ = DeepLinkRouter.shared.handleURL(url)
-                }
-                .onContinueUserActivity(NSUserActivityTypeBrowsingWeb) { activity in
-                    // Universal Link delivery (https://livtet.olamaelcu.net/...).
-                    guard let url = activity.webpageURL else { return }
-                    _ = DeepLinkRouter.shared.handleURL(url)
-                }
-                .onReceive(syncManager.$state) { state in
-                    if case .pairing = state {
-                        showPairingSheet = true
-                    } else if case .paired = state {
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-                            showPairingSheet = false
-                        }
-                    }
-                }
         }
     }
 }
