@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--
-    The one directory the app shares: received books in the user-visible
-    Documents folder. KOReader (or any reader) gets a content:// URI scoped to
-    this path, never the whole filesystem.
--->
-<paths>
-    <external-path name="livtet_books" path="Documents/Livtet" />
-</paths>

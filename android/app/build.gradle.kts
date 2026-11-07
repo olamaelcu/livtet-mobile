@@ -4,12 +4,8 @@ plugins {
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.ksp)
     alias(libs.plugins.hilt)
-    // @Serializable models for the public catalog reads. The kotlin.android
-    // plugin does not bring the serialization compiler plugin along.
-    alias(libs.plugins.kotlin.serialization)
     // Pulls in ktfmt + ktlint + detekt and configures them per the
-    // shared detekt.yml at `config/detekt/detekt.yml`. See
-    // `docs/superpowers/specs/2026-07-11-ktfmt-android-lint-design.md`.
+    // shared detekt.yml at `config/detekt/detekt.yml`.
     id("livtet.android.application.lint")
 }
 
@@ -25,20 +21,6 @@ android {
 
     buildFeatures { buildConfig = true }
 
-    // Builds the literal written into
-    // `BuildConfig.LABS_BUILD_TIME_DEFAULTS_JSON`. The Kotlin
-    // side parses this on every read (`FeatureFlagsManager.buildTimeDefault`)
-    // so the runtime value must be valid JSON, but Gradle
-    // writes `buildConfigField` values verbatim into the
-    // generated `BuildConfig.java` as a Java string literal —
-    // meaning every inner double-quote in the JSON must be
-    // backslash-escaped for Java to accept the source, AND
-    // the whole literal must already start and end with `"`.
-    // Returning the Java-source-ready string directly keeps
-    // the call sites simple and avoids a second layer of wrapping.
-    fun labsDefaultsJson(flags: Map<String, Boolean>): String =
-        "\"{" + flags.entries.joinToString(separator = ",") { (k, v) -> "\\\"$k\\\":$v" } + "}\""
-
     defaultConfig {
         applicationId = "net.olamaelcu.livtet"
         minSdk = 24
@@ -48,60 +30,12 @@ android {
 
         ndk { abiFilters += setOf("arm64-v8a", "x86", "x86_64") }
 
-        // Compose UI tests need the test manifest merged into the
-        // main manifest so that `createAndroidComposeRule` can find
-        // the activity. Without this, the rule compiles but throws
-        // "no activity found" at startup. The manifest entry is in
-        // `src/androidTest/AndroidManifest.xml`.
+        // Instrumented test runner for FfiGoldenScenarioTest.
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
-        // Compile-time API keys. The Google Books plugin reads
-        // these via host.get_api_key("googlebooks"). Set the env
-        // var at build time to enable authenticated quota; leave
-        // unset to fall back to the unauthenticated per-IP path.
-        // See ADR 0031 for the threat model and the iOS env var
-        // convention (GOOGLE_BOOKS_IOS_API_KEY).
-        buildConfigField(
-            "String",
-            "GOOGLE_BOOKS_API_KEY",
-            "\"" + (System.getenv("GOOGLE_BOOKS_ANDROID_API_KEY") ?: "") + "\"",
-        )
-
-        // SOPS-wired values sourced from .mise/secrets.env by the calling
-        // mise task. GOOGLE_API_KEY is available in all flavors. SENTRY_DSN
-        // defaults to empty; the playstore flavor overrides it from the
-        // SOPS env var (fdroid and generic get no tracking).
-        val googleApiKey: String =
-            (project.findProperty("LIVTET_GOOGLE_API_KEY_ANDROID") as String?) ?: ""
-        buildConfigField("String", "GOOGLE_API_KEY", "\"$googleApiKey\"")
+        // SENTRY_DSN is the only build-time secret the launcher reads
+        // (LivtetApp). Default is empty; the playstore flavor overrides it.
         buildConfigField("String", "SENTRY_DSN", "\"\"")
-        buildConfigField("boolean", "GOOGLE_SIGN_IN_ENABLED", "false")
-        buildConfigField("boolean", "APPLE_SIGN_IN_ENABLED", "false")
-
-        // Labs feature-flag build-time gates. Emitted as
-        // `BuildConfig.LABS_BUILD_TIME_DEFAULTS_JSON`, a map of
-        // `LabsFlag.key` -> boolean. Consumed by
-        // `FeatureFlagsManager.buildTimeDefault` on the Kotlin
-        // side. Every entry here MUST have a matching
-        // `LabsFlag` in `settings/Labs.kt`; the Kotlin resolver
-        // falls back to "unlocked" for missing keys so a stale
-        // build never silently enables a brand-new flag.
-        //
-        // Per-flavor overrides live in the `productFlavors`
-        // block below — we always emit a `LABS_BUILD_TIME_DEFAULTS_JSON`
-        // field there even if the JSON is identical, so flavors
-        // can opt into different staged rollouts without
-        // touching the default.
-        val labsFlagBuildDefaults: Map<String, Boolean> =
-            mapOf(
-                "show_experimental_duplicates_badge" to false,
-                "instant_local_file_import" to false,
-            )
-        buildConfigField(
-            "String",
-            "LABS_BUILD_TIME_DEFAULTS_JSON",
-            labsDefaultsJson(labsFlagBuildDefaults),
-        )
     }
 
     signingConfigs {
@@ -137,57 +71,14 @@ android {
             val sentryDsn: String =
                 (project.findProperty("LIVTET_SENTRY_DSN_MOBILE") as String?) ?: ""
             buildConfigField("String", "SENTRY_DSN", "\"$sentryDsn\"")
-            buildConfigField("boolean", "GOOGLE_SIGN_IN_ENABLED", "true")
-            buildConfigField("boolean", "APPLE_SIGN_IN_ENABLED", "true")
-
-            // Play Store canary-style rollout: the duplicates-badge
-            // Labs flag is unlocked so users (and Test Flight /
-            // internal testers) can toggle it on. New flags ship
-            // off and get promoted here once the team is ready.
-            val playstoreLabs: Map<String, Boolean> =
-                mapOf(
-                    "show_experimental_duplicates_badge" to true,
-                    "instant_local_file_import" to false,
-                )
-            buildConfigField(
-                "String",
-                "LABS_BUILD_TIME_DEFAULTS_JSON",
-                labsDefaultsJson(playstoreLabs),
-            )
         }
         create("fdroid") {
             dimension = "store"
             applicationIdSuffix = ".fdroid"
-            // F-Droid policy is no tracking and no
-            // experimental surfaces. Lock every Labs flag off
-            // at the build-time gate so the toggles render
-            // disabled in Settings.
-            val fdroidLabs: Map<String, Boolean> =
-                mapOf(
-                    "show_experimental_duplicates_badge" to false,
-                    "instant_local_file_import" to false,
-                )
-            buildConfigField(
-                "String",
-                "LABS_BUILD_TIME_DEFAULTS_JSON",
-                labsDefaultsJson(fdroidLabs),
-            )
         }
         create("generic") {
             dimension = "store"
             applicationIdSuffix = ".generic"
-            // Sideload / unsigned-style build. Matches the
-            // fdroid posture: no Labs surfaces exposed.
-            val genericLabs: Map<String, Boolean> =
-                mapOf(
-                    "show_experimental_duplicates_badge" to false,
-                    "instant_local_file_import" to false,
-                )
-            buildConfigField(
-                "String",
-                "LABS_BUILD_TIME_DEFAULTS_JSON",
-                labsDefaultsJson(genericLabs),
-            )
         }
     }
 
@@ -205,66 +96,29 @@ android {
 kotlin { compilerOptions { jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17) } }
 
 dependencies {
+    // UniFFI Kotlin bindings load the native library via JNA.
     implementation("net.java.dev.jna:jna:5.14.0@aar")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.11.0")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.11.0")
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3")
     implementation(libs.timber)
     implementation(libs.sentry.android)
-    implementation(libs.ulid.kotlin)
-    implementation(libs.androidx.datastore.preferences)
     implementation(project(":core:designsystem"))
     implementation(project(":core:auth"))
 
     // Hilt
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)
-    implementation(libs.hilt.navigation.compose)
 
     val composeBom = platform("androidx.compose:compose-bom:2026.03.00")
     implementation(composeBom)
     implementation("androidx.compose.ui:ui")
     implementation("androidx.compose.material3:material3")
     implementation("androidx.compose.runtime:runtime")
-    implementation("androidx.activity:activity-compose")
-    implementation("androidx.lifecycle:lifecycle-runtime-compose:2.9.4")
-    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.9.4")
-    implementation("androidx.navigation:navigation-compose:2.9.8")
-    implementation("androidx.compose.material:material-icons-extended")
-    implementation(libs.coil.compose)
+    // Not covered by the Compose BOM, so the version has to be explicit: the
+    // instrumentation source set has no other node supplying one.
+    implementation("androidx.activity:activity-compose:1.8.2")
 
-    // Coil 3 ships no network fetcher; the catalog's cover art and the profile
-    // avatars are https URLs, so the OkHttp fetcher has to be on the classpath.
-    implementation(libs.coil.network.okhttp)
-
-    // QR scanning of a peer's node id. CameraX for the preview and analysis
-    // pipeline, ZXing (Apache-2.0) to decode: ML Kit's scanner is
-    // closed-source, so the fdroid flavor could not ship it.
-    implementation(libs.bundles.camerax)
-    implementation(libs.zxing.core)
-
-    // Public catalog reads for the book/review/profile permalinks. The app
-    // owns this client (see biblio/PublicBiblioModule.kt) so it carries no
-    // session state and cannot outlive the screens that need it.
-    implementation(libs.ktor.client.core)
-    implementation(libs.ktor.client.content.negotiation)
-    implementation(libs.ktor.client.cio)
-    implementation(libs.ktor.serialization.kotlinx.json)
-
-    testImplementation(libs.junit)
-    testImplementation(libs.kotlin.test.junit)
-    testImplementation(libs.ktor.client.mock)
-
-    // Instrumented test deps. See
-    // `mobile/android/app/src/androidTest/java/net/olamaelcu/livtet/AddBookSearchTest.kt`
-    // for the test that exercises the Add-Book wizard's search flow.
-    // The `ui-test-manifest` is `debugImplementation` only (Compose
-    // test convention) so the merged manifest is gated to the
-    // `debug` build.
-    debugImplementation(libs.androidx.compose.ui.test.manifest)
-    androidTestImplementation(libs.androidx.compose.ui.test.junit4)
-    androidTestImplementation(libs.androidx.test.ext.junit)
+    // FFI golden-scenario instrumented test.
+    androidTestImplementation(libs.junit)
     androidTestImplementation(libs.androidx.test.runner)
-    androidTestImplementation(libs.androidx.test.rules)
-    androidTestImplementation(libs.androidx.test.espresso.core)
 }

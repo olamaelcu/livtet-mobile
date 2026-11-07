@@ -1,27 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Sentry event upload only; every feature that used the network is gone. -->
     <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-    <!-- CHANGE_WIFI_MULTICAST_STATE is required by NsdManager
-         discoverServices on some OEM Android builds. It's a normal
-         permission (no runtime prompt) so adding it here is free. -->
-    <uses-permission android:name="android.permission.CHANGE_WIFI_MULTICAST_STATE" />
-    <!-- Scanning a peer's node id from a QR code. Declared optional so
-         devices without a camera can still install and pair by hand. -->
-    <uses-permission android:name="android.permission.CAMERA" />
-    <uses-feature android:name="android.hardware.camera.any" android:required="false" />
-    <!-- Received books land in Documents/Livtet so KOReader can open them without
-         this app. Writing there needs all-files access on API 30+; the reader
-         grants it when they enable book receiving. -->
-    <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE" />
-    <!-- KOReader install detection — both F-Droid and direct-APK
-         package ids. Upstream does not publish a Google Play build
-         (https://github.com/koreader/koreader/wiki/Installation-on-Android-devices),
-         so no Play variant is listed here. -->
-    <queries>
-        <package android:name="org.koreader.launcher" />
-        <package android:name="org.koreader.launcher.fdroid" />
-    </queries>
     <application android:name=".LivtetApp"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -29,68 +9,16 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.Livtet">
-        <!-- Disable Sentry's SentryInitProvider auto-init. We initialize
-             Sentry manually in LivtetApp.onCreate() so empty DSN (generic
-             and fdroid flavors) doesn't crash the SDK at ContentProvider
-             attach time with "DSN is required". -->
+        <!-- Sentry auto-init stays off: LivtetApp.onCreate initialises it manually
+             so the empty DSN in fdroid/generic does not crash at attach time. -->
         <meta-data android:name="io.sentry.auto-init" android:value="false" />
-        <activity android:name=".SplashActivity" android:exported="true" android:theme="@style/Theme.Livtet">
+        <activity android:name=".MainActivity"
+            android:exported="true"
+            android:theme="@style/Theme.Livtet">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-            <!-- Platform permalinks for books, reviews, and profiles. These
-                 live on SplashActivity rather than DashboardActivity: a cold
-                 start has to run Bridge.init before any screen can read the
-                 store, and the splash already forwards to the dashboard.
-                 Verification needs /.well-known/assetlinks.json to list this
-                 package's signing fingerprints. -->
-            <intent-filter android:autoVerify="true">
-                <action android:name="android.intent.action.VIEW" />
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE" />
-                <data android:scheme="https" android:host="livtet.olamaelcu.net" android:pathPrefix="/book/" />
-                <data android:scheme="https" android:host="livtet.olamaelcu.net" android:pathPrefix="/review/" />
-                <data android:scheme="https" android:host="livtet.olamaelcu.net" android:pathPrefix="/profile/" />
-            </intent-filter>
-            <!-- Local verification and the fallback when universal links are
-                 not verified. Same routes with the host standing in for the
-                 path prefix. -->
-            <intent-filter>
-                <action android:name="android.intent.action.VIEW" />
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE" />
-                <data android:scheme="livtet" android:host="book" />
-                <data android:scheme="livtet" android:host="review" />
-                <data android:scheme="livtet" android:host="profile" />
-            </intent-filter>
         </activity>
-        <activity android:name=".DashboardActivity"
-            android:exported="true"
-            android:launchMode="singleTask"
-            android:theme="@style/Theme.Livtet">
-            <intent-filter android:label="ATProto OAuth">
-                <action android:name="android.intent.action.VIEW" />
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE" />
-                <data android:scheme="net.olamaelcu.livtet" android:path="/oauth-redirect" />
-            </intent-filter>
-        </activity>
-        <!-- Returns the decoded pairing payload as the `node_id` extra. Not
-             exported: it is only ever started from the pairing dialog. -->
-        <activity android:name=".sync.QrScannerActivity"
-            android:exported="false"
-            android:theme="@style/Theme.Livtet" />
-        <!-- Hands a received book to KOReader as a scoped content:// URI, so the
-             reader gets read access to that one file and nothing else. -->
-        <provider
-            android:name="androidx.core.content.FileProvider"
-            android:authorities="${applicationId}.fileprovider"
-            android:exported="false"
-            android:grantUriPermissions="true">
-            <meta-data
-                android:name="android.support.FILE_PROVIDER_PATHS"
-                android:resource="@xml/file_paths" />
-        </provider>
     </application>
 </manifest>

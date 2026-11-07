@@ -29,7 +29,7 @@ PKG="net.olamaelcu.livtet"
 if [ "$FLAVOR" != "playstore" ]; then
 	PKG="net.olamaelcu.livtet.${FLAVOR}"
 fi
-ACTIVITY="net.olamaelcu.livtet.SplashActivity"
+ACTIVITY="net.olamaelcu.livtet.MainActivity"
 SERIAL=$(adb devices 2>/dev/null | grep 'device$' | head -1 | awk '{print $1}')
 if [ -n "$SERIAL" ]; then
 	adb -s "$SERIAL" shell am start -n "${PKG}/${ACTIVITY}"
