@@ -215,6 +215,9 @@ object Bridge {
         return generated
     }
 
+    /** This device's stable id, shared by pairing and by the sync screen. */
+    fun deviceId(): String = deviceIdForPeer()
+
     /**
      * Announce this device on `_livtet-sync._tcp` and start answering peers.
      *
@@ -248,6 +251,7 @@ object Bridge {
     ): SyncPairingResult =
         net.olamaelcu.livtet.ffi.pairSyncDevice(
             secretKeyPath = secretKeyPath(),
+            dbPath = requireDatabaseFile(),
             peerNodeId = peerNodeId,
             deviceId = deviceIdForPeer(),
             name = name,
@@ -259,14 +263,27 @@ object Bridge {
     suspend fun pairingStatus(
         peerNodeId: String,
         claim: String,
+        name: String,
         waitSeconds: UInt = 30u,
     ): SyncPairingResult =
         net.olamaelcu.livtet.ffi.syncPairingStatus(
             secretKeyPath = secretKeyPath(),
+            dbPath = requireDatabaseFile(),
             peerNodeId = peerNodeId,
             claim = claim,
             waitSecs = waitSeconds,
+            name = name,
+            deviceType = "android",
         )
+
+    /**
+     * The token a peer issued this device, read from its `paired_devices` row.
+     *
+     * `null` means no pairing completed with it — or completed without the peer identifying itself
+     * — and a pull then needs the token handed in explicitly.
+     */
+    suspend fun peerToken(peerNodeId: String): String? =
+        net.olamaelcu.livtet.ffi.syncPeerToken(requireDatabaseFile(), peerNodeId)
 
     /** Peers waiting on this device to approve them. */
     suspend fun pendingPairings(): List<SyncPendingPairing> =
@@ -281,7 +298,7 @@ object Bridge {
 
     /** The devices this one is paired with, in either direction. */
     suspend fun pairedDevices(): List<SyncPairedDevice> =
-        net.olamaelcu.livtet.ffi.syncPairedDevices(secretKeyPath())
+        net.olamaelcu.livtet.ffi.syncPairedDevices(requireDatabaseFile())
 
     /** Offer a book this device holds to a paired peer. */
     suspend fun sendBook(editionId: String, deviceId: String): SyncSentBook =
@@ -295,14 +312,17 @@ object Bridge {
      */
     suspend fun syncOnce(
         peerNodeId: String,
-        sessionToken: String,
+        sessionToken: String? = null,
         deviceId: String,
         sinceVersion: Long = 0L,
         limit: Long = 0L,
     ): SyncPullReport =
         net.olamaelcu.livtet.ffi.syncPull(
             secretKeyPath = secretKeyPath(),
-            sessionToken = sessionToken,
+            sessionToken =
+                sessionToken
+                    ?: peerToken(peerNodeId)
+                    ?: error("no session token for $peerNodeId; pair with it first"),
             dbPath = requireDatabaseFile(),
             deviceId = deviceId,
             peerNodeId = peerNodeId,

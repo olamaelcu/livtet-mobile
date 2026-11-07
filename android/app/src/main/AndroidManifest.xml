@@ -2,6 +2,10 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <!-- Sentry event upload only; every feature that used the network is gone. -->
     <uses-permission android:name="android.permission.INTERNET" />
+    <!-- Peer discovery: NsdManager browses _livtet-sync._tcp, which needs the
+         multicast lock on some OEM builds. Both are normal permissions. -->
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.CHANGE_WIFI_MULTICAST_STATE" />
     <application android:name=".LivtetApp"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -26,6 +30,11 @@
         <activity android:name=".ReaderActivity"
             android:exported="false"
             android:configChanges="orientation|screenSize|smallestScreenSize|screenLayout|keyboardHidden|uiMode"
+            android:theme="@style/Theme.Livtet" />
+        <!-- Pairing and the devices this one can exchange books with. Not
+             exported: reached only from the launcher. -->
+        <activity android:name=".SyncActivity"
+            android:exported="false"
             android:theme="@style/Theme.Livtet" />
     </application>
 </manifest>

@@ -120,32 +120,11 @@ private fun LauncherScreen(databasePath: String) {
                 )
             }
             LauncherPhase.Ready ->
-                if (readable.isEmpty()) {
-                    Text(
-                        text = "Mobile client under reconstruction",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
-                        textAlign = TextAlign.Center,
-                    )
-                } else {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text(
-                            text = "Read something",
-                            style = MaterialTheme.typography.labelMedium,
-                            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        readable.take(5).forEach { book ->
-                            val editionId = book.primaryEditionId ?: return@forEach
-                            TextButton(
-                                onClick = {
-                                    context.startActivity(ReaderActivity.intent(context, editionId))
-                                }
-                            ) {
-                                Text(text = book.title, style = MaterialTheme.typography.bodyMedium)
-                            }
-                        }
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    TextButton(onClick = { context.startActivity(SyncActivity.intent(context)) }) {
+                        Text("Sync & Devices")
                     }
+                    LauncherBody(readable = readable, context = context)
                 }
             is LauncherPhase.Failed ->
                 Text(
@@ -154,6 +133,37 @@ private fun LauncherScreen(databasePath: String) {
                     color = MaterialTheme.colorScheme.error,
                     textAlign = TextAlign.Center,
                 )
+        }
+    }
+}
+
+/** What the launcher offers once the library is open. */
+@Composable
+private fun LauncherBody(readable: List<Book>, context: android.content.Context) {
+    if (readable.isEmpty()) {
+        Text(
+            text = "Mobile client under reconstruction",
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
+            textAlign = TextAlign.Center,
+        )
+        return
+    }
+
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Text(
+            text = "Read something",
+            style = MaterialTheme.typography.labelMedium,
+            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        readable.take(5).forEach { book ->
+            val editionId = book.primaryEditionId ?: return@forEach
+            TextButton(
+                onClick = { context.startActivity(ReaderActivity.intent(context, editionId)) }
+            ) {
+                Text(text = book.title, style = MaterialTheme.typography.bodyMedium)
+            }
         }
     }
 }
