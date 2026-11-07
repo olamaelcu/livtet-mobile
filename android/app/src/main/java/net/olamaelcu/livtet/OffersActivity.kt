@@ -8,6 +8,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -19,6 +20,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.LinearProgressIndicator
@@ -36,6 +38,10 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -280,12 +286,39 @@ private fun OfferDeck(
     // The deck always shows the first undecided offer: deciding removes it from
     // the list, so the next one takes its place without any index bookkeeping.
     val offer = offers.firstOrNull() ?: return
+    // The cover is fetched for the book on the card, not for the whole deck: a
+    // preview costs a round trip to the peer, so only the offer being looked at
+    // pays for one.
+    var cover by remember(offer.offerId) { mutableStateOf<ImageBitmap?>(null) }
+    LaunchedEffect(offer.offerId, offer.hasCover) {
+        cover =
+            if (!offer.hasCover) {
+                null
+            } else {
+                runCatching { Bridge.offerCover(offer) }
+                    .getOrNull()
+                    ?.let { bytes ->
+                        android.graphics.BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
+                            ?.asImageBitmap()
+                    }
+            }
+    }
     Column(
         modifier = Modifier.fillMaxSize().padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         OutlinedCard(modifier = Modifier.fillMaxWidth()) {
             Column(modifier = Modifier.padding(20.dp)) {
+                cover?.let { bitmap ->
+                    Image(
+                        bitmap = bitmap,
+                        contentDescription = "Cover of ${offer.title}",
+                        contentScale = ContentScale.Crop,
+                        modifier =
+                            Modifier.fillMaxWidth().height(180.dp).clip(RoundedCornerShape(12.dp)),
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                }
                 Text(
                     text = "FROM ${offer.fromDeviceId.take(8).uppercase()}",
                     style = MaterialTheme.typography.labelSmall,
@@ -310,7 +343,9 @@ private fun OfferDeck(
                     )
                     Spacer(modifier = Modifier.weight(1f))
                     Text(
-                        text = if (offer.hasCover) "Cover art" else "",
+                        // Only a fallback: when the art is on the card, saying so
+                        // in words as well is noise.
+                        text = if (offer.hasCover && cover == null) "Cover art" else "",
                         style = MaterialTheme.typography.labelMedium,
                         color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
                     )

@@ -364,6 +364,24 @@ object Bridge {
         )
     }
 
+    /**
+     * The cover of a book a peer is offering, or null when it has none.
+     *
+     * Read straight from the peer, before anything is written locally: looking at a book should not
+     * be the same act as accepting it.
+     */
+    suspend fun offerCover(from: SyncOfferSummary): ByteArray? {
+        if (!from.hasCover) return null
+        val peer = peerFor(from.fromDeviceId)
+        val nodeId = peer.nodeId ?: return null
+        return net.olamaelcu.livtet.ffi.syncOfferCover(
+            secretKeyPath = secretKeyPath(),
+            sessionToken = tokenFor(peer),
+            peerNodeId = nodeId,
+            inventoryId = from.inventoryId,
+        )
+    }
+
     /** Decline an offered book. */
     suspend fun rejectOffer(from: SyncOfferSummary) {
         val peer = peerFor(from.fromDeviceId)
