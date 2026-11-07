@@ -1,4 +1,3 @@
-import Inject
 import LivtetKit
 import os
 import SwiftUI
@@ -12,15 +11,13 @@ import SwiftUI
 /// 2. `.error` — an inline error message + a Retry button. We only
 ///    show this for unrecoverable initialization failures (e.g.
 ///    database file-system errors).
-/// 3. `.ready` — the root [RootTabView] appears with a cross-fade,
+/// 3. `.ready` — the barebone [LauncherView] appears with a cross-fade,
 ///    so the user sees the brand transition rather than a hard cut.
 struct SplashScreenView: View {
     private let logger = Logger(subsystem: "net.olamaelcu.livtet", category: "SplashScreenView")
 
     @State private var state: SplashState = SplashScreenView.isRunningTests ? .ready : .loading
     @State private var errorMessage: String?
-
-    @ObserveInjection var forceRedraw
 
     /// Unit tests are hosted by this app. The splash's FFI and database setup
     /// can outlast the test runner's bootstrap window, and none of the tests
@@ -93,14 +90,13 @@ struct SplashScreenView: View {
                     }
 
                 case .ready:
-                    RootTabView()
+                    LauncherView()
                         .transition(.opacity)
                 }
             }
             .padding()
         }
         .animation(.easeInOut(duration: 0.25), value: state)
-        .enableInjection()
     }
 
     private func initializeDatabase() {

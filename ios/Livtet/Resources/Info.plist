@@ -15,19 +15,6 @@
 		<string>0.1.1</string>
 		<key>CFBundleVersion</key>
 		<string>2</string>
-		<key>CFBundleURLTypes</key>
-		<array>
-			<dict>
-				<key>CFBundleURLName</key>
-				<string>net.olamaelcu.livtet</string>
-				<key>CFBundleURLSchemes</key>
-				<array>
-					<string>livtet</string>
-				</array>
-			</dict>
-		</array>
-		<key>GoogleBooksApiKey</key>
-		<string>$(GOOGLE_BOOKS_IOS_API_KEY)</string>
 		<key>LSRequiresIPhoneOS</key>
 		<true />
 		<key>UILaunchScreen</key>
@@ -49,27 +36,12 @@
 			<string>UIInterfaceOrientationLandscapeLeft</string>
 			<string>UIInterfaceOrientationLandscapeRight</string>
 		</array>
-		<key>NSUserTrackingUsageDescription</key>
-		<string>Livtet does not track you across apps. This setting is unused.</string>
-		<key>NSCameraUsageDescription</key>
-		<string>Livtet scans QR codes to pair with your desktop server. The camera is only used when scanning a code.</string>
-		<key>NSLocalNetworkUsageDescription</key>
-		<string>Livtet discovers your desktop Livtet server on the local network for sync.</string>
-		<key>NSBonjourServices</key>
+		<key>UIAppFonts</key>
 		<array>
-			<string>_livtet-sync._tcp</string>
+			<string>work_sans.ttf</string>
+			<string>geist.ttf</string>
+			<string>jetbrains_mono.ttf</string>
 		</array>
-		<key>NSAppTransportSecurity</key>
-		<dict>
-			<key>NSAllowsLocalNetworking</key>
-			<true />
-		</dict>
-	<key>UIAppFonts</key>
-	<array>
-		<string>work_sans.ttf</string>
-		<string>geist.ttf</string>
-		<string>jetbrains_mono.ttf</string>
-	</array>
 		<key>UIDesignRequiresCompatibility</key>
 		<true />
 	</dict>
