@@ -155,10 +155,7 @@ private fun OffersRoute(onBack: () -> Unit) {
             }
             deciding = null
             progress = null
-            notice = buildString {
-                append("Added $added")
-                if (failed > 0) append(" \u00b7 $failed could not be added")
-            }
+            notice = AcceptAllResult(added = added, failed = failed).summary
             reload()
         }
     }

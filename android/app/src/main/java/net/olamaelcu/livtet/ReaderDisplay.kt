@@ -75,6 +75,7 @@ data class ReaderDisplay(
         copy(marginStep = step.coerceIn(0, MARGIN_STEPS.lastIndex))
 
     /** The toolkit's preferences for this display. */
+    @OptIn(org.readium.r2.shared.ExperimentalReadiumApi::class)
     fun toPreferences(): EpubPreferences =
         EpubPreferences(
             theme = theme.toNavigatorTheme(),
