@@ -125,6 +125,10 @@ dependencies {
     // Not covered by the Compose BOM, so the version has to be explicit: the
     // instrumentation source set has no other node supplying one.
     implementation("androidx.activity:activity-compose:1.8.2")
+    // Lifecycle-aware effects in Compose: the home screen re-reads the library when
+    // it comes back to the foreground, so a book deleted from the library screen
+    // stops being on the shelf.
+    implementation(libs.androidx.lifecycle.runtime.compose)
 
     // FFI golden-scenario instrumented test.
     androidTestImplementation(libs.junit)

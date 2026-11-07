@@ -13,7 +13,12 @@ import java.util.zip.ZipOutputStream
  * a genuine package rather than a placeholder with the right name.
  */
 object TestEpub {
-    fun write(context: Context, title: String, directory: File = context.cacheDir): File {
+    fun write(
+        context: Context,
+        title: String,
+        author: String? = null,
+        directory: File = context.cacheDir,
+    ): File {
         val target = File(directory, "$title.epub")
         ZipOutputStream(target.outputStream()).use { zip ->
             // The mimetype entry must come first and be stored, not deflated.
@@ -50,6 +55,7 @@ object TestEpub {
                     <dc:identifier id="uid">urn:uuid:9d1c8f3e-1111-4a2b-9c3d-000000000001</dc:identifier>
                     <dc:title>$title</dc:title>
                     <dc:language>en</dc:language>
+                    ${if (author != null) "<dc:creator>$author</dc:creator>" else ""}
                     <meta property="dcterms:modified">2026-01-01T00:00:00Z</meta>
                   </metadata>
                   <manifest>

@@ -31,10 +31,22 @@ class ImportBookTest {
     fun anEpubFromThePhoneBecomesReadableBook() = runBlocking {
         Bridge.init(File(context.filesDir, "import-book-test.db").absolutePath)
 
-        val source = TestEpub.write(context, "On The Phone")
+        val source = TestEpub.write(context, "On The Phone", author = "Jacky Alcine")
         val imported = ImportBook.from(context, Uri.fromFile(source))
 
+        // The package says what the book is; the file name is only the fallback.
+        assertEquals(
+            "the package reader finds the creator on this platform",
+            "Jacky Alcine",
+            EpubMetadataReader.read(source)?.author,
+        )
         assertEquals("On The Phone", imported.title)
+        assertFalse("a first import is not a repeat", imported.alreadyPresent)
+        assertEquals(
+            "the OPF creator becomes the edition's author",
+            listOf("Jacky Alcine"),
+            Bridge.editionDetail(imported.editionId)?.authors,
+        )
 
         val copy = File(imported.path)
         assertTrue("the bytes were copied into the app's own storage", copy.isFile)
@@ -78,6 +90,30 @@ class ImportBookTest {
             File(context.filesDir, "books").listFiles().orEmpty().any {
                 it.name.endsWith("notes.txt")
             },
+        )
+    }
+
+    @Test
+    fun theSameFileTwiceIsOneBook() = runBlocking {
+        Bridge.init(File(context.filesDir, "import-book-test.db").absolutePath)
+
+        val source = TestEpub.write(context, "Arriving Twice")
+        val first = ImportBook.from(context, Uri.fromFile(source))
+        val second = ImportBook.from(context, Uri.fromFile(source))
+
+        assertTrue("the repeat is recognised", second.alreadyPresent)
+        assertEquals("the repeat resolves to the same edition", first.editionId, second.editionId)
+        assertEquals(
+            "only one copy of the bytes is kept",
+            1,
+            File(context.filesDir, "books").listFiles().orEmpty().count {
+                it.name.endsWith("Arriving Twice.epub")
+            },
+        )
+        assertEquals(
+            "and only one work",
+            1,
+            Bridge.listBooks(limit = 200).count { it.title == "Arriving Twice" },
         )
     }
 }

@@ -211,7 +211,7 @@ private fun SyncRoute(onBack: () -> Unit) {
                     .padding(horizontal = 16.dp)
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                TextButton(onClick = onBack) { Text("\u2039  Library") }
+                TextButton(onClick = onBack) { Text("\u2039  Back") }
                 Spacer(modifier = Modifier.weight(1f))
                 Text("Sync & Devices", style = MaterialTheme.typography.labelLarge)
                 Spacer(modifier = Modifier.weight(1f))

@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -55,6 +56,8 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LifecycleEventEffect
 import java.io.File
 import kotlinx.coroutines.launch
 import net.olamaelcu.livtet.core.designsystem.LivtetTheme
@@ -95,8 +98,20 @@ private data class HomeState(
     val paired: List<SyncPairedDevice>,
 )
 
-/** A book plus how to open it: no edition, no path, no tap. */
-private data class ShelfBook(val book: Book, val editionId: String?, val cover: ImageBitmap?)
+/**
+ * A book plus how to open it: no edition, no path, no tap.
+ *
+ * [progress] is the reader's own position in the edition, so the shelf can show where they stopped
+ * instead of asking them to remember. Zero means "not started", which is also what a book that has
+ * never been opened reports.
+ */
+private data class ShelfBook(
+    val book: Book,
+    val editionId: String?,
+    val cover: ImageBitmap?,
+    val progress: Double = 0.0,
+    val author: String? = null,
+)
 
 private sealed interface HomePhase {
     data object Loading : HomePhase
@@ -119,6 +134,11 @@ private fun HomeRoute(databasePath: String) {
     var notice by remember { mutableStateOf<String?>(null) }
     var failure by remember { mutableStateOf<String?>(null) }
 
+    // Coming back from the library or the reader can change what the shelf holds —
+    // a book removed, progress written — so the screen re-reads on resume rather than
+    // showing what was true when it was first composed.
+    LifecycleEventEffect(Lifecycle.Event.ON_RESUME) { reloads++ }
+
     LaunchedEffect(databasePath) {
         phase =
             runCatching { Bridge.init(databasePath) }
@@ -133,20 +153,39 @@ private fun HomeRoute(databasePath: String) {
         state =
             runCatching {
                     val books = Bridge.listBooks(limit = 200)
+                    // Only books with a file can be opened, so only those reach a shelf.
+                    val readable = books.mapNotNull { book ->
+                        val editionId = book.primaryEditionId ?: return@mapNotNull null
+                        val path = Bridge.editionFilePath(editionId) ?: return@mapNotNull null
+                        if (!File(path).isFile) return@mapNotNull null
+                        ShelfBook(book = book, editionId = editionId, cover = localCover(book))
+                    }
+                    // Continue reading first: the shelf is where you pick up, so a book
+                    // read ten minutes ago outranks one acquired first. The rest of the
+                    // row is what is next, rather than empty slots next to your book.
+                    val byWork = books.associateBy { it.id }
+                    val continuing =
+                        Bridge.getRecentlyReadBooks(SHELF_SIZE).mapNotNull { recent ->
+                            val book = byWork[recent.workId] ?: return@mapNotNull null
+                            val path = Bridge.editionFilePath(recent.editionId)
+                            if (path == null || !File(path).isFile) return@mapNotNull null
+                            ShelfBook(
+                                book = book,
+                                editionId = recent.editionId,
+                                cover = localCover(book),
+                                progress = recent.progress,
+                                author =
+                                    recent.authorName
+                                        ?: Bridge.editionDetail(recent.editionId)
+                                            ?.authors
+                                            ?.firstOrNull(),
+                            )
+                        }
+                    val alreadyOnShelf = continuing.mapNotNullTo(mutableSetOf()) { it.editionId }
                     val shelf =
-                        books
-                            .mapNotNull { book ->
-                                val editionId = book.primaryEditionId ?: return@mapNotNull null
-                                val path =
-                                    Bridge.editionFilePath(editionId) ?: return@mapNotNull null
-                                if (!File(path).isFile) return@mapNotNull null
-                                ShelfBook(
-                                    book = book,
-                                    editionId = editionId,
-                                    cover = localCover(book),
-                                )
-                            }
-                            .take(SHELF_SIZE)
+                        (continuing + readable.filterNot { it.editionId in alreadyOnShelf }).take(
+                            SHELF_SIZE
+                        )
                     val offers = runCatching { Bridge.pendingOffers() }.getOrDefault(emptyList())
                     HomeState(
                         books = books,
@@ -162,13 +201,35 @@ private fun HomeRoute(databasePath: String) {
                 }
     }
 
+    // Covers for catalog books live on the network until they have been fetched once,
+    // so they are resolved after the shelf is already on screen: a slow or offline
+    // cover degrades to initials rather than holding up the library.
+    var resolvedCovers by remember { mutableStateOf<Map<String, ImageBitmap>>(emptyMap()) }
+    LaunchedEffect(state.shelf.map { it.editionId }) {
+        state.shelf
+            .mapNotNull { it.editionId }
+            .forEach { editionId ->
+                if (resolvedCovers.containsKey(editionId)) return@forEach
+                val book = state.shelf.firstOrNull { it.editionId == editionId }?.book
+                val url = book?.coverUrl?.takeIf { it.startsWith("http") } ?: return@forEach
+                val path = runCatching { Bridge.resolveCoverPath(editionId, url) }.getOrNull()
+                val bitmap = path?.takeIf { it.isNotBlank() }?.let { coverAt(it) } ?: return@forEach
+                resolvedCovers = resolvedCovers + (editionId to bitmap)
+            }
+    }
+
     fun importFrom(uri: Uri) {
         scope.launch {
             working = "Importing\u2026"
             failure = null
             runCatching { ImportBook.from(context, uri) }
                 .onSuccess { imported ->
-                    notice = "\u201c${imported.title}\u201d is on this device"
+                    notice =
+                        if (imported.alreadyPresent) {
+                            "\u201c${imported.title}\u201d was already on this device"
+                        } else {
+                            "\u201c${imported.title}\u201d is on this device"
+                        }
                     reloads++
                 }
                 .onFailure { failure = it.message ?: it.toString() }
@@ -201,6 +262,7 @@ private fun HomeRoute(databasePath: String) {
             HomePhase.Ready ->
                 HomeContent(
                     state = state,
+                    covers = resolvedCovers,
                     working = working,
                     notice = notice,
                     failure = failure,
@@ -224,6 +286,7 @@ private const val SHELF_SIZE = 4
 @Composable
 private fun HomeContent(
     state: HomeState,
+    covers: Map<String, ImageBitmap>,
     working: String?,
     notice: String?,
     failure: String?,
@@ -286,7 +349,7 @@ private fun HomeContent(
                 onImport = onImport,
             )
         } else {
-            Shelf(shelf = state.shelf, onOpenBook = onOpenBook)
+            Shelf(shelf = state.shelf, covers = covers, onOpenBook = onOpenBook)
             Row(verticalAlignment = Alignment.CenterVertically) {
                 TextButton(onClick = onImport) { Text("Add a book") }
                 Spacer(modifier = Modifier.weight(1f))
@@ -351,7 +414,11 @@ private fun SearchPill(onClick: () -> Unit) {
 }
 
 @Composable
-private fun Shelf(shelf: List<ShelfBook>, onOpenBook: (String) -> Unit) {
+private fun Shelf(
+    shelf: List<ShelfBook>,
+    covers: Map<String, ImageBitmap>,
+    onOpenBook: (String) -> Unit,
+) {
     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
         shelf.forEach { entry ->
             val editionId = entry.editionId ?: return@forEach
@@ -361,12 +428,28 @@ private fun Shelf(shelf: List<ShelfBook>, onOpenBook: (String) -> Unit) {
                         .clickable { onOpenBook(editionId) }
                         .semantics { contentDescription = "Open ${entry.book.title}" }
             ) {
-                Cover(cover = entry.cover, title = entry.book.title)
+                Cover(cover = covers[editionId] ?: entry.cover, title = entry.book.title)
+                if (entry.progress > 0.0) {
+                    ProgressUnder(progress = entry.progress)
+                }
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
                     text = entry.book.title,
                     style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.onBackground,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+                Text(
+                    text =
+                        entry.author
+                            ?: if (entry.progress > 0.0) {
+                                "${(entry.progress * 100).toInt()}%"
+                            } else {
+                                ""
+                            },
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )
@@ -551,7 +634,39 @@ private fun initials(title: String): String =
 private fun localCover(book: Book): ImageBitmap? {
     val url = book.coverUrl ?: return null
     if (url.startsWith("http://") || url.startsWith("https://")) return null
-    val file = File(url)
+    return coverAt(url)
+}
+
+/** Decode a cover file, or null when it is missing or unreadable. */
+private fun coverAt(path: String): ImageBitmap? {
+    val file = File(path)
     if (!file.isFile) return null
     return BitmapFactory.decodeFile(file.absolutePath)?.asImageBitmap()
+}
+
+/**
+ * How far into the book the reader is.
+ *
+ * A bar rather than a number: on a shelf of four covers the question is "which one was I in the
+ * middle of", and length answers that faster than two digits do. The percentage still appears in
+ * the caption when there is no author to show instead.
+ */
+@Composable
+private fun ProgressUnder(progress: Double) {
+    Box(
+        modifier =
+            Modifier.fillMaxWidth()
+                .height(3.dp)
+                .background(
+                    MaterialTheme.colorScheme.outlineVariant,
+                    RoundedCornerShape(bottomStart = 4.dp, bottomEnd = 4.dp),
+                )
+    ) {
+        Box(
+            modifier =
+                Modifier.fillMaxWidth(progress.coerceIn(0.0, 1.0).toFloat())
+                    .fillMaxHeight()
+                    .background(MaterialTheme.colorScheme.primary)
+        )
+    }
 }

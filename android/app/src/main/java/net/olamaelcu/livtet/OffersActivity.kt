@@ -166,7 +166,7 @@ private fun OffersRoute(onBack: () -> Unit) {
                 modifier = Modifier.fillMaxWidth().padding(horizontal = 4.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                TextButton(onClick = onBack) { Text("\u2039  Library") }
+                TextButton(onClick = onBack) { Text("\u2039  Back") }
                 Spacer(modifier = Modifier.weight(1f))
                 Text("Waiting for you", style = MaterialTheme.typography.labelLarge)
                 Spacer(modifier = Modifier.weight(1f))

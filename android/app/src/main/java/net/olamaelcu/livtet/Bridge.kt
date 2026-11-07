@@ -162,11 +162,19 @@ object Bridge {
 
     // ── Library (book list) ─────────────────────────────────────────
 
+    /** The orders a library screen can offer. */
+    enum class SortBy(val workSort: WorkSortBy) {
+        /** Newest acquisition first, which is what "recently added" means here. */
+        RECENT(WorkSortBy.CREATED_AT),
+        TITLE(WorkSortBy.TITLE),
+    }
+
     suspend fun listBooks(
         limit: Int = 50,
         offset: Int = 0,
         order: BookSearchSortOrder = BookSearchSortOrder.DESCENDING,
         query: String? = null,
+        sortBy: SortBy = SortBy.RECENT,
     ): List<Book> =
         withContext(Dispatchers.IO) {
             val sortDirection =
@@ -178,7 +186,7 @@ object Bridge {
                 .listWorks(
                     limit = limit.toUInt(),
                     offset = offset.toUInt(),
-                    sortBy = WorkSortBy.CREATED_AT,
+                    sortBy = sortBy.workSort,
                     sortDirection = sortDirection,
                     query = query?.takeIf { it.isNotBlank() },
                 )
