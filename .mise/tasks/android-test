@@ -37,7 +37,12 @@ run_test() {
 
 	if [ "${usage_instrumented:-false}" = "true" ]; then
 		echo "  [$flavor] Running instrumented tests..."
-		gradle ":app:connected${cap}DebugAndroidTest"
+		# By default AGP uninstalls the app and the test APK when the run ends,
+		# which throws away the app's data with them — the library, the pairing
+		# rows, the reader's display choices. Keeping them installed makes the
+		# device a place you can look at after a test run instead of a clean slate.
+		gradle ":app:connected${cap}DebugAndroidTest" \
+			-Pandroid.injected.androidTest.leaveApksInstalledAfterRun=true
 	fi
 }
 
