@@ -83,6 +83,8 @@ android {
     }
 
     compileOptions {
+        // Readium uses java.time and other post-API-24 types.
+        isCoreLibraryDesugaringEnabled = true
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
@@ -104,6 +106,10 @@ dependencies {
     implementation(libs.sentry.android)
     implementation(project(":core:designsystem"))
     implementation(project(":core:auth"))
+    // Opening a received EPUB: Readium is linked here through the reader module,
+    // so the app also has to desugar (see the compileOptions block above).
+    implementation(project(":core:reader"))
+    coreLibraryDesugaring(libs.desugar.jdk.libs)
 
     // Hilt
     implementation(libs.hilt.android)
