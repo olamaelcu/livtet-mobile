@@ -441,6 +441,22 @@ object Bridge {
 
     /** Pass as `sinceVersion` to resume from the peer's stored cursor. */
     const val FROM_STORED_CURSOR: Long = -1L
+    /** Where the reader's display choices are kept. */
+    private const val READER_DISPLAY_KEY: String = "reader.display"
+
+    /** How this reader likes a page; the default until they say otherwise. */
+    suspend fun readerDisplay(): ReaderDisplay =
+        ReaderDisplay.decode(
+            net.olamaelcu.livtet.ffi.settingsGet(requireDatabaseFile(), READER_DISPLAY_KEY)
+        )
+
+    /** Remember a display choice, so the next book opens the same way. */
+    suspend fun saveReaderDisplay(display: ReaderDisplay) =
+        net.olamaelcu.livtet.ffi.settingsSet(
+            requireDatabaseFile(),
+            READER_DISPLAY_KEY,
+            display.encode(),
+        )
 
     suspend fun getDashboardStats(): DashboardStats? =
         withContext(Dispatchers.IO) {
