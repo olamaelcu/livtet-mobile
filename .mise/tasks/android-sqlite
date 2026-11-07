@@ -1,0 +1,176 @@
+#!/usr/bin/env bash
+#MISE description="Build a modern sqlite3 shell for the device from the amalgamation the app links, and optionally run it against the app's database"
+#USAGE flag "--abi <abi>" help="Target ABI (auto = the connected device's)" default="auto" {
+#USAGE   choices "auto" "x86_64" "arm64"
+#USAGE }
+#USAGE flag "--package <package>" help="Application id whose data directory to open with --db" default="net.olamaelcu.livtet.generic"
+#USAGE flag "--db" help="Run the shell as the app user against files/livtet.db instead of just installing it"
+#USAGE flag "--sql <sql>" help="SQL to run with --db" default="select sqlite_version();"
+#USAGE flag "--build-only" help="Compile for --abi and stop, so a cross-build needs no device"
+set -euo pipefail
+# shellcheck disable=SC1091
+source "$(dirname "${BASH_SOURCE[0]}")/_os-check" && require_os linux
+
+SDK_ROOT="${ANDROID_SDK_ROOT:-${ANDROID_HOME:-$HOME/.local/share/mise/installs/android-sdk/latest}}"
+NDK_VERSION="${ANDROID_NDK_VERSION:-27.1.12297006}"
+NDK="$SDK_ROOT/ndk/$NDK_VERSION"
+HOST_TAG="linux-x86_64"
+CLANG_DIR="$NDK/toolchains/llvm/prebuilt/$HOST_TAG/bin"
+CACHE_ROOT="${XDG_CACHE_HOME:-$HOME/.cache}/livtet/android-sqlite"
+
+if [ ! -d "$CLANG_DIR" ]; then
+	echo "ERROR: no NDK clang at $CLANG_DIR" >&2
+	exit 1
+fi
+
+#######################################
+# 1. Which SQLite does the app link?
+#######################################
+# The shell has to be the engine the app runs, or it is a different database
+# pretending to answer for this one: read the pinned crate out of the lock file
+# and take the version from the header it vendors.
+LOCK="core/Cargo.lock"
+[ -f "$LOCK" ] || LOCK="../core/Cargo.lock"
+[ -f "$LOCK" ] || {
+	echo "ERROR: cannot find core/Cargo.lock (run this from the mobile repo root)" >&2
+	exit 1
+}
+
+CRATE_VERSION="$(awk '/^name = "libsqlite3-sys"$/{found=1} found && /^version = /{gsub(/[" ]/,"",$3); print $3; exit}' "$LOCK")"
+if [ -z "$CRATE_VERSION" ]; then
+	echo "ERROR: libsqlite3-sys is not in $LOCK" >&2
+	exit 1
+fi
+
+HEADER=""
+for candidate in "$HOME"/.cargo/registry/src/*/libsqlite3-sys-"$CRATE_VERSION"/sqlite3/sqlite3.h; do
+	[ -f "$candidate" ] && HEADER="$candidate" && break
+done
+if [ -z "$HEADER" ]; then
+	echo "ERROR: vendor copy of libsqlite3-sys $CRATE_VERSION not found; run 'cargo fetch' in core/" >&2
+	exit 1
+fi
+
+SQLITE_VERSION="$(awk '/^#define SQLITE_VERSION /{gsub(/"/,"",$3); print $3}' "$HEADER")"
+if [ -z "$SQLITE_VERSION" ]; then
+	echo "ERROR: no SQLITE_VERSION in $HEADER" >&2
+	exit 1
+fi
+echo "=== android-sqlite: $SQLITE_VERSION (libsqlite3-sys $CRATE_VERSION) ==="
+
+#######################################
+# 2. The amalgamation for exactly that version
+#######################################
+MAJOR="${SQLITE_VERSION%%.*}"
+REST="${SQLITE_VERSION#*.}"
+MINOR="${REST%%.*}"
+PATCH="${REST#*.}"
+PATCH="${PATCH%%.*}"
+AMALGAMATION_ID="$(printf '%d%02d%02d00' "$MAJOR" "$MINOR" "$PATCH")"
+
+WORK="$CACHE_ROOT/$SQLITE_VERSION"
+SRC="$WORK/src"
+if [ ! -f "$SRC/sqlite3.c" ] || [ ! -f "$SRC/shell.c" ]; then
+	mkdir -p "$WORK"
+	ZIP="$WORK/sqlite-amalgamation-$AMALGAMATION_ID.zip"
+	if [ ! -f "$ZIP" ]; then
+		echo "  fetching amalgamation $AMALGAMATION_ID..."
+		for year in 2026 2025 2024 2023; do
+			url="https://www.sqlite.org/$year/sqlite-amalgamation-$AMALGAMATION_ID.zip"
+			if curl -fsSL --max-time 60 -o "$ZIP" "$url" 2>/dev/null; then
+				break
+			fi
+			rm -f "$ZIP"
+		done
+	fi
+	[ -f "$ZIP" ] || {
+		echo "ERROR: could not download the $SQLITE_VERSION amalgamation" >&2
+		exit 1
+	}
+	rm -rf "$SRC"
+	(unzip -q "$ZIP" -d "$WORK" && mv "$WORK/sqlite-amalgamation-$AMALGAMATION_ID" "$SRC")
+fi
+
+#######################################
+# 3. Build it for the device's ABI
+#######################################
+ABI="${usage_abi:-auto}"
+
+# Build-only needs a named ABI: there is nothing to detect from without a device.
+if [ "${usage_build_only:-false}" = true ] && [ "$ABI" = auto ]; then
+	echo "ERROR: --build-only needs --abi (auto has no device to inspect)" >&2
+	exit 1
+fi
+
+if [ "$ABI" = auto ]; then
+	DEVICE_ABI="$(adb shell getprop ro.product.cpu.abi 2>/dev/null | tr -d '\r')"
+	case "$DEVICE_ABI" in
+	arm64* | aarch64*) ABI=arm64 ;;
+	x86_64*) ABI=x86_64 ;;
+	*)
+		echo "ERROR: no device or unsupported ABI: '${DEVICE_ABI}'" >&2
+		exit 1
+		;;
+	esac
+fi
+case "$ABI" in
+arm64) TRIPLE="aarch64-linux-android" ;;
+x86_64) TRIPLE="x86_64-linux-android" ;;
+*)
+	echo "ERROR: unknown ABI $ABI" >&2
+	exit 1
+	;;
+esac
+
+OUT="$WORK/sqlite3-$ABI"
+if [ ! -f "$OUT" ] || [ "$SRC/sqlite3.c" -nt "$OUT" ]; then
+	echo "  building for $TRIPLE..."
+	# The shell is a debugging tool: no threads, no extension loading, one file.
+	"$CLANG_DIR/${TRIPLE}24-clang" \
+		-O2 \
+		-DSQLITE_THREADSAFE=0 \
+		-DSQLITE_OMIT_LOAD_EXTENSION \
+		-DSQLITE_DQS=0 \
+		"$SRC/sqlite3.c" "$SRC/shell.c" \
+		-o "$OUT"
+fi
+
+if [ "${usage_build_only:-false}" = true ]; then
+	file "$OUT"
+	echo "  built: $OUT"
+	exit 0
+fi
+
+#######################################
+# 4. Put it on the device
+#######################################
+REMOTE="/data/local/tmp/sqlite3-$ABI"
+adb push "$OUT" "$REMOTE" >/dev/null
+adb shell "chmod 755 $REMOTE"
+echo "  installed: $REMOTE"
+# The device runs it, not this host: it is an Android binary, and asking it for
+# its version is the first proof it starts at all.
+adb shell "$REMOTE -version" | head -1
+
+if [ "${usage_db:-false}" != true ]; then
+	echo "  run: adb shell $REMOTE /sdcard/some.db"
+	exit 0
+fi
+
+#######################################
+# 5. Or run it as the app, on the app's database
+#######################################
+PKG="${usage_package:-net.olamaelcu.livtet.generic}"
+if [ -z "$(adb shell pm path "$PKG" 2>/dev/null | tr -d '\r')" ]; then
+	echo "ERROR: $PKG is not installed (or not debuggable)" >&2
+	exit 1
+fi
+
+# An app UID cannot execute from /data/local/tmp reliably; its own directory is
+# the one place it can. The copy is left in place so a second run costs nothing.
+adb shell "run-as $PKG cp $REMOTE files/sqlite3-tool && run-as $PKG chmod 755 files/sqlite3-tool"
+SQL="${usage_sql:-select sqlite_version();}"
+# SQL goes over stdin: the statement is already inside two shell layers (this
+# task, then adb), and a third layer of quoting is how a `'table'` loses its
+# quotes and comes back as a syntax error.
+printf '%s\n' "$SQL" | adb shell "run-as $PKG files/sqlite3-tool files/livtet.db"
