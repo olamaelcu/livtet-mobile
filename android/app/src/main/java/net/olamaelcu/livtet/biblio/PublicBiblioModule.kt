@@ -9,12 +9,14 @@ import io.ktor.client.engine.cio.CIO
 import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.serialization.kotlinx.json.json
+import kotlinx.serialization.json.Json
 import javax.inject.Qualifier
 import javax.inject.Singleton
-import kotlinx.serialization.json.Json
 
 /** Marks the read-only client the public permalink screens use. */
-@Qualifier @Retention(AnnotationRetention.BINARY) annotation class PublicBiblioHttp
+@Qualifier
+@Retention(AnnotationRetention.BINARY)
+annotation class PublicBiblioHttp
 
 /**
  * HTTP client for the public catalog reads.
@@ -38,7 +40,7 @@ object PublicBiblioModule {
                     Json {
                         ignoreUnknownKeys = true
                         isLenient = true
-                    }
+                    },
                 )
             }
             install(HttpTimeout) {

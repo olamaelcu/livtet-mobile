@@ -1,10 +1,6 @@
 package net.olamaelcu.livtet
 
 import android.util.Log
-import java.io.File
-import java.text.SimpleDateFormat
-import java.util.Locale
-import java.util.TimeZone
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -16,10 +12,14 @@ import net.olamaelcu.livtet.ffi.NewEdition
 import net.olamaelcu.livtet.ffi.ReadingList
 import net.olamaelcu.livtet.ffi.SeedStats
 import net.olamaelcu.livtet.ffi.WorkSummary
-import net.olamaelcu.livtet.types.SortDirection
 import net.olamaelcu.livtet.types.PublishedDate
+import net.olamaelcu.livtet.types.SortDirection
 import net.olamaelcu.livtet.types.WorkSortBy
 import net.olamaelcu.livtet.types.WorkStatus
+import java.io.File
+import java.text.SimpleDateFormat
+import java.util.Locale
+import java.util.TimeZone
 
 /** A book (work) row for the Library screen (`Bridge.listBooks`). */
 data class Book(
@@ -34,6 +34,20 @@ data class Book(
     val primaryEditionId: String? = null,
 )
 
+/** One edition, as the book-detail sheet renders it. */
+data class EditionDetailView(
+    val title: String?,
+    val authors: List<String>,
+    val description: String?,
+    val format: String?,
+    val languageCode: String?,
+    val publishedDate: String?,
+    val publishers: List<String>,
+    val identifiers: List<String>,
+    val filePath: String?,
+    val fileSizeBytes: Long?,
+)
+
 /** A contributor to attach while importing an edition. */
 data class ContributorInput(val name: String, val role: String)
 
@@ -45,9 +59,9 @@ enum class BookSearchSortOrder {
 /** Outcome of a seed/reset call (`SeedStats` is the FFI shape). */
 typealias SeedResultMobile = SeedStats
 
-/** Dashboard stats, projected from the FFI record. The FFI carries
- * `firstReadingAt` as an RFC 3339 string; the UI works in epoch millis,
- * so `Bridge.getDashboardStats` converts at the boundary.
+/**
+ * Dashboard stats, projected from the FFI record. The FFI carries `firstReadingAt` as an RFC 3339
+ * string; the UI works in epoch millis, so `Bridge.getDashboardStats` converts at the boundary.
  */
 data class DashboardStats(
     val totalBooks: Long = 0,
@@ -69,10 +83,7 @@ data class RecentlyReadBook(
 )
 
 /** A search-history entry for the dashboard. Placeholder data class. */
-data class RecentSearch(
-    val query: String,
-    val searchedAt: String,
-)
+data class RecentSearch(val query: String, val searchedAt: String)
 
 /** A provider hit (from the Add Book wizard's online search). Placeholder. */
 data class PluginHitMobile(
@@ -92,14 +103,12 @@ enum class SyncState {
 }
 
 /**
- * Kotlin-facing library facade. Thin wrapper around the UniFFI
- * [`LivtetStore`]; owns initialization and presents the API surface the
- * screens consume.
+ * Kotlin-facing library facade. Thin wrapper around the UniFFI [`LivtetStore`]; owns initialization
+ * and presents the API surface the screens consume.
  *
- * Plugin lookup and peer sync are intentionally stubbed: the upstream
- * plugin runtime and sync engine do not exist in core right now. The
- * call sites keep their exact API shape so only this object changes
- * when those subsystems return.
+ * Plugin lookup and peer sync are intentionally stubbed: the upstream plugin runtime and sync
+ * engine do not exist in core right now. The call sites keep their exact API shape so only this
+ * object changes when those subsystems return.
  */
 object Bridge {
     @Volatile private var store: LivtetStore? = null
@@ -124,15 +133,13 @@ object Bridge {
 
     fun isInitialized(): Boolean = store != null
 
-    private fun requireStore(): LivtetStore =
-        checkNotNull(store) { "Bridge.init() was not called before accessing the store" }
+    private fun requireStore(): LivtetStore = checkNotNull(store) { "Bridge.init() was not called before accessing the store" }
 
     // ── Dashboard surfaces ────────────────────────────────────────
 
     fun getGreeting(): Greeting = net.olamaelcu.livtet.ffi.getGreeting()
 
-    fun getEmptyStateQuotation(): EmptyMessage =
-        net.olamaelcu.livtet.ffi.getEmptyStateQuotation()
+    fun getEmptyStateQuotation(): EmptyMessage = net.olamaelcu.livtet.ffi.getEmptyStateQuotation()
 
     // ── Plugin search (for the Add Book wizard) ───────────────────
     //
@@ -220,8 +227,7 @@ object Bridge {
 
     // ── Seed helper (used by smoke tests) ───────────────────────────
 
-    suspend fun seedDatabase(works: Int): SeedResultMobile =
-        withContext(Dispatchers.IO) { requireStore().seedSampleData(works.toUInt()) }
+    suspend fun seedDatabase(works: Int): SeedResultMobile = withContext(Dispatchers.IO) { requireStore().seedSampleData(works.toUInt()) }
 
     suspend fun resetAndSeed(numWorks: Int): SeedResultMobile =
         withContext(Dispatchers.IO) { requireStore().resetAndSeed(numWorks.toUInt()) }
@@ -229,20 +235,22 @@ object Bridge {
     // ── Covers (disk cache) ──────────────────────────────────────────
 
     /**
-     * Where cached covers live. Inside the app's own cache directory, so the
-     * system may evict it; the loader treats a miss as "download again".
+     * Where cached covers live. Inside the app's own cache directory, so the system may evict it;
+     * the loader treats a miss as "download again".
      */
-    private fun coverCacheRoot(): String =
-        File(LivtetApp.getInstance().cacheDir, "livtet-covers").absolutePath
+    private fun coverCacheRoot(): String = File(LivtetApp.getInstance().cacheDir, "livtet-covers").absolutePath
 
     /**
      * A local file for the edition's cover, downloading it once if needed.
      *
-     * `livtet-covers` owns the on-disk layout, so the FFI answers every hit.
-     * A miss returns null from the lookup and the image is fetched here and
-     * handed back for storage; the next call is then served from disk.
+     * `livtet-covers` owns the on-disk layout, so the FFI answers every hit. A miss returns null
+     * from the lookup and the image is fetched here and handed back for storage; the next call is
+     * then served from disk.
      */
-    suspend fun resolveCoverPath(editionId: String, remoteUrl: String?): String? =
+    suspend fun resolveCoverPath(
+        editionId: String,
+        remoteUrl: String?,
+    ): String? =
         withContext(Dispatchers.IO) {
             val store = requireStore()
             val root = coverCacheRoot()
@@ -250,7 +258,9 @@ object Bridge {
             store
                 .coverCachePath(editionId, root)
                 ?.takeIf { it.isNotBlank() }
-                ?.let { return@withContext it }
+                ?.let {
+                    return@withContext it
+                }
 
             val url = remoteUrl?.takeIf { it.isNotBlank() } ?: return@withContext null
             val download = downloadImage(url) ?: return@withContext null
@@ -259,23 +269,54 @@ object Bridge {
         }
 
     /** Remove a work, its editions, and its shelf/status rows. */
-    suspend fun deleteBook(workId: String): Boolean =
-        withContext(Dispatchers.IO) { requireStore().deleteWork(workId) }
+    suspend fun deleteBook(workId: String): Boolean = withContext(Dispatchers.IO) { requireStore().deleteWork(workId) }
 
     /** Identifier URNs stored against an edition, used when backfilling a cover. */
     suspend fun listEditionIdentifiers(editionId: String): List<String> =
         withContext(Dispatchers.IO) { requireStore().listEditionIdentifiers(editionId) }
 
+    /** The file on disk for an edition, or null when the library holds none. */
+    suspend fun editionFilePath(editionId: String): String? =
+        withContext(Dispatchers.IO) { requireStore().getEdition(editionId)?.file?.filePath }
+
+    /** One edition for the detail sheet, or null when the id is unknown. */
+    suspend fun editionDetail(editionId: String): EditionDetailView? =
+        withContext(Dispatchers.IO) {
+            val edition = requireStore().getEdition(editionId) ?: return@withContext null
+            EditionDetailView(
+                title = edition.title,
+                authors = edition.authors,
+                description = edition.description,
+                format = edition.format,
+                languageCode = edition.languageCode,
+                publishedDate = edition.publishedDate?.let(::formatPublishedDate),
+                publishers = edition.publishers,
+                identifiers = edition.identifiers,
+                filePath = edition.file?.filePath,
+                fileSizeBytes = edition.file?.fileSizeBytes,
+            )
+        }
+
+    /** `1989`, `1989-09`, or `1989-09-03`, matching the stored precision. */
+    private fun formatPublishedDate(date: PublishedDate): String =
+        when (date) {
+            is PublishedDate.Year -> "${date.v1}"
+            is PublishedDate.YearMonth -> "%04d-%02d".format(date.year, date.month.toInt())
+            is PublishedDate.YearMonthDay ->
+                "%04d-%02d-%02d".format(date.year, date.month.toInt(), date.day.toInt())
+        }
+
     /** Record a catalog cover URL for an edition that was imported without one. */
-    suspend fun setEditionCoverUrl(editionId: String, coverUrl: String) =
-        withContext(Dispatchers.IO) { requireStore().setEditionCoverUrl(editionId, coverUrl) }
+    suspend fun setEditionCoverUrl(
+        editionId: String,
+        coverUrl: String,
+    ) = withContext(Dispatchers.IO) { requireStore().setEditionCoverUrl(editionId, coverUrl) }
 
     private class DownloadedImage(val bytes: ByteArray, val ext: String)
 
     /**
-     * Fetch an image and guess its extension from the response, falling back
-     * to the URL's suffix. Returns null on any failure: a missing cover is a
-     * degraded row, not an error screen.
+     * Fetch an image and guess its extension from the response, falling back to the URL's suffix.
+     * Returns null on any failure: a missing cover is a degraded row, not an error screen.
      */
     private fun downloadImage(url: String): DownloadedImage? =
         try {
@@ -298,18 +339,24 @@ object Bridge {
             null
         }
 
-    private fun extensionFor(contentType: String?, url: String): String =
+    private fun extensionFor(
+        contentType: String?,
+        url: String,
+    ): String =
         when (contentType?.substringBefore(';')?.trim()?.lowercase()) {
-            "image/jpeg", "image/jpg" -> "jpg"
+            "image/jpeg",
+            "image/jpg",
+            -> "jpg"
             "image/png" -> "png"
             "image/webp" -> "webp"
             "image/avif" -> "avif"
             "image/gif" -> "gif"
             else ->
-                url.substringAfterLast('/').substringBefore('?').substringAfterLast('.', "jpg")
+                url.substringAfterLast('/')
+                    .substringBefore('?')
+                    .substringAfterLast('.', "jpg")
                     .lowercase()
-                    .takeIf { it in setOf("jpg", "jpeg", "png", "webp", "avif", "gif") }
-                    ?: "jpg"
+                    .takeIf { it in setOf("jpg", "jpeg", "png", "webp", "avif", "gif") } ?: "jpg"
         }
 
     // ── Shelves (named reading lists) ────────────────────────────────
@@ -330,38 +377,45 @@ object Bridge {
             editionIds = editionIds.map { it.toString() },
         )
 
-    suspend fun listShelves(): List<Shelf> =
-        withContext(Dispatchers.IO) { requireStore().listReadingLists().map { it.toShelf() } }
+    suspend fun listShelves(): List<Shelf> = withContext(Dispatchers.IO) { requireStore().listReadingLists().map { it.toShelf() } }
 
     suspend fun createShelf(name: String): Shelf =
         withContext(Dispatchers.IO) {
             requireStore().createReadingList(name = name, description = null).toShelf()
         }
 
-    suspend fun renameShelf(shelfId: String, name: String): Shelf =
+    suspend fun renameShelf(
+        shelfId: String,
+        name: String,
+    ): Shelf =
         withContext(Dispatchers.IO) {
             requireStore().updateReadingList(shelfId, name, null).toShelf()
         }
 
     /** File a book on a shelf. No-op when it is already there. */
-    suspend fun addToShelf(shelfId: String, editionId: String) =
-        withContext(Dispatchers.IO) { requireStore().addEditionToList(shelfId, editionId) }
+    suspend fun addToShelf(
+        shelfId: String,
+        editionId: String,
+    ) = withContext(Dispatchers.IO) { requireStore().addEditionToList(shelfId, editionId) }
 
     /** Move a book to [position] (0-based) on its shelf; returns the new order. */
-    suspend fun moveInShelf(shelfId: String, editionId: String, position: Int): List<String> =
+    suspend fun moveInShelf(
+        shelfId: String,
+        editionId: String,
+        position: Int,
+    ): List<String> =
         withContext(Dispatchers.IO) {
             requireStore()
                 .moveEditionInList(shelfId, editionId, position.coerceAtLeast(0).toUInt())
                 .map { it.toString() }
         }
 
-    suspend fun removeFromShelf(shelfId: String, editionId: String): Boolean =
-        withContext(Dispatchers.IO) {
-            requireStore().removeEditionFromList(shelfId, editionId)
-        }
+    suspend fun removeFromShelf(
+        shelfId: String,
+        editionId: String,
+    ): Boolean = withContext(Dispatchers.IO) { requireStore().removeEditionFromList(shelfId, editionId) }
 
-    suspend fun deleteShelf(shelfId: String): Boolean =
-        withContext(Dispatchers.IO) { requireStore().deleteReadingList(shelfId) }
+    suspend fun deleteShelf(shelfId: String): Boolean = withContext(Dispatchers.IO) { requireStore().deleteReadingList(shelfId) }
 
     private fun WorkSummary.toBook(): Book =
         Book(
@@ -376,12 +430,12 @@ object Bridge {
     // ── Import (catalog edition → library) ────────────────────────
 
     /**
-     * Create a work with one edition and attach [identifiers] (URN
-     * strings), returning the new edition id.
+     * Create a work with one edition and attach [identifiers] (URN strings), returning the new
+     * edition id.
      *
-     * Contributors are not persisted: the FFI has no author-creation
-     * method, so a catalog contributor cannot become an `authors` row
-     * yet. The work title is what the Library list renders.
+     * Contributors are not persisted: the FFI has no author-creation method, so a catalog
+     * contributor cannot become an `authors` row yet. The work title is what the Library list
+     * renders.
      */
     suspend fun importEdition(
         title: String,
@@ -393,12 +447,7 @@ object Bridge {
     ): String =
         withContext(Dispatchers.IO) {
             val store = requireStore()
-            val work =
-                store.createWork(
-                    title = title,
-                    sortTitle = null,
-                    description = description,
-                )
+            val work = store.createWork(title = title, sortTitle = null, description = description)
             val edition =
                 store.createEdition(
                     NewEdition(
@@ -410,7 +459,7 @@ object Bridge {
                         formatId = null,
                         languageId = null,
                         notes = null,
-                    )
+                    ),
                 )
             identifiers.distinct().forEach { urn ->
                 store.addEditionIdentifier(editionId = edition.id, identifier = urn)
@@ -430,8 +479,8 @@ object Bridge {
     /**
      * The contributor with exactly this name, or a new row.
      *
-     * `authors` has no unique constraint, so importing the same person twice
-     * would otherwise leave two rows that a rename could not keep in step.
+     * `authors` has no unique constraint, so importing the same person twice would otherwise leave
+     * two rows that a rename could not keep in step.
      */
     private suspend fun contributorId(
         store: net.olamaelcu.livtet.ffi.LivtetStore,
@@ -453,9 +502,9 @@ object Bridge {
 }
 
 /**
- * Parse the FFI's RFC 3339 (UTC) timestamps into epoch millis for the UI.
- * The Rust side renders sub-second precision variably, so it is truncated
- * before parsing; malformed input degrades to `null`.
+ * Parse the FFI's RFC 3339 (UTC) timestamps into epoch millis for the UI. The Rust side renders
+ * sub-second precision variably, so it is truncated before parsing; malformed input degrades to
+ * `null`.
  */
 private fun parseRfc3339Millis(value: String): Long? =
     try {

@@ -29,10 +29,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import java.io.File
 import net.olamaelcu.livtet.branding.LivtetColors
 import net.olamaelcu.livtet.core.designsystem.LivtetTheme
 import net.olamaelcu.livtet.settings.ThemeManager
+import java.io.File
 
 class SplashActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {

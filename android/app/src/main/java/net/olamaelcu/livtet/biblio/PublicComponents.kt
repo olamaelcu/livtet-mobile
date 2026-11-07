@@ -44,7 +44,11 @@ fun LoadingState(modifier: Modifier = Modifier) {
 
 /** A failed load, with the one action that can help. */
 @Composable
-fun ErrorState(message: String, onRetry: () -> Unit, modifier: Modifier = Modifier) {
+fun ErrorState(
+    message: String,
+    onRetry: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
     Column(
         modifier = modifier.fillMaxSize().padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -61,7 +65,10 @@ fun ErrorState(message: String, onRetry: () -> Unit, modifier: Modifier = Modifi
 
 /** Small uppercase-ish heading that separates blocks inside a screen. */
 @Composable
-fun SectionLabel(text: String, modifier: Modifier = Modifier) {
+fun SectionLabel(
+    text: String,
+    modifier: Modifier = Modifier,
+) {
     Text(
         text = text,
         modifier = modifier,
@@ -76,7 +83,12 @@ fun SectionLabel(text: String, modifier: Modifier = Modifier) {
  * identifiable.
  */
 @Composable
-fun RemoteAvatar(url: String?, label: String, size: Dp, modifier: Modifier = Modifier) {
+fun RemoteAvatar(
+    url: String?,
+    label: String,
+    size: Dp,
+    modifier: Modifier = Modifier,
+) {
     val shape = RoundedCornerShape(percent = 50)
     Box(
         modifier =
@@ -102,7 +114,13 @@ fun RemoteAvatar(url: String?, label: String, size: Dp, modifier: Modifier = Mod
 
 /** A cover with a placeholder when the catalog has no image. */
 @Composable
-fun BookCover(url: String?, title: String, width: Dp, height: Dp, modifier: Modifier = Modifier) {
+fun BookCover(
+    url: String?,
+    title: String,
+    width: Dp,
+    height: Dp,
+    modifier: Modifier = Modifier,
+) {
     Box(
         modifier =
             modifier

@@ -1,11 +1,10 @@
 package net.olamaelcu.livtet
 
+import org.junit.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
-import org.junit.Test
 
 class AppLinkRouterTest {
-
     private fun parse(raw: String?) = AppLinkRouter.parse(raw)
 
     @Test
@@ -13,7 +12,7 @@ class AppLinkRouterTest {
         assertEquals(
             AppLink.Book(AppLinkRouter.BIBLIOGRAPH_DID, "ol.OL3425796M"),
             parse(
-                "https://livtet.olamaelcu.net/book/did:web:biblio.livtet.olamaelcu.net/ol.OL3425796M"
+                "https://livtet.olamaelcu.net/book/did:web:biblio.livtet.olamaelcu.net/ol.OL3425796M",
             ),
         )
     }
@@ -39,7 +38,7 @@ class AppLinkRouterTest {
         assertEquals(
             AppLink.Review("did:plc:e2ctbutx6kya6si4if5ngjmm", "3myy5wjqiydz7"),
             parse(
-                "https://livtet.olamaelcu.net/review/did:plc:e2ctbutx6kya6si4if5ngjmm/3myy5wjqiydz7"
+                "https://livtet.olamaelcu.net/review/did:plc:e2ctbutx6kya6si4if5ngjmm/3myy5wjqiydz7",
             ),
         )
     }
@@ -81,7 +80,7 @@ class AppLinkRouterTest {
         assertEquals(
             AppLink.Profile("did:plc:e2ctbutx6kya6si4if5ngjmm", AppLinkRouter.TAB_SHELVES, "read"),
             parse(
-                "https://livtet.olamaelcu.net/profile/did:plc:e2ctbutx6kya6si4if5ngjmm/shelf/read"
+                "https://livtet.olamaelcu.net/profile/did:plc:e2ctbutx6kya6si4if5ngjmm/shelf/read",
             ),
         )
     }

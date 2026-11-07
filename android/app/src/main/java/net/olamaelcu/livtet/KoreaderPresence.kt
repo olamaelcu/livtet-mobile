@@ -14,17 +14,16 @@ import kotlinx.coroutines.flow.asStateFlow
 /**
  * Reactive KOReader install detector.
  *
- * Covers both F-Droid (`org.koreader.launcher.fdroid`) and the direct-APK
- * GitHub build (`org.koreader.launcher`). Upstream does not ship a Google
- * Play distribution, so no Play id is included.
+ * Covers both F-Droid (`org.koreader.launcher.fdroid`) and the direct-APK GitHub build
+ * (`org.koreader.launcher`). Upstream does not ship a Google Play distribution, so no Play id is
+ * included.
  *
- * `isInstalled` is a [StateFlow] so Compose UI can collect it and re-render
- * "Open in KOReader" affordances live when the user installs or removes
- * KOReader while the app is foregrounded.
+ * `isInstalled` is a [StateFlow] so Compose UI can collect it and re-render "Open in KOReader"
+ * affordances live when the user installs or removes KOReader while the app is foregrounded.
  *
- * Lifecycle: call [register] from `Application.onCreate` (or any
- * lifecycle-owning scope), [unregister] when the owning scope ends.
- * `register`/`unregister` are idempotent — duplicate calls are no-ops.
+ * Lifecycle: call [register] from `Application.onCreate` (or any lifecycle-owning scope),
+ * [unregister] when the owning scope ends. `register`/`unregister` are idempotent — duplicate calls
+ * are no-ops.
  */
 class KoreaderPresence(private val context: Context) {
     private val pm = context.packageManager
@@ -34,25 +33,30 @@ class KoreaderPresence(private val context: Context) {
 
     private var registered = false
 
-    private val receiver = object : BroadcastReceiver() {
-        override fun onReceive(c: Context?, intent: Intent?) {
-            val pkg = intent?.data?.schemeSpecificPart ?: return
-            if (pkg in KO_READER_PACKAGES) {
-                val now = checkNow()
-                Log.i(TAG, "$pkg package event → isInstalled=$now")
-                _isInstalled.value = now
+    private val receiver =
+        object : BroadcastReceiver() {
+            override fun onReceive(
+                c: Context?,
+                intent: Intent?,
+            ) {
+                val pkg = intent?.data?.schemeSpecificPart ?: return
+                if (pkg in KO_READER_PACKAGES) {
+                    val now = checkNow()
+                    Log.i(TAG, "$pkg package event → isInstalled=$now")
+                    _isInstalled.value = now
+                }
             }
         }
-    }
 
     fun register() {
         if (registered) return
-        val filter = IntentFilter().apply {
-            addAction(Intent.ACTION_PACKAGE_ADDED)
-            addAction(Intent.ACTION_PACKAGE_REMOVED)
-            addAction(Intent.ACTION_PACKAGE_REPLACED)
-            addDataScheme("package")
-        }
+        val filter =
+            IntentFilter().apply {
+                addAction(Intent.ACTION_PACKAGE_ADDED)
+                addAction(Intent.ACTION_PACKAGE_REMOVED)
+                addAction(Intent.ACTION_PACKAGE_REPLACED)
+                addDataScheme("package")
+            }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             context.registerReceiver(receiver, filter, Context.RECEIVER_NOT_EXPORTED)
         } else {
@@ -85,12 +89,9 @@ class KoreaderPresence(private val context: Context) {
         private const val TAG = "KoreaderPresence"
 
         /**
-         * All known KOReader Android package ids, ordered from most to
-         * least common. The first installed id wins when launching.
+         * All known KOReader Android package ids, ordered from most to least common. The first
+         * installed id wins when launching.
          */
-        val KO_READER_PACKAGES = listOf(
-            "org.koreader.launcher.fdroid",
-            "org.koreader.launcher",
-        )
+        val KO_READER_PACKAGES = listOf("org.koreader.launcher.fdroid", "org.koreader.launcher")
     }
 }

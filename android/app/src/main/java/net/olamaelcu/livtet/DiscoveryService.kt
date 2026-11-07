@@ -11,14 +11,14 @@ import kotlinx.coroutines.flow.asStateFlow
 /**
  * A discovered livtet/koreader sync peer on the local network.
  *
- * The TXT record carries two distinct identifiers (`core/livtet-sync-server/src/mdns.rs`):
- * `id` is the iroh node id that pairing dials, and `device_id` is the stable device ULID. They are
- * kept apart deliberately — `nodeId` is what a future pairing flow hands to the core, `deviceId` is
- * what identifies the device to the user and to stored state.
+ * The TXT record carries two distinct identifiers (`core/livtet-sync-server/src/mdns.rs`): `id` is
+ * the iroh node id that pairing dials, and `device_id` is the stable device ULID. They are kept
+ * apart deliberately — `nodeId` is what a future pairing flow hands to the core, `deviceId` is what
+ * identifies the device to the user and to stored state.
  *
  * `name` is the peer's friendly display name from the TXT `name` record, falling back to the mDNS
- * instance label. `host` and `port` identify the endpoint; `appVersion` and `deviceFlavor` come from
- * the other TXT fields.
+ * instance label. `host` and `port` identify the endpoint; `appVersion` and `deviceFlavor` come
+ * from the other TXT fields.
  */
 data class DiscoveredSyncDevice(
     val nodeId: String,
@@ -75,10 +75,9 @@ class DiscoveryService(private val context: Context) {
                                     deviceId =
                                         attrs["device_id"]?.toString(Charsets.UTF_8).orEmpty(),
                                     name =
-                                        attrs["name"]
-                                            ?.toString(Charsets.UTF_8)
-                                            ?.takeIf { it.isNotBlank() }
-                                            ?: instance,
+                                        attrs["name"]?.toString(Charsets.UTF_8)?.takeIf {
+                                            it.isNotBlank()
+                                        } ?: instance,
                                     host = info.host?.hostAddress.orEmpty(),
                                     port = info.port,
                                     appVersion = attrs["version"]?.toString(Charsets.UTF_8),
@@ -88,7 +87,10 @@ class DiscoveryService(private val context: Context) {
                             emit()
                         }
 
-                        override fun onResolveFailed(info: NsdServiceInfo, errorCode: Int) {
+                        override fun onResolveFailed(
+                            info: NsdServiceInfo,
+                            errorCode: Int,
+                        ) {
                             Log.w(TAG, "resolve failed for $instance: $errorCode")
                         }
                     }
@@ -112,11 +114,17 @@ class DiscoveryService(private val context: Context) {
                 Log.i(TAG, "discovery stopped: $serviceType")
             }
 
-            override fun onStartDiscoveryFailed(serviceType: String, errorCode: Int) {
+            override fun onStartDiscoveryFailed(
+                serviceType: String,
+                errorCode: Int,
+            ) {
                 Log.w(TAG, "start discovery failed for $serviceType: $errorCode")
             }
 
-            override fun onStopDiscoveryFailed(serviceType: String, errorCode: Int) {
+            override fun onStopDiscoveryFailed(
+                serviceType: String,
+                errorCode: Int,
+            ) {
                 Log.w(TAG, "stop discovery failed for $serviceType: $errorCode")
             }
         }

@@ -68,18 +68,26 @@ object FeatureFlagsManager {
     /**
      * Per-flag reactive lookup. Returns the same effective value as [flow] for the requested flag.
      */
-    fun isEnabled(context: Context, flag: LabsFlag): Flow<Boolean> =
-        context.store.data.map { prefs -> resolve(flag, prefs[keyFor(flag)]) }
+    fun isEnabled(
+        context: Context,
+        flag: LabsFlag,
+    ): Flow<Boolean> = context.store.data.map { prefs -> resolve(flag, prefs[keyFor(flag)]) }
 
     /** Suspending snapshot read for non-Compose callers. */
-    suspend fun isEnabledNow(context: Context, flag: LabsFlag): Boolean =
-        resolve(flag, context.store.data.first()[keyFor(flag)])
+    suspend fun isEnabledNow(
+        context: Context,
+        flag: LabsFlag,
+    ): Boolean = resolve(flag, context.store.data.first()[keyFor(flag)])
 
     /**
      * Persist a user override. Ignored silently when the build-time gate is off — the UI shouldn't
      * even call this in that case, but we don't crash on a race.
      */
-    suspend fun setEnabled(context: Context, flag: LabsFlag, enabled: Boolean) {
+    suspend fun setEnabled(
+        context: Context,
+        flag: LabsFlag,
+        enabled: Boolean,
+    ) {
         if (!buildTimeDefault(flag)) return
         context.store.edit { it[keyFor(flag)] = enabled }
     }
@@ -104,7 +112,10 @@ object FeatureFlagsManager {
 
     private fun keyFor(flag: LabsFlag) = booleanPreferencesKey("$KEY_PREFIX${flag.key}")
 
-    private fun resolve(flag: LabsFlag, persisted: Boolean?): Boolean {
+    private fun resolve(
+        flag: LabsFlag,
+        persisted: Boolean?,
+    ): Boolean {
         val gate = buildTimeDefault(flag)
         if (!gate) return false
         return persisted ?: flag.defaultEnabled

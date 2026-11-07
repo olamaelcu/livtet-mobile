@@ -4,7 +4,6 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-import javax.inject.Inject
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
@@ -13,6 +12,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import net.olamaelcu.livtet.AppLinkRouter
+import javax.inject.Inject
 
 /** UI state for a profile permalink. */
 data class ProfileUiState(
@@ -58,147 +58,149 @@ private fun tailOf(did: String): String = did.substringAfterLast(':')
  */
 @HiltViewModel
 class ProfileViewModel
-@Inject
-constructor(private val client: BiblioClient, savedStateHandle: SavedStateHandle) : ViewModel() {
+    @Inject
+    constructor(private val client: BiblioClient, savedStateHandle: SavedStateHandle) : ViewModel() {
+        private val actor: String = savedStateHandle.get<String>("actor").orEmpty()
 
-    private val actor: String = savedStateHandle.get<String>("actor").orEmpty()
+        private val initialTab: String = AppLinkRouter.normalizeTab(savedStateHandle.get<String>("tab"))
 
-    private val initialTab: String = AppLinkRouter.normalizeTab(savedStateHandle.get<String>("tab"))
+        private val initialShelf: String? = savedStateHandle.get<String>("shelf")
 
-    private val initialShelf: String? = savedStateHandle.get<String>("shelf")
+        private val _state = MutableStateFlow(ProfileUiState(selectedTab = initialTab))
 
-    private val _state = MutableStateFlow(ProfileUiState(selectedTab = initialTab))
+        val state: StateFlow<ProfileUiState> = _state.asStateFlow()
 
-    val state: StateFlow<ProfileUiState> = _state.asStateFlow()
+        private var job: Job? = null
 
-    private var job: Job? = null
+        private var shelfJob: Job? = null
 
-    private var shelfJob: Job? = null
+        /** Shelving records, kept for the on-demand title hydration of one shelf. */
+        private var shelving: List<BiblioShelving> = emptyList()
 
-    /** Shelving records, kept for the on-demand title hydration of one shelf. */
-    private var shelving: List<BiblioShelving> = emptyList()
+        private var loaded = false
 
-    private var loaded = false
-
-    fun load() {
-        if (job?.isActive == true || loaded) return
-        val requestedActor = actor
-        job = viewModelScope.launch {
-            _state.value = ProfileUiState(isLoading = true, selectedTab = initialTab)
-            val identity = client.getActor(requestedActor)
-            val did =
-                identity?.did?.takeIf { it.isNotEmpty() }
-                    ?: requestedActor.takeIf { it.startsWith("did:") }
-            if (did == null) {
-                _state.value =
-                    ProfileUiState(isLoading = false, error = "This profile could not be found.")
-                return@launch
-            }
-            loaded = true
-            val pds = client.resolvePds(did)
-            if (pds == null) {
-                _state.value =
-                    ProfileUiState(
-                        isLoading = false,
-                        actor = identity,
-                        did = did,
-                        unavailable = true,
-                        selectedTab = initialTab,
-                    )
-                return@launch
-            }
-            val (reviews, shelvingRecords, shelves) =
-                coroutineScope {
-                    val reviewsAsync = async { client.listActorReviews(did) }
-                    val shelvingAsync = async { client.listActorShelving(did) }
-                    val shelvesAsync = async { client.listActorShelves(did) }
-                    Triple(reviewsAsync.await(), shelvingAsync.await(), shelvesAsync.await())
-                }
-            shelving = shelvingRecords
-            val reviewers = client.actorMap(reviews.map { it.did })
-            val reviewBooks = client.bookSummaries(reviews.mapNotNull { it.record.bookUri() })
-            val counts = shelfCounts(shelvingRecords)
-            val shelfRows =
-                shelves.entries
-                    .sortedBy { it.key }
-                    .map { (rkey, name) ->
-                        ShelfSummary(rkey = rkey, name = name, bookCount = counts[rkey] ?: 0)
+        fun load() {
+            if (job?.isActive == true || loaded) return
+            val requestedActor = actor
+            job =
+                viewModelScope.launch {
+                    _state.value = ProfileUiState(isLoading = true, selectedTab = initialTab)
+                    val identity = client.getActor(requestedActor)
+                    val did =
+                        identity?.did?.takeIf { it.isNotEmpty() }
+                            ?: requestedActor.takeIf { it.startsWith("did:") }
+                    if (did == null) {
+                        _state.value =
+                            ProfileUiState(isLoading = false, error = "This profile could not be found.")
+                        return@launch
                     }
+                    loaded = true
+                    val pds = client.resolvePds(did)
+                    if (pds == null) {
+                        _state.value =
+                            ProfileUiState(
+                                isLoading = false,
+                                actor = identity,
+                                did = did,
+                                unavailable = true,
+                                selectedTab = initialTab,
+                            )
+                        return@launch
+                    }
+                    val (reviews, shelvingRecords, shelves) =
+                        coroutineScope {
+                            val reviewsAsync = async { client.listActorReviews(did) }
+                            val shelvingAsync = async { client.listActorShelving(did) }
+                            val shelvesAsync = async { client.listActorShelves(did) }
+                            Triple(reviewsAsync.await(), shelvingAsync.await(), shelvesAsync.await())
+                        }
+                    shelving = shelvingRecords
+                    val reviewers = client.actorMap(reviews.map { it.did })
+                    val reviewBooks = client.bookSummaries(reviews.mapNotNull { it.record.bookUri() })
+                    val counts = shelfCounts(shelvingRecords)
+                    val shelfRows =
+                        shelves.entries
+                            .sortedBy { it.key }
+                            .map { (rkey, name) ->
+                                ShelfSummary(rkey = rkey, name = name, bookCount = counts[rkey] ?: 0)
+                            }
+                    _state.value =
+                        ProfileUiState(
+                            isLoading = false,
+                            actor = identity,
+                            did = did,
+                            stats = shelvingStats(shelvingRecords),
+                            reviews = reviews,
+                            reviewers = reviewers,
+                            reviewBooks = reviewBooks,
+                            statusByBookUri = statusByBookUri(shelvingRecords),
+                            shelves =
+                                if (shelfRows.isEmpty()) {
+                                    // A reader can have shelving records whose shelf
+                                    // record is missing; show those shelves anyway.
+                                    counts.entries
+                                        .sortedBy { it.key }
+                                        .map { (rkey, count) ->
+                                            ShelfSummary(rkey = rkey, name = rkey, bookCount = count)
+                                        }
+                                } else {
+                                    shelfRows
+                                },
+                            selectedTab = initialTab,
+                        )
+                    if (initialTab == AppLinkRouter.TAB_SHELVES) selectShelf(initialShelf)
+                }
+        }
+
+        fun selectTab(tab: String) {
+            _state.value = _state.value.copy(selectedTab = AppLinkRouter.normalizeTab(tab))
+        }
+
+        /**
+         * Opens one shelf. Titles are hydrated from the catalog here rather than during [load], so a
+         * profile with hundreds of shelved books stays cheap.
+         */
+        fun selectShelf(shelfRkey: String?) {
+            val target = shelfRkey?.takeIf { it.isNotBlank() }
             _state.value =
-                ProfileUiState(
-                    isLoading = false,
-                    actor = identity,
-                    did = did,
-                    stats = shelvingStats(shelvingRecords),
-                    reviews = reviews,
-                    reviewers = reviewers,
-                    reviewBooks = reviewBooks,
-                    statusByBookUri = statusByBookUri(shelvingRecords),
-                    shelves =
-                        if (shelfRows.isEmpty()) {
-                            // A reader can have shelving records whose shelf
-                            // record is missing; show those shelves anyway.
-                            counts.entries
-                                .sortedBy { it.key }
-                                .map { (rkey, count) ->
-                                    ShelfSummary(rkey = rkey, name = rkey, bookCount = count)
-                                }
-                        } else {
-                            shelfRows
-                        },
-                    selectedTab = initialTab,
+                _state.value.copy(
+                    selectedTab = AppLinkRouter.TAB_SHELVES,
+                    selectedShelf = target,
+                    shelfBooks = emptyList(),
+                    shelfBooksLoading = target != null,
                 )
-            if (initialTab == AppLinkRouter.TAB_SHELVES) selectShelf(initialShelf)
-        }
-    }
-
-    fun selectTab(tab: String) {
-        _state.value = _state.value.copy(selectedTab = AppLinkRouter.normalizeTab(tab))
-    }
-
-    /**
-     * Opens one shelf. Titles are hydrated from the catalog here rather than during [load], so a
-     * profile with hundreds of shelved books stays cheap.
-     */
-    fun selectShelf(shelfRkey: String?) {
-        val target = shelfRkey?.takeIf { it.isNotBlank() }
-        _state.value =
-            _state.value.copy(
-                selectedTab = AppLinkRouter.TAB_SHELVES,
-                selectedShelf = target,
-                shelfBooks = emptyList(),
-                shelfBooksLoading = target != null,
-            )
-        if (target == null) {
-            shelfJob?.cancel()
-            return
-        }
-        shelfJob?.cancel()
-        val entries = shelving.filter { parseAtUri(it.value.shelf)?.rkey == target }
-        shelfJob = viewModelScope.launch {
-            // Reader-app records carry the title inline; only the ones that do
-            // not need a catalog round-trip.
-            val summaries =
-                client.bookSummaries(
-                    entries
-                        .filter { it.value.book.title.isNullOrBlank() }
-                        .mapNotNull { it.value.book.atUri }
-                )
-            val rows = entries.map { entry ->
-                val bookUri = entry.value.book.atUri
-                val title =
-                    summaries[bookUri]?.title
-                        ?: entry.value.book.title?.takeIf { it.isNotBlank() }
-                        ?: parseAtUri(bookUri)?.rkey
-                        ?: "Untitled"
-                ShelfBookRow(
-                    shelfRkey = target,
-                    bookUri = bookUri,
-                    title = title,
-                    status = entry.value.metadata?.status,
-                )
+            if (target == null) {
+                shelfJob?.cancel()
+                return
             }
-            _state.value = _state.value.copy(shelfBooks = rows, shelfBooksLoading = false)
+            shelfJob?.cancel()
+            val entries = shelving.filter { parseAtUri(it.value.shelf)?.rkey == target }
+            shelfJob =
+                viewModelScope.launch {
+                    // Reader-app records carry the title inline; only the ones that do
+                    // not need a catalog round-trip.
+                    val summaries =
+                        client.bookSummaries(
+                            entries
+                                .filter { it.value.book.title.isNullOrBlank() }
+                                .mapNotNull { it.value.book.atUri },
+                        )
+                    val rows =
+                        entries.map { entry ->
+                            val bookUri = entry.value.book.atUri
+                            val title =
+                                summaries[bookUri]?.title
+                                    ?: entry.value.book.title?.takeIf { it.isNotBlank() }
+                                    ?: parseAtUri(bookUri)?.rkey
+                                    ?: "Untitled"
+                            ShelfBookRow(
+                                shelfRkey = target,
+                                bookUri = bookUri,
+                                title = title,
+                                status = entry.value.metadata?.status,
+                            )
+                        }
+                    _state.value = _state.value.copy(shelfBooks = rows, shelfBooksLoading = false)
+                }
         }
     }
-}

@@ -1,14 +1,14 @@
 package net.olamaelcu.livtet.biblio
 
-import java.text.ParseException
-import java.text.SimpleDateFormat
-import java.util.Locale
-import java.util.TimeZone
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
+import java.text.ParseException
+import java.text.SimpleDateFormat
+import java.util.Locale
+import java.util.TimeZone
 
 /** Everything a card needs about the edition a review points at. */
 data class BookSummary(
@@ -44,8 +44,7 @@ data class ShelfBookRow(
  * `getRecord` hydration hangs the name on the ref (`contributor.name` / `subject.name`), while
  * `searchEditions` writes it inline on the contribution itself.
  */
-fun BiblioContributor.contributorName(): String? =
-    name?.takeIf { it.isNotBlank() } ?: person()?.name?.takeIf { it.isNotBlank() }
+fun BiblioContributor.contributorName(): String? = name?.takeIf { it.isNotBlank() } ?: person()?.name?.takeIf { it.isNotBlank() }
 
 /** The author line for a book view: the contributor roles the catalog treats as authorship. */
 fun BiblioBook.authorLine(): String? {

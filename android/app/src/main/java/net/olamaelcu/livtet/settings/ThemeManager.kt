@@ -21,7 +21,8 @@ object ThemeManager {
     enum class Mode {
         SYSTEM,
         LIGHT,
-        DARK;
+        DARK,
+        ;
 
         companion object {
             /** Lenient parse — never throws, never panics. */
@@ -49,14 +50,16 @@ object ThemeManager {
      * Stream of the user's current theme preference. Emits `SYSTEM` on first launch before the user
      * has set anything.
      */
-    fun mode(context: Context): Flow<Mode> =
-        context.store.data.map { prefs -> Mode.parse(prefs[KEY]) }
+    fun mode(context: Context): Flow<Mode> = context.store.data.map { prefs -> Mode.parse(prefs[KEY]) }
 
     /**
      * Persist a new theme preference. Safe to call from the main thread — DataStore routes writes
      * to its internal IO dispatcher.
      */
-    suspend fun setMode(context: Context, mode: Mode) {
+    suspend fun setMode(
+        context: Context,
+        mode: Mode,
+    ) {
         context.store.edit { it[KEY] = mode.asToken() }
     }
 }

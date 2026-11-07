@@ -176,9 +176,9 @@ private fun BookContent(
                         Text(
                             text =
                                 listOfNotNull(
-                                        contribution.person()?.name,
-                                        role.takeIf { it.isNotBlank() },
-                                    )
+                                    contribution.person()?.name,
+                                    role.takeIf { it.isNotBlank() },
+                                )
                                     .joinToString(" — "),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,

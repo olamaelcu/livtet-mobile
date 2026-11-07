@@ -12,13 +12,13 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
@@ -41,12 +41,11 @@ import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import net.olamaelcu.livtet.core.auth.ProviderAccount
+import net.olamaelcu.livtet.core.auth.provider.AuthProvider
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
-import net.olamaelcu.livtet.BuildConfig
-import net.olamaelcu.livtet.core.auth.ProviderAccount
-import net.olamaelcu.livtet.core.auth.provider.AuthProvider
 
 private val AtProtocolBlue = Color(0xFF1185FE)
 
@@ -63,7 +62,7 @@ fun AccountScreen(viewModel: AccountViewModel = hiltViewModel()) {
                 is AccountEvent.SignInSucceeded -> {
                     isSigningIn = false
                     snackbarHostState.showSnackbar(
-                        "Signed in with ${providerLabel(event.provider)}"
+                        "Signed in with ${providerLabel(event.provider)}",
                     )
                 }
                 is AccountEvent.SignInFailed -> {
@@ -151,11 +150,12 @@ private fun SignedOutContent(
         modifier = Modifier.fillMaxWidth(),
         singleLine = true,
         enabled = !isSigningIn,
-        keyboardOptions = KeyboardOptions(
-            capitalization = KeyboardCapitalization.None,
-            autoCorrect = false,
-            keyboardType = KeyboardType.Uri,
-        ),
+        keyboardOptions =
+            KeyboardOptions(
+                capitalization = KeyboardCapitalization.None,
+                autoCorrect = false,
+                keyboardType = KeyboardType.Uri,
+            ),
     )
     Spacer(Modifier.height(4.dp))
     ProviderButton(
@@ -192,7 +192,10 @@ private fun ProviderButton(
 }
 
 @Composable
-private fun SignedInCard(account: ProviderAccount, onSignOut: () -> Unit) {
+private fun SignedInCard(
+    account: ProviderAccount,
+    onSignOut: () -> Unit,
+) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),

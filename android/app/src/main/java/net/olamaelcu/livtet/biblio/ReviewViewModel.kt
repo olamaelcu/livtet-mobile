@@ -4,12 +4,12 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-import javax.inject.Inject
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 /** UI state for a review permalink. */
 data class ReviewUiState(
@@ -29,40 +29,40 @@ data class ReviewUiState(
  */
 @HiltViewModel
 class ReviewViewModel
-@Inject
-constructor(private val client: BiblioClient, savedStateHandle: SavedStateHandle) : ViewModel() {
+    @Inject
+    constructor(private val client: BiblioClient, savedStateHandle: SavedStateHandle) : ViewModel() {
+        private val did: String = savedStateHandle.get<String>("did").orEmpty()
 
-    private val did: String = savedStateHandle.get<String>("did").orEmpty()
+        private val rkey: String = savedStateHandle.get<String>("rkey").orEmpty()
 
-    private val rkey: String = savedStateHandle.get<String>("rkey").orEmpty()
+        private val _state = MutableStateFlow(ReviewUiState())
 
-    private val _state = MutableStateFlow(ReviewUiState())
+        val state: StateFlow<ReviewUiState> = _state.asStateFlow()
 
-    val state: StateFlow<ReviewUiState> = _state.asStateFlow()
+        private var job: Job? = null
 
-    private var job: Job? = null
-
-    fun load() {
-        if (job?.isActive == true) return
-        val requestedDid = did
-        val requestedRkey = rkey
-        job = viewModelScope.launch {
-            _state.value = ReviewUiState(isLoading = true)
-            val review = client.getReview(requestedDid, requestedRkey)
-            if (review == null) {
-                _state.value =
-                    ReviewUiState(isLoading = false, error = "This review could not be loaded.")
-                return@launch
-            }
-            val reviewer = client.getActor(requestedDid)
-            val bookUri = review.record.bookUri()
-            _state.value =
-                ReviewUiState(
-                    isLoading = false,
-                    review = review,
-                    reviewer = reviewer,
-                    book = bookUri?.let { client.summarise(it) },
-                )
+        fun load() {
+            if (job?.isActive == true) return
+            val requestedDid = did
+            val requestedRkey = rkey
+            job =
+                viewModelScope.launch {
+                    _state.value = ReviewUiState(isLoading = true)
+                    val review = client.getReview(requestedDid, requestedRkey)
+                    if (review == null) {
+                        _state.value =
+                            ReviewUiState(isLoading = false, error = "This review could not be loaded.")
+                        return@launch
+                    }
+                    val reviewer = client.getActor(requestedDid)
+                    val bookUri = review.record.bookUri()
+                    _state.value =
+                        ReviewUiState(
+                            isLoading = false,
+                            review = review,
+                            reviewer = reviewer,
+                            book = bookUri?.let { client.summarise(it) },
+                        )
+                }
         }
     }
-}

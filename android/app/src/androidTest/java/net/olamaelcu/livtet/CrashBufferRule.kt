@@ -1,11 +1,11 @@
 package net.olamaelcu.livtet
 
-import java.io.BufferedReader
-import java.io.InputStreamReader
-import java.util.concurrent.TimeUnit
 import org.junit.rules.TestRule
 import org.junit.runner.Description
 import org.junit.runners.model.Statement
+import java.io.BufferedReader
+import java.io.InputStreamReader
+import java.util.concurrent.TimeUnit
 
 /**
  * JUnit rule that fails the test if a `FATAL EXCEPTION`, `ANR`, or `signal 6/11` line mentioning
@@ -26,7 +26,10 @@ import org.junit.runners.model.Statement
  *   warning and passes. Tests that need the rule's signal should not run on those devices.
  */
 class CrashBufferRule(private val packageFilter: String) : TestRule {
-    override fun apply(base: Statement, description: Description): Statement =
+    override fun apply(
+        base: Statement,
+        description: Description,
+    ): Statement =
         object : Statement() {
             override fun evaluate() {
                 clearCrashBuffer()
@@ -39,7 +42,7 @@ class CrashBufferRule(private val packageFilter: String) : TestRule {
                         throw AssertionError(
                             "Crash buffer contains $packageFilter-related " +
                                 "entries during ${description.displayName}:\n" +
-                                offending.joinToString("\n")
+                                offending.joinToString("\n"),
                         )
                     }
                 }

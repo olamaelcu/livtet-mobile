@@ -54,7 +54,6 @@ import net.olamaelcu.livtet.settings.ThemeManager
 
 @AndroidEntryPoint
 class DashboardActivity : ComponentActivity() {
-
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         val uri = intent.data?.toString() ?: return
@@ -164,9 +163,7 @@ private fun DashboardNavHost() {
                             // from Settings then pops Settings and
                             // lands on Dashboard (the start destination).
                             navController.navigate("settings") {
-                                popUpTo("dashboard") {
-                                    saveState = true
-                                }
+                                popUpTo("dashboard") { saveState = true }
                                 launchSingleTop = true
                                 restoreState = true
                             }
@@ -177,7 +174,7 @@ private fun DashboardNavHost() {
                 },
                 colors =
                     TopAppBarDefaults.topAppBarColors(
-                        containerColor = MaterialTheme.colorScheme.surface
+                        containerColor = MaterialTheme.colorScheme.surface,
                     ),
             )
         },
@@ -195,18 +192,13 @@ private fun DashboardNavHost() {
                         selected = selected,
                         onClick = {
                             navController.navigate(item.route) {
-                                popUpTo("dashboard") {
-                                    saveState = true
-                                }
+                                popUpTo("dashboard") { saveState = true }
                                 launchSingleTop = true
                                 restoreState = true
                             }
                         },
                         icon = {
-                            Icon(
-                                imageVector = item.vectorIcon!!,
-                                contentDescription = item.label,
-                            )
+                            Icon(imageVector = item.vectorIcon!!, contentDescription = item.label)
                         },
                         label = { Text(item.label) },
                     )
@@ -220,16 +212,18 @@ private fun DashboardNavHost() {
             modifier = Modifier.fillMaxSize().padding(innerPadding),
         ) {
             composable("dashboard") {
-                DashboardScreen(
-                    onNavigateToLibrary = {
-                        navController.navigate("library") {
-                            popUpTo("dashboard") {
-                                saveState = true
-                            }
-                            launchSingleTop = true
-                            restoreState = true
-                        }
+                val openLibrary = {
+                    navController.navigate("library") {
+                        popUpTo("dashboard") { saveState = true }
+                        launchSingleTop = true
+                        restoreState = true
                     }
+                }
+                // The dashboard is a shelf: a cover leads into the library, where
+                // detail, shelving and the reader handoff live.
+                DashboardScreen(
+                    onOpenBook = { openLibrary() },
+                    onLongPressBook = { openLibrary() },
                 )
             }
             composable("library") { LibraryScreen() }

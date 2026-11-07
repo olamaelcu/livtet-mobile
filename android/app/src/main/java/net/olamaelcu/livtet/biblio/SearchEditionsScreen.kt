@@ -24,9 +24,9 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.ImeAction
@@ -37,9 +37,9 @@ import androidx.hilt.navigation.compose.hiltViewModel
 /**
  * Add-book search over `community.lexicon.book.searchEditions`.
  *
- * Each result shows the edition's title, cover, and author line. "Add" writes the
- * work, its edition, and the edition's identifiers through the FFI, then asks the
- * caller to close and reload the library.
+ * Each result shows the edition's title, cover, and author line. "Add" writes the work, its
+ * edition, and the edition's identifiers through the FFI, then asks the caller to close and reload
+ * the library.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -67,7 +67,7 @@ fun SearchEditionsScreen(
                     }
                 },
             )
-        }
+        },
     ) { innerPadding ->
         Column(modifier = Modifier.fillMaxSize().padding(innerPadding)) {
             OutlinedTextField(
@@ -78,12 +78,10 @@ fun SearchEditionsScreen(
                 leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
                 singleLine = true,
                 keyboardOptions =
-                    androidx.compose.foundation.text.KeyboardOptions(
-                        imeAction = ImeAction.Search
-                    ),
+                    androidx.compose.foundation.text.KeyboardOptions(imeAction = ImeAction.Search),
                 keyboardActions =
                     androidx.compose.foundation.text.KeyboardActions(
-                        onSearch = { viewModel.submit() }
+                        onSearch = { viewModel.submit() },
                     ),
             )
 
@@ -98,10 +96,7 @@ fun SearchEditionsScreen(
 
             when {
                 state.isLoading && state.editions.isEmpty() -> {
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center,
-                    ) {
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                         CircularProgressIndicator()
                     }
                 }
@@ -151,18 +146,16 @@ fun SearchEditionsScreen(
 }
 
 @Composable
-private fun EditionResultRow(edition: BiblioBook, isImporting: Boolean, onClick: () -> Unit) {
+private fun EditionResultRow(
+    edition: BiblioBook,
+    isImporting: Boolean,
+    onClick: () -> Unit,
+) {
     Row(
-        modifier =
-            Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        BookCover(
-            url = edition.coverImageUrl,
-            title = edition.title,
-            width = 56.dp,
-            height = 84.dp,
-        )
+        BookCover(url = edition.coverImageUrl, title = edition.title, width = 56.dp, height = 84.dp)
         Column(modifier = Modifier.padding(start = 16.dp)) {
             Text(
                 text = edition.title,

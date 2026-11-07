@@ -127,7 +127,10 @@ class AddBookSearchTest {
     }
 
     private fun hasNoResultsBanner(): Boolean =
-        composeTestRule.onAllNodesWithText("No results found", substring = true).fetchSemanticsNodes().isNotEmpty()
+        composeTestRule
+            .onAllNodesWithText("No results found", substring = true)
+            .fetchSemanticsNodes()
+            .isNotEmpty()
 
     private fun hasOnlineErrorBanner(): Boolean =
         composeTestRule

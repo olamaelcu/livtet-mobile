@@ -11,21 +11,18 @@ import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.headersOf
 import io.ktor.serialization.kotlinx.json.json
+import kotlinx.coroutines.runBlocking
+import kotlinx.serialization.json.Json
+import org.junit.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
-import kotlinx.coroutines.runBlocking
-import kotlinx.serialization.json.Json
-import org.junit.Test
 
 class BiblioClientTest {
-
     private val jsonHeaders = headersOf(HttpHeaders.ContentType, "application/json")
 
-    private fun client(
-        handler: suspend MockRequestHandleScope.(HttpRequestData) -> HttpResponseData
-    ): BiblioClient {
+    private fun client(handler: suspend MockRequestHandleScope.(HttpRequestData) -> HttpResponseData): BiblioClient {
         val engine = MockEngine { request -> handler(request) }
         val http =
             HttpClient(engine) {
@@ -34,7 +31,7 @@ class BiblioClientTest {
                         Json {
                             ignoreUnknownKeys = true
                             isLenient = true
-                        }
+                        },
                     )
                 }
             }
@@ -42,9 +39,10 @@ class BiblioClientTest {
     }
 
     @Test
-    fun `getEdition decodes a hydrated edition view`() = runBlocking {
-        val payload =
-            """
+    fun `getEdition decodes a hydrated edition view`() =
+        runBlocking {
+            val payload =
+                """
             {
               "uri": "at://did:web:biblio.livtet.olamaelcu.net/community.lexicon.book.edition/ol.OL3425796M",
               "cid": "bafyedition",
@@ -67,39 +65,42 @@ class BiblioClientTest {
               }
             }
             """
-        val client = client { request ->
-            assertEquals("/xrpc/com.atproto.repo.getRecord", request.url.encodedPath)
-            assertEquals("community.lexicon.book.edition", request.url.parameters["collection"])
-            assertEquals("ol.OL3425796M", request.url.parameters["rkey"])
-            respond(payload, HttpStatusCode.OK, jsonHeaders)
+            val client =
+                client { request ->
+                    assertEquals("/xrpc/com.atproto.repo.getRecord", request.url.encodedPath)
+                    assertEquals("community.lexicon.book.edition", request.url.parameters["collection"])
+                    assertEquals("ol.OL3425796M", request.url.parameters["rkey"])
+                    respond(payload, HttpStatusCode.OK, jsonHeaders)
+                }
+
+            val book = client.getEdition("did:web:biblio.livtet.olamaelcu.net", "ol.OL3425796M")
+
+            assertEquals("Dune", book.title)
+            assertEquals("Frank Herbert", book.authorLine())
+            assertEquals("9780441172719", book.isbn())
+            assertEquals("Hardcover", book.format?.description)
+            assertEquals(1, book.genres?.size)
         }
 
-        val book = client.getEdition("did:web:biblio.livtet.olamaelcu.net", "ol.OL3425796M")
-
-        assertEquals("Dune", book.title)
-        assertEquals("Frank Herbert", book.authorLine())
-        assertEquals("9780441172719", book.isbn())
-        assertEquals("Hardcover", book.format?.description)
-        assertEquals(1, book.genres?.size)
-    }
-
     @Test
-    fun `a non-2xx edition read surfaces a BiblioException`() = runBlocking {
-        val client = client { respond("nope", HttpStatusCode.NotFound) }
-        assertFailsWith<BiblioException> {
-            client.getEdition("did:web:biblio.livtet.olamaelcu.net", "missing")
+    fun `a non-2xx edition read surfaces a BiblioException`() =
+        runBlocking {
+            val client = client { respond("nope", HttpStatusCode.NotFound) }
+            assertFailsWith<BiblioException> {
+                client.getEdition("did:web:biblio.livtet.olamaelcu.net", "missing")
+            }
+            Unit
         }
-        Unit
-    }
 
     @Test
-    fun `getBookReviews prefers the AppView list`() = runBlocking {
-        val payload =
-            """
+    fun `getBookReviews prefers the AppView list`() =
+        runBlocking {
+            val payload =
+                """
             {
               "reviews": [
                 {
-                  "uri": "at://did:plc:r1/net.olamaelcu.livtet.bookReview/3rk1",
+                  "uri": "at://did:plc:r1/net.olamaelcu.livtet.biblio.bookReview/3rk1",
                   "did": "did:plc:r1",
                   "record": {
                     "text": "Still the best.",
@@ -111,28 +112,29 @@ class BiblioClientTest {
               ]
             }
             """
-        val client = client { request ->
-            assertTrue(
-                request.url.encodedPath.endsWith(".getReviewsByBook"),
-                "unexpected call ${request.url}",
-            )
-            respond(payload, HttpStatusCode.OK, jsonHeaders)
+            val client =
+                client { request ->
+                    assertTrue(
+                        request.url.encodedPath.endsWith(".getReviewsByBook"),
+                        "unexpected call ${request.url}",
+                    )
+                    respond(payload, HttpStatusCode.OK, jsonHeaders)
+                }
+
+            val reviews = client.getBookReviews(BOOK_URI)
+
+            assertEquals(1, reviews.size)
+            assertEquals("did:plc:r1", reviews.single().did)
+            assertEquals(9.5, reviews.single().record.rating)
+            assertEquals(BOOK_URI, reviews.single().record.bookUri())
         }
-
-        val reviews = client.getBookReviews(BOOK_URI)
-
-        assertEquals(1, reviews.size)
-        assertEquals("did:plc:r1", reviews.single().did)
-        assertEquals(9.5, reviews.single().record.rating)
-        assertEquals(BOOK_URI, reviews.single().record.bookUri())
-    }
 
     @Test
     fun `an empty AppView list falls back to constellation backlinks and PDS records`() =
         runBlocking {
             val backlinks =
                 """
-            { "records": [ { "did": "did:plc:r1", "collection": "net.olamaelcu.livtet.bookReview", "rkey": "3rk1" } ] }
+            { "records": [ { "did": "did:plc:r1", "collection": "net.olamaelcu.livtet.biblio.bookReview", "rkey": "3rk1" } ] }
             """
             val didDocument =
                 """
@@ -145,7 +147,7 @@ class BiblioClientTest {
             val record =
                 """
             {
-              "uri": "at://did:plc:r1/net.olamaelcu.livtet.bookReview/3rk1",
+              "uri": "at://did:plc:r1/net.olamaelcu.livtet.biblio.bookReview/3rk1",
               "cid": "bafyreview",
               "value": {
                 "text": "Still the best.",
@@ -155,20 +157,21 @@ class BiblioClientTest {
             }
             """
             val calls = mutableListOf<String>()
-            val client = client { request ->
-                calls.add("${request.url.host}${request.url.encodedPath}")
-                when {
-                    request.url.encodedPath.endsWith(".getReviewsByBook") ->
-                        respond("""{"reviews":[]}""", HttpStatusCode.OK, jsonHeaders)
-                    request.url.encodedPath.endsWith(".getBacklinks") ->
-                        respond(backlinks, HttpStatusCode.OK, jsonHeaders)
-                    request.url.host == "plc.directory" ->
-                        respond(didDocument, HttpStatusCode.OK, jsonHeaders)
-                    request.url.host == "pds.test" ->
-                        respond(record, HttpStatusCode.OK, jsonHeaders)
-                    else -> respond("unexpected", HttpStatusCode.NotFound)
+            val client =
+                client { request ->
+                    calls.add("${request.url.host}${request.url.encodedPath}")
+                    when {
+                        request.url.encodedPath.endsWith(".getReviewsByBook") ->
+                            respond("""{"reviews":[]}""", HttpStatusCode.OK, jsonHeaders)
+                        request.url.encodedPath.endsWith(".getBacklinks") ->
+                            respond(backlinks, HttpStatusCode.OK, jsonHeaders)
+                        request.url.host == "plc.directory" ->
+                            respond(didDocument, HttpStatusCode.OK, jsonHeaders)
+                        request.url.host == "pds.test" ->
+                            respond(record, HttpStatusCode.OK, jsonHeaders)
+                        else -> respond("unexpected", HttpStatusCode.NotFound)
+                    }
                 }
-            }
 
             val reviews = client.getBookReviews(BOOK_URI)
 
@@ -180,87 +183,92 @@ class BiblioClientTest {
         }
 
     @Test
-    fun `a review record with a string book still yields its edition uri`() = runBlocking {
-        val client = client { request ->
-            when {
-                request.url.host == "plc.directory" ->
-                    respond(
-                        """{"service":[{"id":"#atproto_pds","type":"AtprotoPersonalDataServer","serviceEndpoint":"pds.test"}]}""",
-                        HttpStatusCode.OK,
-                        jsonHeaders,
-                    )
-                else ->
-                    respond(
-                        """{"uri":"at://did:plc:r1/net.olamaelcu.livtet.bookReview/3rk1","value":{"text":"Fine.","book":"$BOOK_URI","createdAt":"2025-02-03T04:05:06.000Z"}}""",
-                        HttpStatusCode.OK,
-                        jsonHeaders,
-                    )
-            }
-        }
-
-        val review = client.getReview("did:plc:r1", "3rk1")
-
-        assertEquals("Fine.", review?.record?.text)
-        assertEquals(BOOK_URI, review?.record?.bookUri())
-    }
-
-    @Test
-    fun `an unresolvable did yields null instead of throwing`() = runBlocking {
-        val client = client { respond("nope", HttpStatusCode.NotFound) }
-        assertNull(client.getReview("did:plc:missing", "3rk1"))
-        assertTrue(client.listActorReviews("did:plc:missing").isEmpty())
-        assertNull(client.getActor("nobody.invalid"))
-    }
-
-    @Test
-    fun `listActorShelving follows cursors and stops at the last page`() = runBlocking {
-        var page = 0
-        val client = client { request ->
-            when {
-                request.url.host == "plc.directory" ->
-                    respond(
-                        """{"service":[{"id":"#atproto_pds","type":"AtprotoPersonalDataServer","serviceEndpoint":"https://pds.test"}]}""",
-                        HttpStatusCode.OK,
-                        jsonHeaders,
-                    )
-                request.url.parameters["collection"] == BiblioClient.SHELF_COLLECTION ->
-                    respond(
-                        """{"records":[{"uri":"at://did:plc:r1/net.olamaelcu.livtet.biblio.shelf/read","value":{"name":"Finished","createdAt":"2025-01-01T00:00:00Z","updatedAt":"2025-01-01T00:00:00Z"}}]}""",
-                        HttpStatusCode.OK,
-                        jsonHeaders,
-                    )
-                else -> {
-                    page += 1
-                    if (page == 1) {
-                        respond(
-                            """{"records":[{"uri":"at://did:plc:r1/net.olamaelcu.livtet.biblio.bookShelving/a","value":{"shelf":"at://did:plc:r1/net.olamaelcu.livtet.biblio.shelf/read","book":{"ref":"$BOOK_URI","title":"Apex hides the hurt"},"metadata":{"status":"read"}}}],"cursor":"next"}""",
-                            HttpStatusCode.OK,
-                            jsonHeaders,
-                        )
-                    } else {
-                        respond(
-                            """{"records":[{"uri":"at://did:plc:r1/net.olamaelcu.livtet.biblio.bookShelving/b","value":{"shelf":"at://did:plc:r1/net.olamaelcu.livtet.biblio.shelf/read","book":{"uri":"$BOOK_URI","cid":"bafy"},"metadata":{"status":"reading"}}}]}""",
-                            HttpStatusCode.OK,
-                            jsonHeaders,
-                        )
+    fun `a review record with a string book still yields its edition uri`() =
+        runBlocking {
+            val client =
+                client { request ->
+                    when {
+                        request.url.host == "plc.directory" ->
+                            respond(
+                                """{"service":[{"id":"#atproto_pds","type":"AtprotoPersonalDataServer","serviceEndpoint":"pds.test"}]}""",
+                                HttpStatusCode.OK,
+                                jsonHeaders,
+                            )
+                        else ->
+                            respond(
+                                """{"uri":"at://did:plc:r1/net.olamaelcu.livtet.biblio.bookReview/3rk1","value":{"text":"Fine.","book":"$BOOK_URI","createdAt":"2025-02-03T04:05:06.000Z"}}""",
+                                HttpStatusCode.OK,
+                                jsonHeaders,
+                            )
                     }
                 }
-            }
+
+            val review = client.getReview("did:plc:r1", "3rk1")
+
+            assertEquals("Fine.", review?.record?.text)
+            assertEquals(BOOK_URI, review?.record?.bookUri())
         }
 
-        val shelving = client.listActorShelving("did:plc:r1")
-        val shelves = client.listActorShelves("did:plc:r1")
+    @Test
+    fun `an unresolvable did yields null instead of throwing`() =
+        runBlocking {
+            val client = client { respond("nope", HttpStatusCode.NotFound) }
+            assertNull(client.getReview("did:plc:missing", "3rk1"))
+            assertTrue(client.listActorReviews("did:plc:missing").isEmpty())
+            assertNull(client.getActor("nobody.invalid"))
+        }
 
-        assertEquals(2, shelving.size)
-        // Reader-app records carry {"ref","title"}; livtet-service writes {"uri","cid"}.
-        assertEquals(BOOK_URI, shelving.first().value.book.atUri)
-        assertEquals("Apex hides the hurt", shelving.first().value.book.title)
-        assertEquals(BOOK_URI, shelving.last().value.book.atUri)
-        assertEquals("read", shelving.first().value.metadata?.status)
-        assertEquals("reading", shelving.last().value.metadata?.status)
-        assertEquals(mapOf("read" to "Finished"), shelves)
-        assertEquals(ProfileStats(total = 2, reading = 1, finished = 1), shelvingStats(shelving))
-    }
+    @Test
+    fun `listActorShelving follows cursors and stops at the last page`() =
+        runBlocking {
+            var page = 0
+            val client =
+                client { request ->
+                    when {
+                        request.url.host == "plc.directory" ->
+                            respond(
+                                """{"service":[{"id":"#atproto_pds","type":"AtprotoPersonalDataServer","serviceEndpoint":"https://pds.test"}]}""",
+                                HttpStatusCode.OK,
+                                jsonHeaders,
+                            )
+                        request.url.parameters["collection"] == BiblioClient.SHELF_COLLECTION ->
+                            respond(
+                                """{"records":[{"uri":"at://did:plc:r1/net.olamaelcu.livtet.biblio.shelf/read","value":{"name":"Finished","createdAt":"2025-01-01T00:00:00Z","updatedAt":"2025-01-01T00:00:00Z"}}]}""",
+                                HttpStatusCode.OK,
+                                jsonHeaders,
+                            )
+                        else -> {
+                            page += 1
+                            if (page == 1) {
+                                respond(
+                                    """{"records":[{"uri":"at://did:plc:r1/net.olamaelcu.livtet.biblio.bookShelving/a","value":{"shelf":"at://did:plc:r1/net.olamaelcu.livtet.biblio.shelf/read","book":{"ref":"$BOOK_URI","title":"Apex hides the hurt"},"metadata":{"status":"read"}}}],"cursor":"next"}""",
+                                    HttpStatusCode.OK,
+                                    jsonHeaders,
+                                )
+                            } else {
+                                respond(
+                                    """{"records":[{"uri":"at://did:plc:r1/net.olamaelcu.livtet.biblio.bookShelving/b","value":{"shelf":"at://did:plc:r1/net.olamaelcu.livtet.biblio.shelf/read","book":{"uri":"$BOOK_URI","cid":"bafy"},"metadata":{"status":"reading"}}}]}""",
+                                    HttpStatusCode.OK,
+                                    jsonHeaders,
+                                )
+                            }
+                        }
+                    }
+                }
+
+            val shelving = client.listActorShelving("did:plc:r1")
+            val shelves = client.listActorShelves("did:plc:r1")
+
+            assertEquals(2, shelving.size)
+            // Reader-app records carry {"ref","title"}; livtet-service writes {"uri","cid"}.
+            assertEquals(BOOK_URI, shelving.first().value.book.atUri)
+            assertEquals("Apex hides the hurt", shelving.first().value.book.title)
+            assertEquals(BOOK_URI, shelving.last().value.book.atUri)
+            assertEquals("read", shelving.first().value.metadata?.status)
+            assertEquals("reading", shelving.last().value.metadata?.status)
+            assertEquals(mapOf("read" to "Finished"), shelves)
+            assertEquals(ProfileStats(total = 2, reading = 1, finished = 1), shelvingStats(shelving))
+        }
 
     @Test
     fun `did document urls follow the did method`() {
@@ -278,9 +286,10 @@ class BiblioClientTest {
     }
 
     @Test
-    fun `searchEditions asks the catalog query and decodes editions`() = runBlocking {
-        val payload =
-            """
+    fun `searchEditions asks the catalog query and decodes editions`() =
+        runBlocking {
+            val payload =
+                """
             {
               "items": [
                 {
@@ -303,27 +312,25 @@ class BiblioClientTest {
               ]
             }
             """
-        val client = client { request ->
-            assertEquals("/xrpc/community.lexicon.book.searchEditions", request.url.encodedPath)
-            assertEquals("cool machine", request.url.parameters["q"])
-            assertEquals("25", request.url.parameters["limit"])
-            respond(payload, HttpStatusCode.OK, jsonHeaders)
+            val client =
+                client { request ->
+                    assertEquals("/xrpc/community.lexicon.book.searchEditions", request.url.encodedPath)
+                    assertEquals("cool machine", request.url.parameters["q"])
+                    assertEquals("25", request.url.parameters["limit"])
+                    respond(payload, HttpStatusCode.OK, jsonHeaders)
+                }
+
+            val result = client.searchEditions("cool machine")
+
+            assertEquals(1, result.items.size)
+            val edition = result.items.first()
+            assertEquals("Cool Machine", edition.title)
+            assertEquals("Colson Whitehead", edition.authorLine())
+            assertEquals(
+                listOf("urn:isbn:9780385698573", "urn:openlibrary:https://openlibrary.org/books/OL1M"),
+                edition.identifiers.orEmpty().mapNotNull { it.toUrn() },
+            )
         }
-
-        val result = client.searchEditions("cool machine")
-
-        assertEquals(1, result.items.size)
-        val edition = result.items.first()
-        assertEquals("Cool Machine", edition.title)
-        assertEquals("Colson Whitehead", edition.authorLine())
-        assertEquals(
-            listOf(
-                "urn:isbn:9780385698573",
-                "urn:openlibrary:https://openlibrary.org/books/OL1M",
-            ),
-            edition.identifiers.orEmpty().mapNotNull { it.toUrn() },
-        )
-    }
 
     @Test
     fun `identifier resources become storage urns`() {
@@ -331,10 +338,7 @@ class BiblioClientTest {
             "urn:isbn:9780385698573",
             BiblioIdentifier("isbn13", "isbn:9780385698573").toUrn(),
         )
-        assertEquals(
-            "urn:isbn:0385698577",
-            BiblioIdentifier("isbn10", "isbn:0385698577").toUrn(),
-        )
+        assertEquals("urn:isbn:0385698577", BiblioIdentifier("isbn10", "isbn:0385698577").toUrn())
         assertEquals(
             "urn:openlibrary:https://openlibrary.org/books/OL27277435M",
             BiblioIdentifier("openlibrary", "https://openlibrary.org/books/OL27277435M").toUrn(),

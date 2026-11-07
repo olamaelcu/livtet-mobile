@@ -1,6 +1,9 @@
 package net.olamaelcu.livtet
 
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
@@ -11,375 +14,185 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.LazyListScope
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import net.olamaelcu.livtet.branding.LivtetColors
-import net.olamaelcu.livtet.core.designsystem.LivtetRadius
+import net.olamaelcu.livtet.biblio.BookCover
+import net.olamaelcu.livtet.types.WorkStatus
 import net.olamaelcu.livtet.ffi.Greeting
 
+/**
+ * Dashboard — the reader's shelf, not a form.
+ *
+ * The page answers one question a reader opens the app for: *what am I reading,
+ * and what is waiting*. A greeting puts the reader in a reading mood, a single
+ * summary line counts the collection, and below it the library is laid out as
+ * shelf lanes — the same lanes the Library screen uses — so the dashboard reads
+ * as the front of the same bookcase rather than a separate stats page.
+ */
 @Composable
-fun DashboardScreen(onNavigateToLibrary: () -> Unit = {}) {
-    val scope = rememberCoroutineScope()
+fun DashboardScreen(onOpenBook: (Book) -> Unit = {}, onLongPressBook: (Book) -> Unit = {}) {
     var greeting by remember { mutableStateOf<Greeting?>(null) }
     var stats by remember { mutableStateOf<DashboardStats?>(null) }
-    var recentBook by remember { mutableStateOf<RecentlyReadBook?>(null) }
-    var recentSearches by remember { mutableStateOf<List<RecentSearch>?>(null) }
+    var books by remember { mutableStateOf<List<Book>?>(null) }
     var error by remember { mutableStateOf<String?>(null) }
 
     androidx.compose.runtime.LaunchedEffect(Unit) {
         try {
             greeting = Bridge.getGreeting()
             stats = Bridge.getDashboardStats()
-            val books = Bridge.getRecentlyReadBooks(1)
-            recentBook = books.firstOrNull()
-            recentSearches = Bridge.getRecentSearches(5)
+            books = Bridge.listBooks(limit = 50)
         } catch (e: Exception) {
             error = e.message
         }
     }
 
-    Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp)) {
-        val g = greeting
-        if (g != null) {
-            Text(
-                text = g.label,
-                style = MaterialTheme.typography.titleLarge,
-                color = MaterialTheme.colorScheme.onBackground,
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Text(
-                text = g.text,
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.8f),
-            )
-
-            Spacer(modifier = Modifier.height(4.dp))
-
-            if (g.author.isNotBlank() || g.material.isNotBlank()) {
-                Text(
-                    text = "${g.author} - ${g.material}",
-                    style = MaterialTheme.typography.bodySmall.copy(fontStyle = FontStyle.Italic),
-                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f),
-                    modifier = Modifier.fillMaxWidth(),
-                    textAlign = TextAlign.End,
-                )
-            }
-        }
-
-        Spacer(modifier = Modifier.height(24.dp))
-
-        if (error != null) {
-            Text(
-                text = "Could not load dashboard: $error",
-                color = MaterialTheme.colorScheme.error,
-                style = MaterialTheme.typography.bodySmall,
-            )
-        } else if (stats != null) {
-            StatsRow(stats = stats!!)
-
-            val s = stats
-            if (s != null) {
-                val now = System.currentTimeMillis()
-                val firstReadingAt = s.firstReadingAtMillis
-                val daysSinceFirst =
-                    if (firstReadingAt != null) {
-                        (now - firstReadingAt) / (1000L * 60 * 60 * 24)
-                    } else {
-                        0L
-                    }
-
-                val showAddBook = s.totalBooks < 10L
-                val showRecordReading = firstReadingAt == null || daysSinceFirst < 14L
-                val showFinishBook = s.finishedBooks == 0L
-
-                if (showAddBook || showRecordReading || showFinishBook) {
+    LazyColumn(
+        modifier = Modifier.fillMaxSize(),
+        contentPadding = androidx.compose.foundation.layout.PaddingValues(bottom = 96.dp),
+    ) {
+        item(key = "masthead") {
+            Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 16.dp)) {
+                val g = greeting
+                if (g != null) {
+                    Text(
+                        text = g.label,
+                        style = MaterialTheme.typography.titleLarge,
+                        color = MaterialTheme.colorScheme.onBackground,
+                    )
                     Spacer(modifier = Modifier.height(8.dp))
-                }
-
-                if (showAddBook) {
-                    QuickActionCard(
-                        emoji = "\uD83D\uDCDA",
-                        title = "Add Your First Book",
-                        description = "Build your library to get started",
-                        progress = (s.totalBooks.toFloat() / 10f).coerceIn(0f, 1f),
-                        progressLabel = "${s.totalBooks}/10 books",
-                        onClick = onNavigateToLibrary,
+                    Text(
+                        text = g.text,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.8f),
                     )
-                }
-
-                if (showRecordReading) {
-                    QuickActionCard(
-                        emoji = "\uD83D\uDCD6",
-                        title = "Record Your Reading",
-                        description =
-                            if (firstReadingAt == null) {
-                                "Log your first reading session"
-                            } else {
-                                "Keep your reading streak going"
-                            },
-                        progress = (daysSinceFirst.toFloat() / 14f).coerceIn(0f, 1f),
-                        progressLabel = "$daysSinceFirst/14 days",
-                        onClick = onNavigateToLibrary,
-                    )
-                }
-
-                if (showFinishBook) {
-                    QuickActionCard(
-                        emoji = "\uD83C\uDFAF",
-                        title = "Finish a Book",
-                        description = "Complete a book to make progress",
-                        progress = null,
-                        progressLabel = null,
-                        onClick = onNavigateToLibrary,
-                    )
-                }
-            }
-        }
-
-        Spacer(modifier = Modifier.height(24.dp))
-
-        if (recentBook != null) {
-            ContinueReadingCard(book = recentBook!!)
-        }
-
-        Spacer(modifier = Modifier.height(24.dp))
-
-        if (recentSearches != null && recentSearches!!.isNotEmpty()) {
-            RecentSearchesRow(searches = recentSearches!!)
-            Spacer(modifier = Modifier.height(24.dp))
-        }
-
-        FeedPlaceholderCard()
-    }
-}
-
-@Composable
-private fun QuickActionCard(
-    emoji: String,
-    title: String,
-    description: String,
-    progress: Float?,
-    progressLabel: String?,
-    onClick: () -> Unit,
-) {
-    Card(
-        onClick = onClick,
-        modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
-        shape = RoundedCornerShape(LivtetRadius.l),
-    ) {
-        Row(
-            modifier = Modifier.fillMaxWidth().padding(12.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Text(
-                text = emoji,
-                fontSize = 24.sp,
-                modifier = Modifier.clearAndSetSemantics { },
-            )
-
-            Spacer(modifier = Modifier.size(12.dp))
-
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = title,
-                    style = MaterialTheme.typography.titleSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-                Text(
-                    text = description,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
-                )
-                if (progress != null && progressLabel != null) {
-                    Spacer(modifier = Modifier.height(6.dp))
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        LinearProgressIndicator(
-                            progress = { progress },
-                            modifier = Modifier.weight(1f).height(6.dp),
-                            color = LivtetColors.Brand,
-                            trackColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
+                    Spacer(modifier = Modifier.height(4.dp))
+                    if (g.author.isNotBlank() || g.material.isNotBlank()) {
                         Text(
-                            text = progressLabel,
-                            style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
+                            text = "${g.author} - ${g.material}",
+                            style =
+                                MaterialTheme.typography.bodySmall.copy(
+                                    fontStyle = FontStyle.Italic,
+                                ),
+                            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f),
+                            modifier = Modifier.fillMaxWidth(),
+                            textAlign = TextAlign.End,
                         )
                     }
+                    Spacer(modifier = Modifier.height(24.dp))
+                }
+
+                when {
+                    error != null ->
+                        Text(
+                            text = "Could not load dashboard: $error",
+                            color = MaterialTheme.colorScheme.error,
+                            style = MaterialTheme.typography.bodySmall,
+                        )
+                    stats != null -> SummaryRow(stats = stats!!)
                 }
             }
+        }
 
-            Spacer(modifier = Modifier.width(8.dp))
-
-            Text(
-                text = "\u203A",
-                style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f),
+        val shelfBooks = books
+        if (shelfBooks != null && shelfBooks.isNotEmpty()) {
+            shelfLanes(
+                books = shelfBooks,
+                coverPaths = emptyMap(),
+                onLongPress = onLongPressBook,
+                onOpen = onOpenBook,
             )
+        } else if (shelfBooks != null) {
+            item(key = "empty") {
+                Box(modifier = Modifier.padding(horizontal = 16.dp)) { EmptyStateCard() }
+            }
         }
     }
 }
 
 @Composable
-private fun StatsRow(stats: DashboardStats) {
-    Card(
+private fun SummaryRow(stats: DashboardStats) {
+    Row(
         modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
-        shape = RoundedCornerShape(LivtetRadius.l),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        Column(modifier = Modifier.fillMaxWidth().padding(12.dp)) {
-            Text(
-                text = "Reading Stats",
-                style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceEvenly,
-            ) {
-                StatItem(value = stats.totalBooks.toString(), label = "Books")
-                StatItem(value = stats.booksInProgress.toString(), label = "In Progress")
-            }
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceEvenly,
-            ) {
-                StatItem(value = stats.finishedBooks.toString(), label = "Finished")
-                StatItem(value = formatDuration(stats.totalReadingTimeSecs), label = "Reading")
-            }
-        }
+        StatItem(value = stats.totalBooks.toString(), label = "Books")
+        StatItem(value = stats.booksInProgress.toString(), label = "Reading")
+        StatItem(value = stats.finishedBooks.toString(), label = "Finished")
+        StatItem(value = formatDuration(stats.totalReadingTimeSecs), label = "Time read")
     }
 }
 
 @Composable
 private fun RowScope.StatItem(value: String, label: String) {
-    Column(modifier = Modifier.weight(1f), horizontalAlignment = Alignment.CenterHorizontally) {
+    Column(
+        modifier = Modifier.weight(1f),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
         Text(
             text = value,
-            style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Medium),
-            color = LivtetColors.Brand,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
+            style = MaterialTheme.typography.titleMedium,
+            color = MaterialTheme.colorScheme.onSurface,
+            fontWeight = FontWeight.SemiBold,
         )
         Text(
             text = label,
-            style = MaterialTheme.typography.labelSmall.copy(fontSize = 11.sp),
+            style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
     }
 }
 
-@Composable
-private fun ContinueReadingCard(book: RecentlyReadBook) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = LivtetColors.Brand),
-        shape = RoundedCornerShape(LivtetRadius.l),
-    ) {
-        Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
-            Text(
-                text = "Continue Reading",
-                style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.onPrimary,
-            )
+private fun formatDuration(seconds: Long): String {
+    val h = seconds / 3600
+    val m = (seconds % 3600) / 60
+    return if (h > 0) "${h}h ${m}m" else "${m}m"
+}
 
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Text(
-                text = book.title,
-                style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.onPrimary,
-            )
-
-            if (book.authorName != null) {
-                Text(
-                    text = book.authorName,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.7f),
-                )
-            }
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            @Suppress("DEPRECATION")
-            LinearProgressIndicator(
-                progress = book.progress.toFloat(),
-                modifier = Modifier.fillMaxWidth().height(6.dp),
-                color = MaterialTheme.colorScheme.onPrimary,
-                trackColor = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.3f),
-            )
-
-            Spacer(modifier = Modifier.height(4.dp))
-
-            Text(
-                text = "${(book.progress * 100).toInt()}% complete",
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.7f),
-            )
+/**
+ * The shelf lanes themselves. This is a [LazyListScope] extension rather than a
+ * composable so the lanes stay items of the dashboard's single scrolling list —
+ * a nested scrolling container would be measured with infinite height.
+ */
+private fun LazyListScope.shelfLanes(
+    books: List<Book>,
+    coverPaths: Map<String, String>,
+    onLongPress: (Book) -> Unit,
+    onOpen: (Book) -> Unit,
+) {
+    shelvesOf(books).forEach { shelf ->
+        item(key = "header-${shelf.key}") {
+            ShelfHeader(label = shelf.label, count = shelf.books.size)
         }
-    }
-}
-
-@Composable
-private fun RecentSearchesRow(searches: List<RecentSearch>) {
-    Column(modifier = Modifier.fillMaxWidth()) {
-        Text(
-            text = "Recent Searches",
-            style = MaterialTheme.typography.labelMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.padding(bottom = 8.dp),
-        )
-
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            searches.take(5).forEach { search ->
-                Card(
-                    modifier = Modifier.weight(1f, fill = false),
-                    colors =
-                        CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.surfaceVariant
-                        ),
-                    shape = RoundedCornerShape(LivtetRadius.l),
-                ) {
-                    Text(
-                        text = search.query,
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 6.dp),
+        item(key = "row-${shelf.key}") {
+            LazyRow(
+                contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 16.dp),
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+            ) {
+                items(shelf.books, key = { it.id }) { book ->
+                    CoverTile(
+                        book = book,
+                        localCover = coverPaths[book.id],
+                        onLongPress = { onLongPress(book) },
+                        onOpen = { onOpen(book) },
                     )
                 }
             }
@@ -388,52 +201,121 @@ private fun RecentSearchesRow(searches: List<RecentSearch>) {
 }
 
 @Composable
-private fun FeedPlaceholderCard() {
+private fun ShelfHeader(label: String, count: Int) {
+    Column(
+        modifier = Modifier.fillMaxWidth().padding(start = 16.dp, end = 16.dp, top = 20.dp, bottom = 10.dp),
+    ) {
+        Text(
+            text = label,
+            style = MaterialTheme.typography.titleSmall,
+            fontWeight = FontWeight.SemiBold,
+            color = MaterialTheme.colorScheme.onSurface,
+        )
+        Text(
+            text = if (count == 1) "1 book" else "$count books",
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+    }
+}
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+private fun CoverTile(
+    book: Book,
+    localCover: String?,
+    onLongPress: () -> Unit,
+    onOpen: () -> Unit,
+) {
+    Column(modifier = Modifier.width(104.dp)) {
+        Box(
+            modifier = Modifier.combinedClickable(
+                onLongClick = { onLongPress() },
+                onClick = onOpen,
+            ),
+        ) {
+            Card(
+                modifier = Modifier.size(width = 104.dp, height = 156.dp),
+                shape = RoundedCornerShape(8.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceContainer,
+                ),
+            ) {
+                BookCover(
+                    url = localCover ?: book.coverUrl,
+                    title = book.title,
+                    width = 104.dp,
+                    height = 156.dp,
+                )
+            }
+        }
+        Text(
+            text = book.title,
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurface,
+            maxLines = 2,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.padding(top = 6.dp),
+        )
+    }
+}
+
+@Composable
+private fun EmptyStateCard() {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
-        shape = RoundedCornerShape(LivtetRadius.l),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
+        ),
     ) {
         Column(
-            modifier = Modifier.fillMaxWidth().padding(24.dp),
+            modifier = Modifier.fillMaxWidth().padding(32.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
+            Text(text = "\uD83D\uDCDA", style = MaterialTheme.typography.displayMedium)
+            Spacer(modifier = Modifier.height(16.dp))
             Text(
-                text = "\uD83D\uDCF0",
-                fontSize = 32.sp,
-                modifier = Modifier.clearAndSetSemantics { },
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Text(
-                text = "Feed",
+                text = "Your shelf is empty",
                 style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onSurface,
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = "Import books from your catalog to start reading here.",
+                style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-
-            Spacer(modifier = Modifier.height(4.dp))
-
-            Text(
-                text =
-                    "Friend activity and recommendations will appear here once the social feed is ready.",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
-                modifier = Modifier.padding(horizontal = 16.dp),
-            )
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            Text(
-                text = "Coming Soon",
-                style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
+                textAlign = TextAlign.Center,
             )
         }
     }
 }
 
-private fun formatDuration(seconds: Long): String {
-    val hours = seconds / 3600
-    return if (hours > 0) "${hours}h" else "${seconds / 60}m"
+/**
+ * Lane order follows a reader's attention: what is being read, what is next,
+ * then what is done. Works on no shelf still appear, in a catch-all lane.
+ */
+private fun shelvesOf(books: List<Book>): List<DashShelf> {
+    val lanes =
+        listOf(
+            WorkStatus.READING to "Reading",
+            WorkStatus.TO_READ to "Want to read",
+            WorkStatus.QUEUED to "Queued",
+            WorkStatus.ACTIVE to "Active",
+            WorkStatus.FINISHED to "Finished",
+            WorkStatus.ABANDONED to "Abandoned",
+        )
+    val shelved =
+        lanes.mapNotNull { (status, label) ->
+            val lane = books.filter { it.status == status }
+            if (lane.isEmpty()) null else DashShelf(status.name, label, lane)
+        }
+    val unshelved = books.filter { it.status == null }
+    return if (unshelved.isEmpty()) {
+        shelved
+    } else {
+        shelved + DashShelf("unshelved", "Unshelved", unshelved)
+    }
 }
+
+/** One dashboard lane: its stable key, the label it shows, and the books on it. */
+private data class DashShelf(val key: String, val label: String, val books: List<Book>)

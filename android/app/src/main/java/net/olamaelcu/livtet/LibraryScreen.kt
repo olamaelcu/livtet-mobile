@@ -1,6 +1,7 @@
 package net.olamaelcu.livtet
 
 import androidx.compose.foundation.ExperimentalFoundationApi
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
@@ -37,6 +38,7 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -54,6 +56,7 @@ import net.olamaelcu.livtet.biblio.BookCover
 import net.olamaelcu.livtet.biblio.SearchEditionsScreen
 import net.olamaelcu.livtet.ffi.EmptyMessage
 import net.olamaelcu.livtet.types.WorkStatus
+import kotlinx.coroutines.launch
 
 /**
  * Library screen — the collection as shelves of covers.
@@ -407,8 +410,7 @@ private fun ShelfEdge() {
 private fun CoverTile(book: Book, localCover: String?, onLongPress: () -> Unit) {
     val context = LocalContext.current
     val haptics = LocalHapticFeedback.current
-    val koreaderInstalled by
-        LivtetApp.getInstance().koreaderPresence.isInstalled.collectAsState()
+    val scope = rememberCoroutineScope()
 
     Column(modifier = Modifier.width(104.dp)) {
         Box(
@@ -419,13 +421,24 @@ private fun CoverTile(book: Book, localCover: String?, onLongPress: () -> Unit) 
                             onLongPress()
                         },
                         onClick = {
-                            if (koreaderInstalled) OpenInKoreader.launchKoreader(context)
+                            scope.launch {
+                                val editionId = book.primaryEditionId
+                                val path = editionId?.let { Bridge.editionFilePath(it) }
+                                if (path != null) {
+                                    OpenInKoreader.openBook(context, path)
+                                } else {
+                                    Toast.makeText(
+                                            context,
+                                            "No file imported for this book",
+                                            Toast.LENGTH_SHORT,
+                                        )
+                                        .show()
+                                }
+                            }
                         },
                     )
                     .semantics {
-                        contentDescription =
-                            if (koreaderInstalled) "${book.title}, open in KOReader"
-                            else book.title
+                        contentDescription = "${book.title}, open"
                     }
         ) {
             BookCover(

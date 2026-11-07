@@ -1,11 +1,11 @@
 package net.olamaelcu.livtet
 
-import java.net.URI
-import java.net.URISyntaxException
-import java.net.URLDecoder
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import java.net.URI
+import java.net.URISyntaxException
+import java.net.URLDecoder
 
 /**
  * A platform permalink the app knows how to render natively.
@@ -105,9 +105,9 @@ object AppLinkRouter {
     }
 
     /** Normalizes a link spelling of a DID: `bibliograph` → the catalog DID. */
+
     /** Clamps a `tab` query value, falling back to the reviews tab. */
-    fun normalizeTab(value: String?): String =
-        if (value != null && TABS.contains(value)) value else TAB_REVIEWS
+    fun normalizeTab(value: String?): String = if (value != null && TABS.contains(value)) value else TAB_REVIEWS
 
     internal fun parse(raw: String?): AppLink? {
         val trimmed = raw?.trim().orEmpty()
@@ -135,7 +135,11 @@ object AppLinkRouter {
         }
     }
 
-    private fun parseKind(kind: String, rest: List<String>, rawQuery: String?): AppLink? =
+    private fun parseKind(
+        kind: String,
+        rest: List<String>,
+        rawQuery: String?,
+    ): AppLink? =
         when (kind) {
             "book" -> if (rest.size == 2) book(rest[0], rest[1]) else null
             "review" -> if (rest.size == 2) review(rest[0], rest[1]) else null
@@ -153,19 +157,29 @@ object AppLinkRouter {
             else -> null
         }
 
-    private fun book(did: String, rkey: String): AppLink? {
+    private fun book(
+        did: String,
+        rkey: String,
+    ): AppLink? {
         val resolved = parseDid(did) ?: return null
         if (!RKEY_PATTERN.matches(rkey)) return null
         return AppLink.Book(resolved, rkey)
     }
 
-    private fun review(did: String, rkey: String): AppLink? {
+    private fun review(
+        did: String,
+        rkey: String,
+    ): AppLink? {
         val resolved = parseDid(did) ?: return null
         if (!RKEY_PATTERN.matches(rkey)) return null
         return AppLink.Review(resolved, rkey)
     }
 
-    private fun profile(actor: String, tab: String?, shelf: String?): AppLink? {
+    private fun profile(
+        actor: String,
+        tab: String?,
+        shelf: String?,
+    ): AppLink? {
         val resolved = parseProfileActor(actor) ?: return null
         if (shelf != null && !RKEY_PATTERN.matches(shelf)) return null
         return AppLink.Profile(resolved, normalizeTab(tab), shelf)
@@ -206,7 +220,10 @@ object AppLinkRouter {
         return out
     }
 
-    private fun queryParam(rawQuery: String?, name: String): String? {
+    private fun queryParam(
+        rawQuery: String?,
+        name: String,
+    ): String? {
         if (rawQuery.isNullOrEmpty()) return null
         for (pair in rawQuery.split('&')) {
             val index = pair.indexOf('=')

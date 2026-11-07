@@ -34,7 +34,15 @@ constructor(
             redirectUri = REDIRECT_URI,
             sessionStore = sessionStore,
             httpClient = httpClient,
-            scope = "atproto repo:net.olamaelcu.livtet.actor.profile repo:net.olamaelcu.livtet.biblio.readingGoal repo:net.olamaelcu.livtet.biblio.shelf repo:net.olamaelcu.livtet.biblio.bookShelving repo:net.olamaelcu.livtet.bookReview blob:image/*",
+            // Scopes must be a subset of the ones the client metadata registers at CLIENT_METADATA_URL;
+            // `net.olamaelcu.livtet.bookReview` is the legacy collection and is not registered there,
+            // so requesting it fails the pushed authorization request with HTTP 400.
+            scope =
+                "atproto repo:net.olamaelcu.livtet.actor.profile " +
+                    "repo:net.olamaelcu.livtet.biblio.readingGoal " +
+                    "repo:net.olamaelcu.livtet.biblio.shelf " +
+                    "repo:net.olamaelcu.livtet.biblio.bookShelving " +
+                    "repo:net.olamaelcu.livtet.biblio.bookReview blob:image/*",
         )
     }
 

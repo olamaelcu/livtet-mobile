@@ -163,7 +163,10 @@ private fun ProfileHeader(state: ProfileUiState) {
 }
 
 @Composable
-private fun Stat(label: String, value: Int) {
+private fun Stat(
+    label: String,
+    value: Int,
+) {
     Column {
         Text(
             text = value.toString(),
@@ -194,7 +197,7 @@ private fun ReviewsTab(
                     "No reviews yet."
                 } else {
                     "No books with this status."
-                }
+                },
         )
         return
     }
@@ -284,9 +287,9 @@ private fun ShelvesTab(
                                     Modifier.clickable { onBookClick(atUri.did, atUri.rkey) }
                                 } else {
                                     Modifier
-                                }
+                                },
                             )
-                            .padding(vertical = 10.dp)
+                            .padding(vertical = 10.dp),
                 ) {
                     Text(text = row.title, style = MaterialTheme.typography.bodyLarge)
                     row.status

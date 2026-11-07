@@ -16,9 +16,7 @@ plugins {
 // Hilt 2.58 bundles kotlin-metadata-jvm 2.3.x which cannot read
 // metadata format 2.4.0 emitted by Kotlin 2.4.0. Force the newer
 // version so the Hilt Java annotation processor can parse classes.
-configurations.all {
-    resolutionStrategy.force("org.jetbrains.kotlin:kotlin-metadata-jvm:2.4.0")
-}
+configurations.all { resolutionStrategy.force("org.jetbrains.kotlin:kotlin-metadata-jvm:2.4.0") }
 
 android {
     namespace = "net.olamaelcu.livtet"
@@ -238,6 +236,12 @@ dependencies {
     // Coil 3 ships no network fetcher; the catalog's cover art and the profile
     // avatars are https URLs, so the OkHttp fetcher has to be on the classpath.
     implementation(libs.coil.network.okhttp)
+
+    // QR scanning of a peer's node id. CameraX for the preview and analysis
+    // pipeline, ZXing (Apache-2.0) to decode: ML Kit's scanner is
+    // closed-source, so the fdroid flavor could not ship it.
+    implementation(libs.bundles.camerax)
+    implementation(libs.zxing.core)
 
     // Public catalog reads for the book/review/profile permalinks. The app
     // owns this client (see biblio/PublicBiblioModule.kt) so it carries no

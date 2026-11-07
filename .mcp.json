@@ -1,0 +1,39 @@
+{
+  "$schema": "https://raw.githubusercontent.com/can1357/oh-my-pi/main/packages/coding-agent/src/config/mcp-schema.json",
+  "mcpServers": {
+    "livtet": {
+      "type": "http",
+      "url": "http://127.0.0.1:7777/mcp",
+      "directTools": true
+    },
+    "sentry": {
+      "type": "http",
+      "url": "https://mcp.sentry.dev/mcp/olamaelcu/livtet-mobile",
+      "directTools": true
+    },
+    "tauri": {
+      "type": "stdio",
+      "command": "mise",
+      "args": [
+        "x",
+        "--",
+        "npx",
+        "-y",
+        "@hypothesi/tauri-mcp-server"
+      ],
+      "enabled": true
+    },
+    "mobile": {
+      "type": "stdio",
+      "command": "mise",
+      "args": [
+        "x",
+        "--",
+        "npx",
+        "-y",
+        "@mobilenext/mobile-mcp@latest"
+      ],
+      "enabled": true
+    }
+  }
+}

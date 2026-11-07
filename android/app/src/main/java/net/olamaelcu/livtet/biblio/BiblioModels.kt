@@ -46,8 +46,8 @@ data class BiblioContributor(
     /** Raw-record spelling of a contribution; the AppView uses `contributor`. */
     val subject: BiblioContributorRef? = null,
     /**
-     * Name written inline on the contribution. `community.lexicon.book.searchEditions` returns
-     * `{ subject, role, name }`, whereas `getRecord` hydration puts the name on the ref itself.
+     * Name written inline on the contribution. `community.lexicon.book.searchEditions` returns `{
+     * subject, role, name }`, whereas `getRecord` hydration puts the name on the ref itself.
      */
     val name: String? = null,
 )
@@ -209,15 +209,17 @@ fun parseAtUri(value: String?): AtUri? {
 /**
  * A catalog identifier as the storage URN the edition-identifier table keeps.
  *
- * ISBNs drop the catalog's `isbn:` prefix so the URN reads
- * `urn:isbn:<digits>`. Every other resource keeps its own scheme and the
- * full URI as the value, so the source survives the round trip.
+ * ISBNs drop the catalog's `isbn:` prefix so the URN reads `urn:isbn:<digits>`. Every other
+ * resource keeps its own scheme and the full URI as the value, so the source survives the round
+ * trip.
  */
 fun BiblioIdentifier.toUrn(): String? {
     val value = uri.trim()
     if (value.isEmpty() || resource.isBlank()) return null
     return when (resource) {
-        "isbn13", "isbn10" -> "urn:isbn:" + value.removePrefix("isbn:").trim()
+        "isbn13",
+        "isbn10",
+        -> "urn:isbn:" + value.removePrefix("isbn:").trim()
         else -> "urn:$resource:$value"
     }
 }
@@ -230,8 +232,7 @@ fun BiblioReviewRecord.bookUri(): String? =
         else -> null
     }
 
-private fun JsonPrimitive.stringOrNull(): String? =
-    if (isString) content.takeIf { it.isNotEmpty() } else null
+private fun JsonPrimitive.stringOrNull(): String? = if (isString) content.takeIf { it.isNotEmpty() } else null
 
 /** Role names the book screen presents as the author line. */
 val AUTHOR_LIKE_ROLES: Set<String> =

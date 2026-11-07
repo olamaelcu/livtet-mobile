@@ -20,11 +20,7 @@ fun FeedScreen() {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
     ) {
-        Text(
-            text = "\uD83D\uDCF0",
-            fontSize = 48.sp,
-            modifier = Modifier.clearAndSetSemantics { },
-        )
+        Text(text = "\uD83D\uDCF0", fontSize = 48.sp, modifier = Modifier.clearAndSetSemantics {})
         Text(
             text = "Feed",
             style = MaterialTheme.typography.headlineMedium,

@@ -94,6 +94,7 @@ chucker = "4.1.0"
 # Camera / ML
 camerax = "1.6.1"
 mlkit = "17.3.0"
+zxing = "3.5.3"
 
 # AndroidX
 work = "2.10.2"
@@ -266,6 +267,10 @@ androidx-camera-view = { group = "androidx.camera", name = "camera-view", versio
 
 # ML Kit Barcode Scanning
 mlkit-barcode-scanning = { group = "com.google.mlkit", name = "barcode-scanning", version.ref = "mlkit" }
+
+# ZXing decode core. Apache-2.0, so the fdroid flavor can ship it; the ML Kit
+# scanner above is closed-source and stays unused for that reason.
+zxing-core = { group = "com.google.zxing", name = "core", version.ref = "zxing" }
 
 # Navigation
 androidx-navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "navigation" }

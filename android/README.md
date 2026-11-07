@@ -102,13 +102,33 @@ top-level sections, plus a debug-only "Developer tools" panel:
   database and re-seeds it with N demo works via `Bridge.resetAndSeed`,
   with two-tap confirmation and a `SeedResultMobile` summary.
 - **Sync & Discovery** — lists the peers `DiscoveryService` found over mDNS
-  (`_livtet-sync._tcp` via NsdManager) and pairs with any of them over
-  iroh. Pairing (`sync/SyncPairing.kt`) reads the peer's node id from the
-  TXT record, files a claim through the FFI (`pairSyncDevice`), waits for
-  the reader to approve it on the desktop, and stores the session token
-  (DataStore) keyed by peer. The Plugins section is gone — it needed
-  `listInstalledPlugins`, `setPluginEnabled`, and plugin FFI that the
-  current `core/livtet-ffi` build does not export.
+  (`_livtet-sync._tcp` via NsdManager), pairs with any of them over iroh, and
+  advertises this device so desktops list it in their nearby peers. Pairing
+  (`sync/SyncPairing.kt`) files a claim through the FFI (`pairSyncDevice`),
+  waits for the reader to approve it on the desktop, and stores the session
+  token (DataStore) keyed by peer. The peer is addressed by its iroh node id —
+  from the mDNS TXT `id` record, typed by the reader, or scanned from a pairing
+  QR code (`livtet://pair?node=…` or
+  `https://livtet.olamaelcu.net/pair?node=…`; see `sync/PairPayload.kt`). Typed
+  and scanned entry exist because mDNS surfaces nothing on networks that filter
+  multicast or when the desktop is on another subnet.
+
+  `advertise_sync_device` (FFI) runs while this screen is open and shows the
+  device's own node id under the list. Incoming pairing claims are answered
+  with a refusal that points at the phone-side flow: approving a claim needs UI
+  this build does not have yet.
+
+  Approval is polled, not clicked: after a claim is filed the app keeps asking
+  `sync_pairing_status` in rounds until the desktop decides, and keeps asking
+  after the dialog is closed. Approved peers are listed under **Paired
+  devices**, with their own name/node id/device id — the last one read with
+  `peer_sync_identity`, because the pairing reply carries the *claiming*
+  device's id. Entering a node id that is already paired disables the request
+  instead of filing one the desktop is bound to refuse.
+
+  The Plugins section is gone — it needed `listInstalledPlugins`,
+  `setPluginEnabled`, and plugin FFI that the current `core/livtet-ffi` build
+  does not export.
 
 ### What is NOT exposed to end users yet
 
@@ -121,8 +141,10 @@ do the following on Android at this time:
 - **Local files / file cache** — `register_local_file`, `list_cached_files`,
   `get_cached_file_path`, `delete_cached_file` exist; no UI.
 - **Browse OPDS catalogs** — no `:feature:opds` module, no UI surface.
-- **Scan ISBN barcodes with the camera** — no CameraX/ML Kit wired, no
-  `CAMERA` permission in `AndroidManifest.xml`.
+- **Scan ISBN barcodes with the camera** — the camera pipeline exists for
+  pairing QR codes (`sync/QrScannerActivity.kt`: CameraX preview + ZXing,
+  `CAMERA` permission declared optional), but nothing decodes book barcodes
+  or feeds the add-book wizard.
 - **Edit tags, genres, or subjects from the UI** — FFI exposes CRUD for all
   three; no Kotlin caller.
 - **Read a book in-app** — no reader screen; reading-progress FFI is

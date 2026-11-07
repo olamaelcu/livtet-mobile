@@ -17,17 +17,14 @@ import org.junit.runners.JUnit4
 /**
  * Regression tests for the dashboard accessibility fixes.
  *
- * Background: a screenshot-vs-a11y comparison on the dashboard surface
- * surfaced four problems:
+ * Background: a screenshot-vs-a11y comparison on the dashboard surface surfaced four problems:
  *
- *   1. The selected bottom-nav tab (Dashboard) had `selected="true"` in
- *      the a11y tree but no `clickable` flag, which can prevent
- *      screen-reader users from re-tapping the active tab.
- *   2. The greeting author/material line ("author - material") rendered
- *      as the literal text " - " when both fields are empty, and the
- *      bare separator was being announced by TalkBack.
- *   3. The newspaper and other decorative emojis inside dashboard cards
- *      were exposed as raw unicode codepoints to a11y services.
+ * 1. The selected bottom-nav tab (Dashboard) had `selected="true"` in the a11y tree but no
+ *    `clickable` flag, which can prevent screen-reader users from re-tapping the active tab.
+ * 2. The greeting author/material line ("author - material") rendered as the literal text " - "
+ *    when both fields are empty, and the bare separator was being announced by TalkBack.
+ * 3. The newspaper and other decorative emojis inside dashboard cards were exposed as raw unicode
+ *    codepoints to a11y services.
  *
  * These tests pin down the corrected behaviour.
  */
@@ -74,9 +71,7 @@ class DashboardA11yTest {
         // " - " (i.e. the separator with no surrounding content) — that
         // node was a11y-announced as the literal word "dash". We assert
         // here that no such stand-alone node exists.
-        composeTestRule
-            .onAllNodesWithText(" - ", substring = false)
-            .assertCountEquals(0)
+        composeTestRule.onAllNodesWithText(" - ", substring = false).assertCountEquals(0)
     }
 
     @Test
@@ -84,7 +79,7 @@ class DashboardA11yTest {
         composeTestRule.onNodeWithText("Feed").assertIsDisplayed()
         composeTestRule
             .onNodeWithText(
-                "Friend activity and recommendations will appear here once the social feed is ready."
+                "Friend activity and recommendations will appear here once the social feed is ready.",
             )
             .assertIsDisplayed()
         composeTestRule.onNodeWithText("Coming Soon").assertIsDisplayed()
