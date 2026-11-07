@@ -1,5 +1,6 @@
 package net.olamaelcu.livtet
 
+import android.content.Intent
 import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.net.Uri
@@ -39,6 +40,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -59,6 +61,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
 import java.io.File
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import net.olamaelcu.livtet.core.designsystem.LivtetTheme
 import net.olamaelcu.livtet.ffi.SyncPairedDevice
@@ -75,18 +78,41 @@ import net.olamaelcu.livtet.ffi.SyncPairedDevice
  * where its battery cost is paid only by someone looking for a peer.
  */
 class MainActivity : ComponentActivity() {
+    /**
+     * The `livtet://oauth/callback` redirect, when the browser sent the reader back here. Kept as
+     * state so a warm activity handles it the same way a cold one does; the manifest marks this
+     * activity `singleTop` for that reason.
+     */
+    private val redirect = MutableStateFlow<String?>(null)
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge(
             statusBarStyle = SystemBarStyle.auto(Color.TRANSPARENT, Color.TRANSPARENT),
             navigationBarStyle = SystemBarStyle.auto(Color.TRANSPARENT, Color.TRANSPARENT),
         )
+        redirect.value = intent?.dataString?.takeIf(::isSignInRedirect)
         setContent {
             LivtetTheme(darkTheme = isSystemInDarkTheme()) {
-                HomeRoute(databasePath = File(filesDir, "livtet.db").absolutePath)
+                val pendingRedirect by redirect.collectAsState()
+                HomeRoute(
+                    databasePath = File(filesDir, "livtet.db").absolutePath,
+                    redirect = pendingRedirect,
+                    onRedirectHandled = { redirect.value = null },
+                )
             }
         }
     }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        redirect.value = intent.dataString?.takeIf(::isSignInRedirect) ?: redirect.value
+    }
+
+    /** The only `livtet://` link this activity completes is the sign-in one. */
+    private fun isSignInRedirect(value: String): Boolean =
+        value.startsWith("livtet://oauth", ignoreCase = true)
 }
 
 /** Everything the band and the shelf need, read in one pass. */
@@ -96,6 +122,9 @@ private data class HomeState(
     val offersWaiting: Int,
     val firstOfferTitle: String?,
     val paired: List<SyncPairedDevice>,
+    /** The newest thing in the reader's feed, when signed in and reachable. */
+    val feedHeadline: String? = null,
+    val feedNeedsSignIn: Boolean = false,
 )
 
 /**
@@ -122,7 +151,11 @@ private sealed interface HomePhase {
 }
 
 @Composable
-private fun HomeRoute(databasePath: String) {
+private fun HomeRoute(
+    databasePath: String,
+    redirect: String? = null,
+    onRedirectHandled: () -> Unit = {},
+) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     var phase: HomePhase by remember { mutableStateOf(HomePhase.Loading) }
@@ -146,6 +179,22 @@ private fun HomeRoute(databasePath: String) {
                     onSuccess = { HomePhase.Ready },
                     onFailure = { HomePhase.Failed(it.message ?: it.toString()) },
                 )
+    }
+
+    // The browser came back with a code: finish the exchange before the screen
+    // asks the feed anything, so a successful sign-in lands in the same pass.
+    LaunchedEffect(redirect) {
+        val value = redirect ?: return@LaunchedEffect
+        working = "Finishing sign-in\u2026"
+        failure = null
+        PlatformAuth.completeSignIn(context, value)
+            .onSuccess {
+                notice = "Signed in"
+                reloads++
+            }
+            .onFailure { failure = it.message ?: it.toString() }
+        working = null
+        onRedirectHandled()
     }
 
     LaunchedEffect(phase, reloads) {
@@ -187,16 +236,30 @@ private fun HomeRoute(databasePath: String) {
                             SHELF_SIZE
                         )
                     val offers = runCatching { Bridge.pendingOffers() }.getOrDefault(emptyList())
+                    val signedIn = PlatformAuth.isSignedIn(context)
+                    val headline =
+                        if (signedIn) {
+                            FeedClient.page(context, limit = 1).getOrNull()?.entries?.firstOrNull()
+                        } else {
+                            null
+                        }
                     HomeState(
                         books = books,
                         shelf = shelf,
                         offersWaiting = offers.size,
                         firstOfferTitle = offers.firstOrNull()?.title,
                         paired = runCatching { Bridge.pairedDevices() }.getOrDefault(emptyList()),
+                        feedHeadline = headline?.summary,
+                        feedNeedsSignIn = !signedIn,
                     )
                 }
-                .getOrElse {
-                    failure = it.message ?: it.toString()
+                .getOrElse { error ->
+                    // A recomposition key change cancels this effect, and
+                    // CancellationException is a control-flow signal, not a
+                    // failure to show: swallowing it printed Compose's own
+                    // "coroutine scope left the composition" as a user error.
+                    if (error is kotlinx.coroutines.CancellationException) throw error
+                    failure = error.message ?: error.toString()
                     HomeState(emptyList(), emptyList(), 0, null, emptyList())
                 }
     }
@@ -276,6 +339,7 @@ private fun HomeRoute(databasePath: String) {
                     },
                     onDevices = { context.startActivity(SyncActivity.intent(context)) },
                     onOffers = { context.startActivity(OffersActivity.intent(context)) },
+                    onFeed = { context.startActivity(FeedActivity.intent(context)) },
                 )
         }
     }
@@ -296,6 +360,7 @@ private fun HomeContent(
     onOpenBook: (String) -> Unit,
     onDevices: () -> Unit,
     onOffers: () -> Unit,
+    onFeed: () -> Unit,
 ) {
     Column(
         modifier =
@@ -380,7 +445,7 @@ private fun HomeContent(
         }
 
         Spacer(modifier = Modifier.height(20.dp))
-        GlanceBand(state = state, onDevices = onDevices, onOffers = onOffers)
+        GlanceBand(state = state, onDevices = onDevices, onOffers = onOffers, onFeed = onFeed)
         Spacer(modifier = Modifier.height(24.dp))
         Text(
             text = "Looking for a device? Discovery lives in Devices.",
@@ -527,7 +592,12 @@ private fun EmptyShelf(prompt: HomePrompt, onPrimary: () -> Unit, onImport: () -
  * have, and a tile that only apologises is worse than no tile.
  */
 @Composable
-private fun GlanceBand(state: HomeState, onDevices: () -> Unit, onOffers: () -> Unit) {
+private fun GlanceBand(
+    state: HomeState,
+    onDevices: () -> Unit,
+    onOffers: () -> Unit,
+    onFeed: () -> Unit,
+) {
     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
         GlanceTile(label = "Devices", onClick = onDevices, modifier = Modifier.weight(1f)) {
             val paired = state.paired.size
@@ -572,6 +642,42 @@ private fun GlanceBand(state: HomeState, onDevices: () -> Unit, onOffers: () -> 
             )
             Text(
                 text = state.firstOfferTitle?.takeIf { state.offersWaiting > 0 } ?: "waiting",
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+        }
+        GlanceTile(
+            label = "Feed",
+            onClick = onFeed,
+            modifier = Modifier.weight(1f),
+            highlighted = state.feedHeadline != null,
+        ) {
+            Text(
+                text =
+                    if (state.feedNeedsSignIn) {
+                        "Sign in"
+                    } else if (state.feedHeadline != null) {
+                        "New"
+                    } else {
+                        "Quiet"
+                    },
+                style = MaterialTheme.typography.headlineSmall,
+                color =
+                    if (state.feedHeadline != null) {
+                        MaterialTheme.colorScheme.onBackground
+                    } else {
+                        MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f)
+                    },
+            )
+            Text(
+                text =
+                    when {
+                        state.feedNeedsSignIn -> "your feed"
+                        state.feedHeadline != null -> state.feedHeadline
+                        else -> "nothing new"
+                    },
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
                 maxLines = 1,

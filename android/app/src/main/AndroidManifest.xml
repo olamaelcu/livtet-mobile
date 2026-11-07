@@ -16,12 +16,23 @@
         <!-- Sentry auto-init stays off: LivtetApp.onCreate initialises it manually
              so the empty DSN in fdroid/generic does not crash at attach time. -->
         <meta-data android:name="io.sentry.auto-init" android:value="false" />
+        <!-- `singleTop` because the sign-in redirect lands here: a second
+             instance would have to re-open the store to finish the exchange. -->
         <activity android:name=".MainActivity"
             android:exported="true"
+            android:launchMode="singleTop"
             android:theme="@style/Theme.Livtet">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+            <!-- The platform's OAuth redirect. Must equal the AS client's
+                 AS_MOBILE_REDIRECT_URI (default livtet://oauth/callback). -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="livtet" android:host="oauth" android:pathPrefix="/callback" />
             </intent-filter>
         </activity>
         <!-- Reads one edition's file. Not exported: it is only ever started
@@ -34,6 +45,11 @@
         <!-- Pairing and the devices this one can exchange books with. Not
              exported: reached only from the launcher. -->
         <activity android:name=".SyncActivity"
+            android:exported="false"
+            android:theme="@style/Theme.Livtet" />
+        <!-- The reader's platform feed, for a signed-in app. Not exported: it
+             has no deep link of its own. -->
+        <activity android:name=".FeedActivity"
             android:exported="false"
             android:theme="@style/Theme.Livtet" />
         <!-- Every book on this device, filterable. Reached from the home
