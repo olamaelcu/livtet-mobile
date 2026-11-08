@@ -27,8 +27,16 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Button
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.foundation.clickable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -47,6 +55,7 @@ import androidx.fragment.app.FragmentContainerView
 import androidx.fragment.app.commitNow
 import java.io.File
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import net.olamaelcu.livtet.core.designsystem.LivtetTheme
 import net.olamaelcu.livtet.core.reader.ReaderError
@@ -112,6 +121,7 @@ private fun ReaderRoute(editionId: String, onBack: () -> Unit) {
 
     var state: ReaderState by remember(editionId) { mutableStateOf(ReaderState.Loading) }
     var progression: Double by remember(editionId) { mutableStateOf(0.0) }
+    var currentHref: String? by remember(editionId) { mutableStateOf(null) }
     // The reader's display choices, and whether they have been read yet: saving
     // before the load finishes would overwrite what is stored with the default.
     var display by remember { mutableStateOf(ReaderDisplay.Default) }
@@ -122,9 +132,17 @@ private fun ReaderRoute(editionId: String, onBack: () -> Unit) {
     var showContents by remember { mutableStateOf(false) }
     var showNotes by remember { mutableStateOf(false) }
     var notes by remember { mutableStateOf<List<Bridge.AnnotationView>>(emptyList()) }
+    var openNote by remember { mutableStateOf<Bridge.AnnotationView?>(null) }
     var writingNote by remember { mutableStateOf<String?>(null) }
     var noteFailure by remember { mutableStateOf<String?>(null) }
     var formatId: String? by remember(editionId) { mutableStateOf(null) }
+
+    suspend fun reloadNotes() {
+        notes =
+            runCatching { Bridge.listAnnotations(editionId) }
+                .onFailure { noteFailure = it.message }
+                .getOrDefault(emptyList())
+    }
     var lastSavedAt: Long by remember(editionId) { mutableLongStateOf(0L) }
     var attempt: Int by remember(editionId) { mutableStateOf(0) }
 
@@ -137,6 +155,7 @@ private fun ReaderRoute(editionId: String, onBack: () -> Unit) {
                     if (!Bridge.isInitialized()) {
                         Bridge.init(File(context.filesDir, "livtet.db").absolutePath)
                     }
+                    reloadNotes()
                     val detail = Bridge.editionDetail(editionId)
                     val path =
                         Bridge.editionFilePath(editionId)
@@ -171,15 +190,9 @@ private fun ReaderRoute(editionId: String, onBack: () -> Unit) {
                 }
     }
 
-    // Notes are read when the sheet opens rather than held in the loader: the
-    // reader may add one at a time, and each is a store write.
-    LaunchedEffect(showNotes, editionId) {
-        if (!showNotes) return@LaunchedEffect
-        notes =
-            runCatching { Bridge.listAnnotations(editionId) }
-                .onFailure { noteFailure = it.message }
-                .getOrDefault(emptyList())
-    }
+    // A note is a point, not a text range: the stored locator has a progress and a
+    // position but no fragment, so the toolkit has nothing to tint. The sheet lists
+    // a row, the row opens the preview card, and the card jumps to the passage.
 
     // A change of display re-lays the page and is remembered for the next book;
     // waiting on `displayLoaded` keeps the first frame from saving the default
@@ -215,7 +228,9 @@ private fun ReaderRoute(editionId: String, onBack: () -> Unit) {
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                     )
-                    TextButton(onClick = { showNotes = true }) { Text("Notes") }
+                    TextButton(onClick = { showNotes = true }) {
+                        Text(if (notes.isEmpty()) "Notes" else "Notes ${notes.size}")
+                    }
                     TextButton(onClick = { showContents = true }) { Text("TOC") }
                     TextButton(onClick = { showSettings = !showSettings }) {
                         Text("Aa", style = MaterialTheme.typography.labelLarge)
@@ -243,14 +258,28 @@ private fun ReaderRoute(editionId: String, onBack: () -> Unit) {
                 }
 
                 if (showNotes) {
-                    NotesDialog(
+                    NotesSheet(
                         notes = notes,
+                        chapterHref = currentHref,
+                        chapterTitleFor = { href ->
+                            chapterTitle(
+                                href,
+                                session?.publication?.tableOfContents.orEmpty(),
+                            )
+                        },
                         failure = noteFailure,
-                        onAdd = { writingNote = "" },
+                        onOpen = { note ->
+                            showNotes = false
+                            openNote = note
+                        },
+                        onAdd = {
+                            showNotes = false
+                            writingNote = ""
+                        },
                         onDelete = { note ->
                             scope.launch {
                                 runCatching { Bridge.deleteAnnotation(note.id) }
-                                    .onSuccess { notes = Bridge.listAnnotations(editionId) }
+                                    .onSuccess { reloadNotes() }
                                     .onFailure { noteFailure = it.message }
                             }
                         },
@@ -258,6 +287,34 @@ private fun ReaderRoute(editionId: String, onBack: () -> Unit) {
                             showNotes = false
                             noteFailure = null
                         },
+                    )
+                }
+
+                openNote?.let { note ->
+                    NotePreviewSheet(
+                        note = note,
+                        chapter =
+                            chapterTitle(
+                                ReadingPosition.locator(note.location)?.href?.toString(),
+                                session?.publication?.tableOfContents.orEmpty(),
+                            ),
+                        onJump = {
+                            ReadingPosition.locator(note.location)?.let { locator ->
+                                navigator?.go(locator, animated = true)
+                            }
+                            openNote = null
+                        },
+                        onDelete = {
+                            scope.launch {
+                                runCatching { Bridge.deleteAnnotation(note.id) }
+                                    .onSuccess {
+                                        openNote = null
+                                        reloadNotes()
+                                    }
+                                    .onFailure { noteFailure = it.message }
+                            }
+                        },
+                        onDismiss = { openNote = null },
                     )
                 }
 
@@ -274,7 +331,7 @@ private fun ReaderRoute(editionId: String, onBack: () -> Unit) {
                                 runCatching { Bridge.addAnnotation(editionId, content, location) }
                                     .onSuccess {
                                         writingNote = null
-                                        notes = Bridge.listAnnotations(editionId)
+                                        reloadNotes()
                                     }
                                     .onFailure { noteFailure = it.message }
                             }
@@ -348,6 +405,7 @@ private fun ReaderRoute(editionId: String, onBack: () -> Unit) {
                                                 lastSavedAt = now
                                                 val position = ReadingPosition.of(locator)
                                                 progression = position.progression
+                                                currentHref = locator.href.toString()
                                                 if (fid == null) {
                                                     android.util.Log.w(
                                                         SAVE_TAG,
@@ -558,71 +616,180 @@ private fun ContentsDialog(links: List<Link>, onOpen: (Link) -> Unit, onDismiss:
     )
 }
 
-/** The notes written on this edition, with the passage each one pins. */
+/** The pull-up index of this edition's notes. */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun NotesDialog(
+private fun NotesSheet(
     notes: List<Bridge.AnnotationView>,
+    chapterHref: String?,
+    chapterTitleFor: (String?) -> String?,
     failure: String?,
+    onOpen: (Bridge.AnnotationView) -> Unit,
     onAdd: () -> Unit,
     onDelete: (Bridge.AnnotationView) -> Unit,
     onDismiss: () -> Unit,
 ) {
-    AlertDialog(
+    var thisChapterOnly by remember { mutableStateOf(false) }
+    val visible =
+        if (thisChapterOnly && chapterHref != null) {
+            notes.filter { ReadingPosition.locator(it.location)?.href?.toString() == chapterHref }
+        } else {
+            notes
+        }
+    ModalBottomSheet(
         onDismissRequest = onDismiss,
-        title = { Text("Notes") },
-        text = {
-            Column {
-                failure?.let {
-                    Text(
-                        text = it,
-                        style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.error,
-                    )
-                }
-                if (notes.isEmpty()) {
-                    Text(
-                        text = "No notes yet. A note remembers the passage it was written on.",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
-                    )
-                } else {
-                    LazyColumn(modifier = Modifier.heightIn(max = 360.dp)) {
-                        items(notes.size) { index ->
-                            val note = notes[index]
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Column(modifier = Modifier.weight(1f).padding(vertical = 4.dp)) {
-                                    Text(
-                                        text = note.content,
-                                        style = MaterialTheme.typography.bodyMedium,
-                                        color = MaterialTheme.colorScheme.onBackground,
-                                    )
-                                    val passage =
-                                        note.location
-                                            ?.let { ReadingPosition.locator(it) }
-                                            ?.let { locator ->
-                                                locator.locations.totalProgression?.let {
-                                                    "${(it * 100).toInt()}% through"
-                                                }
-                                            }
-                                    Text(
-                                        text = passage ?: "no passage recorded",
-                                        style = MaterialTheme.typography.labelSmall,
-                                        color =
-                                            MaterialTheme.colorScheme.onBackground.copy(
-                                                alpha = 0.6f
-                                            ),
-                                    )
-                                }
-                                TextButton(onClick = { onDelete(note) }) { Text("Delete") }
-                            }
-                        }
+        sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = false),
+    ) {
+        Column(
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp).padding(bottom = 28.dp)
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text("Annotations", style = MaterialTheme.typography.titleMedium)
+                Spacer(modifier = Modifier.weight(1f))
+                Text(
+                    text = "${notes.size}",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
+                )
+            }
+            Spacer(modifier = Modifier.padding(4.dp))
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                FilterChip(
+                    selected = !thisChapterOnly,
+                    onClick = { thisChapterOnly = false },
+                    label = { Text("All") },
+                )
+                FilterChip(
+                    selected = thisChapterOnly,
+                    onClick = { thisChapterOnly = true },
+                    label = { Text("This chapter") },
+                    enabled = chapterHref != null,
+                )
+            }
+            Spacer(modifier = Modifier.padding(2.dp))
+            failure?.let {
+                Text(
+                    text = it,
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.error,
+                )
+            }
+            if (visible.isEmpty()) {
+                Text(
+                    text =
+                        if (notes.isEmpty()) {
+                            "No notes yet. A note remembers the passage it was written on."
+                        } else {
+                            "No notes in this chapter."
+                        },
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
+                    modifier = Modifier.padding(vertical = 16.dp),
+                )
+            } else {
+                LazyColumn(modifier = Modifier.heightIn(max = 420.dp)) {
+                    items(visible, key = { it.id }) { note ->
+                        NoteRow(
+                            note = note,
+                            chapter =
+                                chapterTitleFor(
+                                    ReadingPosition.locator(note.location)?.href?.toString()
+                                ),
+                            onOpen = { onOpen(note) },
+                            onDelete = { onDelete(note) },
+                        )
                     }
                 }
-                TextButton(onClick = onAdd) { Text("Add a note here") }
             }
-        },
-        confirmButton = { TextButton(onClick = onDismiss) { Text("Close") } },
-    )
+            TextButton(onClick = onAdd) { Text("Add a note here") }
+        }
+    }
+}
+
+@Composable
+private fun NoteRow(
+    note: Bridge.AnnotationView,
+    chapter: String?,
+    onOpen: () -> Unit,
+    onDelete: () -> Unit,
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth().clickable { onOpen() }.padding(vertical = 10.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = note.content,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onBackground,
+            )
+            Text(
+                text = passageLabel(note.location, chapter),
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
+            )
+        }
+        TextButton(onClick = onDelete) { Text("Delete") }
+    }
+}
+
+/** "34% through · Chapter IV", or what the row can say without a passage. */
+private fun passageLabel(location: String?, chapter: String?): String {
+    val percent =
+        location
+            ?.let { ReadingPosition.locator(it) }
+            ?.locations
+            ?.totalProgression
+            ?.let { "${(it * 100).toInt()}% through" }
+    return listOfNotNull(percent, chapter).joinToString(" · ").ifBlank { "no passage recorded" }
+}
+
+/** The chapter a href names in the table of contents, if it names one. */
+private fun chapterTitle(href: String?, links: List<Link>): String? {
+    if (href == null) return null
+    fun walk(items: List<Link>): Link? {
+        for (link in items) {
+            if (link.href.toString() == href && !link.title.isNullOrBlank()) return link
+            walk(link.children)?.let { return it }
+        }
+        return null
+    }
+    return walk(links)?.title
+}
+
+/** One note, pulled up from the page it marks. */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun NotePreviewSheet(
+    note: Bridge.AnnotationView,
+    chapter: String?,
+    onJump: () -> Unit,
+    onDelete: () -> Unit,
+    onDismiss: () -> Unit,
+) {
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = false),
+    ) {
+        Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp).padding(bottom = 28.dp)) {
+            Text("Note", style = MaterialTheme.typography.titleMedium)
+            Spacer(modifier = Modifier.padding(4.dp))
+            Text(
+                text = note.content,
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onBackground,
+            )
+            Spacer(modifier = Modifier.padding(4.dp))
+            Text(
+                text = passageLabel(note.location, chapter),
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
+            )
+            Spacer(modifier = Modifier.padding(8.dp))
+            Button(onClick = onJump, modifier = Modifier.fillMaxWidth()) { Text("Jump to passage") }
+            TextButton(onClick = onDelete, modifier = Modifier.fillMaxWidth()) { Text("Delete") }
+        }
+    }
 }
 
 /** A note being written, pinned to wherever the reader is now. */

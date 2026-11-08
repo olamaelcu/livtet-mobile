@@ -75,6 +75,9 @@ The goals for the platform are:
       chapter list and reading-position persistence. `ReaderActivity.kt`,
       `ReaderDisplay.kt`, `android/core/reader`.
 - [x] Notes on a passage, stored as annotations and listed from the chapter.
+- [x] Notes surface in a pull-up sheet — All/This-chapter filters, per-row
+      delete, and a preview card with Jump to passage; the header counts what
+      is stored. Locators are points, so no in-page highlight yet.
 - [x] Instrumented coverage for open/position/annotations and the FFI golden
       scenario. `android/app/src/androidTest`.
 
