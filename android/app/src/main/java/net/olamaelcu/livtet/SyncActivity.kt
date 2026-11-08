@@ -21,10 +21,12 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -40,6 +42,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -92,6 +95,7 @@ private fun SyncRoute(onBack: () -> Unit) {
     var notice by remember { mutableStateOf<String?>(null) }
     var busy by remember { mutableStateOf<String?>(null) }
     var failure by remember { mutableStateOf<String?>(null) }
+    var typedTicket by remember { mutableStateOf("") }
 
     // Advertising is what makes polling possible, so its failure is its own
     // state: otherwise the first poll's "not advertising yet" sticks forever.
@@ -148,28 +152,35 @@ private fun SyncRoute(onBack: () -> Unit) {
     // after advertising succeeds would tear the advertisement down again.
     DisposableEffect(Unit) { onDispose { Bridge.stopAdvertising() } }
 
-    fun pair(peer: NearbyPeer) {
+    /**
+     * Claim a peer by node id.
+     *
+     * Shared by the discovered list and the field: a node id typed from another screen is the same
+     * claim as one a browse found, so the approval wait and its messages live here rather than in
+     * each caller.
+     */
+    fun pairNode(peerNodeId: String, label: String) {
         scope.launch {
-            busy = peer.nodeId
+            busy = peerNodeId
             failure = null
-            notice = "Waiting for ${peer.label} to approve\u2026"
+            notice = "Waiting for $label to approve\u2026"
             try {
-                when (val first = Bridge.pairWithPeer(peer.nodeId, name, 1u)) {
-                    is SyncPairingResult.Paired -> notice = "Paired with ${peer.label}"
+                when (val first = Bridge.pairWithPeer(peerNodeId, name, 1u)) {
+                    is SyncPairingResult.Paired -> notice = "Paired with $label"
                     is SyncPairingResult.Refused -> notice = "Refused: ${first.reason}"
                     is SyncPairingResult.Pending -> {
                         var status: SyncPairingResult = first
                         repeat(30) {
                             if (status !is SyncPairingResult.Pending) return@repeat
                             delay(2_000)
-                            status = Bridge.pairingStatus(peer.nodeId, first.claim, name, 2u)
+                            status = Bridge.pairingStatus(peerNodeId, first.claim, name, 2u)
                         }
                         notice =
                             when (status) {
-                                is SyncPairingResult.Paired -> "Paired with ${peer.label}"
+                                is SyncPairingResult.Paired -> "Paired with $label"
                                 is SyncPairingResult.Refused -> "Refused: ${status.reason}"
                                 is SyncPairingResult.Pending ->
-                                    "Still waiting \u2014 approve on ${peer.label}"
+                                    "Still waiting \u2014 approve on $label"
                             }
                     }
                 }
@@ -180,6 +191,33 @@ private fun SyncRoute(onBack: () -> Unit) {
                 busy = null
                 refresh()
             }
+        }
+    }
+
+    fun pair(peer: NearbyPeer) = pairNode(peer.nodeId, peer.label)
+
+    /** Pair with whatever the reader pasted: a node id, or a pairing link. */
+    fun pairTyped() {
+        val input = typedTicket.trim()
+        if (input.isEmpty()) return
+        failure = null
+        when {
+            PairingTicket.isLink(input) ->
+                runCatching { Bridge.parsePairingLink(input) }
+                    .onSuccess { link ->
+                        pairNode(
+                            link.nodeId,
+                            link.name?.takeIf { it.isNotBlank() } ?: "Peer ${link.nodeId.take(6)}",
+                        )
+                    }
+                    .onFailure { failure = "That pairing link cannot be read." }
+            else ->
+                PairingTicket.nodeId(input)?.let { nodeId ->
+                    pairNode(nodeId, "Peer ${nodeId.take(6)}")
+                }
+                    ?: run {
+                        failure = "That is not a node id (64 hex characters) or a pairing link."
+                    }
         }
     }
 
@@ -228,6 +266,16 @@ private fun SyncRoute(onBack: () -> Unit) {
                     clipboard.setPrimaryClip(ClipData.newPlainText("Livtet pairing link", text))
                     notice = "Pairing link copied"
                 },
+            )
+
+            // Discovery only finds devices on this network that are advertising
+            // right now. A node id from another screen, or from a QR read on the
+            // desktop, is the way in when the browse cannot see it.
+            PairByNodeIdCard(
+                value = typedTicket,
+                onChange = { typedTicket = it },
+                onPair = ::pairTyped,
+                enabled = busy == null,
             )
 
             if (requests.isNotEmpty()) {
@@ -394,6 +442,52 @@ private fun ThisDeviceCard(name: String, nodeId: String?, link: String?, onCopy:
             if (link != null) {
                 Spacer(modifier = Modifier.height(4.dp))
                 TextButton(onClick = { onCopy(link) }) { Text("Copy pairing link") }
+            }
+        }
+    }
+}
+
+/** The manual door: a node id or pairing link, typed or pasted. */
+@Composable
+private fun PairByNodeIdCard(
+    value: String,
+    onChange: (String) -> Unit,
+    onPair: () -> Unit,
+    enabled: Boolean,
+) {
+    Spacer(modifier = Modifier.height(12.dp))
+    OutlinedCard(modifier = Modifier.fillMaxWidth()) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Text(
+                text = "PAIR BY NODE ID",
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
+            )
+            Spacer(modifier = Modifier.height(6.dp))
+            Text(
+                text =
+                    "Paste the id the other device shows, or a livtet:// pairing " +
+                        "link. Use this when the device is not listed below.",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            OutlinedTextField(
+                value = value,
+                onValueChange = onChange,
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true,
+                label = { Text("Node id or link") },
+                textStyle =
+                    MaterialTheme.typography.bodySmall.copy(fontFamily = FontFamily.Monospace),
+                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Spacer(modifier = Modifier.weight(1f))
+                TextButton(onClick = onPair, enabled = enabled && value.isNotBlank()) {
+                    Text("Pair")
+                }
             }
         }
     }
