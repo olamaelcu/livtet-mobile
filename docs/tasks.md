@@ -102,9 +102,9 @@ uda.livtet_component.label  = Component
 uda.livtet_component.values = web,desktop,mobile,platform,data,opds,core
 ```
 
-Mobile tasks usually set `livtet_component:mobile`; a sync change that belongs
-to the Rust core sets `livtet_component:core` and lands in `../desktop`'s list
-via the core repo, not here.
+Mobile tasks usually set `livtet_component:mobile`. Work that lives in the Rust
+core sets `livtet_component:core` but is still tracked in the repo that owns the
+workstream: the core repo (`olamaelcu/livtet`) has no task list of its own.
 
 ## Troubleshooting
 
