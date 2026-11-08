@@ -450,12 +450,6 @@ private fun HomeContent(
         Spacer(modifier = Modifier.height(20.dp))
         GlanceBand(state = state, onDevices = onDevices, onOffers = onOffers, onFeed = onFeed)
         Spacer(modifier = Modifier.height(24.dp))
-        Text(
-            text = "Looking for a device? Discovery lives in Devices.",
-            style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f),
-        )
-        Spacer(modifier = Modifier.height(24.dp))
     }
 }
 
