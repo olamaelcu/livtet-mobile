@@ -102,6 +102,16 @@ private fun SyncRoute(onBack: () -> Unit) {
 
     val name = Bridge.deviceName()
 
+    // Discovery also sees devices that are already paired; the Nearby list is
+    // for pairing, so omit anything already in the Paired section.
+    val unpairedNearby =
+        nearby.filterNot { peer ->
+            paired.any {
+                it.nodeId == peer.nodeId ||
+                    (peer.deviceId != null && it.deviceId == peer.deviceId)
+            }
+        }
+
     suspend fun refresh() {
         try {
             requests = Bridge.pendingPairings()
@@ -352,7 +362,7 @@ private fun SyncRoute(onBack: () -> Unit) {
                         color = MaterialTheme.colorScheme.error,
                     )
 
-                nearby.isEmpty() ->
+                unpairedNearby.isEmpty() ->
                     Text(
                         text =
                             "Looking for devices on this network. Have the other device open its sync screen too.",
@@ -361,7 +371,7 @@ private fun SyncRoute(onBack: () -> Unit) {
                     )
 
                 else ->
-                    nearby.forEach { peer ->
+                    unpairedNearby.forEach { peer ->
                         Row(
                             modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
                             verticalAlignment = Alignment.CenterVertically,
