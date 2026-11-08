@@ -708,6 +708,46 @@ object Bridge {
             editionIds = editionIds.map { it.toString() },
         )
 
+    // ── Annotations (notes pinned to a passage) ──────────────────
+
+    /** A note as the reader screen renders it. */
+    data class AnnotationView(
+        val id: String,
+        val content: String,
+        val location: String?,
+        val createdAt: String,
+    )
+
+    /**
+     * Notes on one edition, oldest first.
+     *
+     * `location` is the toolkit's `Locator` JSON, the same shape reading progress stores, so a note
+     * points at a passage the reader can return to.
+     */
+    suspend fun listAnnotations(editionId: String): List<AnnotationView> =
+        withContext(Dispatchers.IO) {
+            requireStore().listAnnotations(editionId).map {
+                AnnotationView(
+                    id = it.id.toString(),
+                    content = it.content,
+                    location = it.location,
+                    createdAt = it.createdAt,
+                )
+            }
+        }
+
+    /** Add a note to an edition; returns the new annotation's id. */
+    suspend fun addAnnotation(editionId: String, content: String, location: String?): String =
+        withContext(Dispatchers.IO) {
+            requireStore()
+                .addAnnotation(editionId = editionId, content = content, location = location)
+                .id
+                .toString()
+        }
+
+    suspend fun deleteAnnotation(id: String): Boolean =
+        withContext(Dispatchers.IO) { requireStore().deleteAnnotation(id) }
+
     suspend fun listShelves(): List<Shelf> =
         withContext(Dispatchers.IO) { requireStore().listReadingLists().map { it.toShelf() } }
 

@@ -14,11 +14,16 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -34,6 +39,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.fragment.app.FragmentActivity
@@ -47,6 +53,7 @@ import net.olamaelcu.livtet.core.reader.ReaderError
 import net.olamaelcu.livtet.core.reader.ReaderSession
 import net.olamaelcu.livtet.core.reader.ReadingPosition
 import org.readium.r2.navigator.epub.EpubNavigatorFragment
+import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
 
 /**
@@ -111,6 +118,12 @@ private fun ReaderRoute(editionId: String, onBack: () -> Unit) {
     var displayLoaded by remember { mutableStateOf(false) }
     var showSettings by remember { mutableStateOf(false) }
     var navigator by remember { mutableStateOf<EpubNavigatorFragment?>(null) }
+    var session by remember { mutableStateOf<ReaderSession?>(null) }
+    var showContents by remember { mutableStateOf(false) }
+    var showNotes by remember { mutableStateOf(false) }
+    var notes by remember { mutableStateOf<List<Bridge.AnnotationView>>(emptyList()) }
+    var writingNote by remember { mutableStateOf<String?>(null) }
+    var noteFailure by remember { mutableStateOf<String?>(null) }
     var formatId: String? by remember(editionId) { mutableStateOf(null) }
     var lastSavedAt: Long by remember(editionId) { mutableLongStateOf(0L) }
     var attempt: Int by remember(editionId) { mutableStateOf(0) }
@@ -135,9 +148,10 @@ private fun ReaderRoute(editionId: String, onBack: () -> Unit) {
                     // paper it was left in rather than correcting itself after.
                     display = runCatching { Bridge.readerDisplay() }.getOrDefault(display)
                     displayLoaded = true
-                    val session = ReaderSession.open(context, path)
+                    val opened = ReaderSession.open(context, path)
+                    session = opened
                     val factory =
-                        session.navigatorFactory
+                        opened.navigatorFactory
                             ?: throw ReaderError.Unsupported(path, "this file is not an EPUB")
                     formatId = Bridge.formatId(detail?.format ?: "epub") ?: Bridge.formatId("epub")
                     activity.supportFragmentManager.fragmentFactory =
@@ -145,7 +159,7 @@ private fun ReaderRoute(editionId: String, onBack: () -> Unit) {
                             initialLocator = ReadingPosition.locator(stored),
                             initialPreferences = display.toPreferences(),
                         )
-                    ReaderState.Ready(session.title ?: detail?.title ?: "Untitled")
+                    ReaderState.Ready(opened.title ?: detail?.title ?: "Untitled")
                 }
                 .getOrElse { error ->
                     ReaderState.Failed(
@@ -155,6 +169,16 @@ private fun ReaderRoute(editionId: String, onBack: () -> Unit) {
                         }
                     )
                 }
+    }
+
+    // Notes are read when the sheet opens rather than held in the loader: the
+    // reader may add one at a time, and each is a store write.
+    LaunchedEffect(showNotes, editionId) {
+        if (!showNotes) return@LaunchedEffect
+        notes =
+            runCatching { Bridge.listAnnotations(editionId) }
+                .onFailure { noteFailure = it.message }
+                .getOrDefault(emptyList())
     }
 
     // A change of display re-lays the page and is remembered for the next book;
@@ -183,13 +207,16 @@ private fun ReaderRoute(editionId: String, onBack: () -> Unit) {
                     // The reader is reached from the home shelf and from the library,
                     // so the way out is named for the action rather than a screen.
                     TextButton(onClick = onBack) { Text("\u2039  Back") }
-                    Spacer(modifier = Modifier.weight(1f))
                     Text(
                         text = (state as? ReaderState.Ready)?.title.orEmpty(),
+                        modifier = Modifier.weight(1f),
                         style = MaterialTheme.typography.labelMedium,
                         color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
                     )
-                    Spacer(modifier = Modifier.weight(1f))
+                    TextButton(onClick = { showNotes = true }) { Text("Notes") }
+                    TextButton(onClick = { showContents = true }) { Text("TOC") }
                     TextButton(onClick = { showSettings = !showSettings }) {
                         Text("Aa", style = MaterialTheme.typography.labelLarge)
                     }
@@ -202,6 +229,58 @@ private fun ReaderRoute(editionId: String, onBack: () -> Unit) {
 
                 if (showSettings) {
                     ReaderDisplayPanel(display = display, onChange = { display = it })
+                }
+
+                if (showContents) {
+                    ContentsDialog(
+                        links = session?.publication?.tableOfContents.orEmpty(),
+                        onOpen = { link ->
+                            showContents = false
+                            navigator?.go(link, animated = true)
+                        },
+                        onDismiss = { showContents = false },
+                    )
+                }
+
+                if (showNotes) {
+                    NotesDialog(
+                        notes = notes,
+                        failure = noteFailure,
+                        onAdd = { writingNote = "" },
+                        onDelete = { note ->
+                            scope.launch {
+                                runCatching { Bridge.deleteAnnotation(note.id) }
+                                    .onSuccess { notes = Bridge.listAnnotations(editionId) }
+                                    .onFailure { noteFailure = it.message }
+                            }
+                        },
+                        onDismiss = {
+                            showNotes = false
+                            noteFailure = null
+                        },
+                    )
+                }
+
+                writingNote?.let { draft ->
+                    WriteNoteDialog(
+                        draft = draft,
+                        onChange = { writingNote = it },
+                        onSave = { content ->
+                            scope.launch {
+                                val location =
+                                    navigator?.currentLocator?.value?.let {
+                                        ReadingPosition.of(it).locatorJson
+                                    }
+                                runCatching { Bridge.addAnnotation(editionId, content, location) }
+                                    .onSuccess {
+                                        writingNote = null
+                                        notes = Bridge.listAnnotations(editionId)
+                                    }
+                                    .onFailure { noteFailure = it.message }
+                            }
+                        },
+                        onDismiss = { writingNote = null },
+                    )
                 }
 
                 Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
@@ -420,3 +499,155 @@ private fun ReaderDisplayPanel(display: ReaderDisplay, onChange: (ReaderDisplay)
 }
 
 private val MARGIN_LABELS = listOf("Narrow", "Normal", "Wide")
+
+/**
+ * The book's contents.
+ *
+ * Readium's navigator exposes the table of contents but renders none of it, and a reader who wants
+ * chapter nine should not have to drag through four chapters to find it. Links are flattened one
+ * level: the toolkit's TOC is a tree, and a dialog that cannot scroll sideways shows depth with
+ * indentation instead.
+ */
+@Composable
+private fun ContentsDialog(links: List<Link>, onOpen: (Link) -> Unit, onDismiss: () -> Unit) {
+    data class Row(val link: Link, val depth: Int, val label: String)
+
+    fun flatten(link: Link, depth: Int): List<Row> {
+        val label =
+            link.title?.takeIf { it.isNotBlank() }
+                ?: link.href.toString().substringAfterLast('/').substringBefore('.').ifBlank {
+                    "Untitled section"
+                }
+        return listOf(Row(link, depth, label)) + link.children.flatMap { flatten(it, depth + 1) }
+    }
+
+    val rows = links.flatMap { flatten(it, 0) }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Contents") },
+        text = {
+            if (rows.isEmpty()) {
+                Text(
+                    text = "This book has no table of contents.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
+                )
+            } else {
+                LazyColumn(modifier = Modifier.heightIn(max = 420.dp)) {
+                    items(rows.size) { index ->
+                        val row = rows[index]
+                        TextButton(
+                            onClick = { onOpen(row.link) },
+                            modifier = Modifier.fillMaxWidth(),
+                        ) {
+                            Text(
+                                text = row.label,
+                                modifier =
+                                    Modifier.fillMaxWidth().padding(start = (row.depth * 12).dp),
+                                style = MaterialTheme.typography.bodyMedium,
+                                maxLines = 2,
+                                overflow = TextOverflow.Ellipsis,
+                            )
+                        }
+                    }
+                }
+            }
+        },
+        confirmButton = { TextButton(onClick = onDismiss) { Text("Close") } },
+    )
+}
+
+/** The notes written on this edition, with the passage each one pins. */
+@Composable
+private fun NotesDialog(
+    notes: List<Bridge.AnnotationView>,
+    failure: String?,
+    onAdd: () -> Unit,
+    onDelete: (Bridge.AnnotationView) -> Unit,
+    onDismiss: () -> Unit,
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Notes") },
+        text = {
+            Column {
+                failure?.let {
+                    Text(
+                        text = it,
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.error,
+                    )
+                }
+                if (notes.isEmpty()) {
+                    Text(
+                        text = "No notes yet. A note remembers the passage it was written on.",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
+                    )
+                } else {
+                    LazyColumn(modifier = Modifier.heightIn(max = 360.dp)) {
+                        items(notes.size) { index ->
+                            val note = notes[index]
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Column(modifier = Modifier.weight(1f).padding(vertical = 4.dp)) {
+                                    Text(
+                                        text = note.content,
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = MaterialTheme.colorScheme.onBackground,
+                                    )
+                                    val passage =
+                                        note.location
+                                            ?.let { ReadingPosition.locator(it) }
+                                            ?.let { locator ->
+                                                locator.locations.totalProgression?.let {
+                                                    "${(it * 100).toInt()}% through"
+                                                }
+                                            }
+                                    Text(
+                                        text = passage ?: "no passage recorded",
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color =
+                                            MaterialTheme.colorScheme.onBackground.copy(
+                                                alpha = 0.6f
+                                            ),
+                                    )
+                                }
+                                TextButton(onClick = { onDelete(note) }) { Text("Delete") }
+                            }
+                        }
+                    }
+                }
+                TextButton(onClick = onAdd) { Text("Add a note here") }
+            }
+        },
+        confirmButton = { TextButton(onClick = onDismiss) { Text("Close") } },
+    )
+}
+
+/** A note being written, pinned to wherever the reader is now. */
+@Composable
+private fun WriteNoteDialog(
+    draft: String,
+    onChange: (String) -> Unit,
+    onSave: (String) -> Unit,
+    onDismiss: () -> Unit,
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Add a note") },
+        text = {
+            OutlinedTextField(
+                value = draft,
+                onValueChange = onChange,
+                modifier = Modifier.fillMaxWidth(),
+                label = { Text("Note") },
+                minLines = 3,
+            )
+        },
+        confirmButton = {
+            TextButton(onClick = { onSave(draft) }, enabled = draft.isNotBlank()) { Text("Save") }
+        },
+        dismissButton = { TextButton(onClick = onDismiss) { Text("Cancel") } },
+    )
+}

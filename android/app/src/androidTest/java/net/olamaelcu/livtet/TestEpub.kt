@@ -18,6 +18,7 @@ object TestEpub {
         title: String,
         author: String? = null,
         cover: ByteArray? = null,
+        chapters: Int = 1,
         directory: File = context.cacheDir,
     ): File {
         val target = File(directory, "$title.epub")
@@ -62,9 +63,9 @@ object TestEpub {
                   <manifest>
                     ${if (cover != null) "<item id=\"cover\" href=\"images/cover.png\" media-type=\"image/png\" properties=\"cover-image\"/>" else ""}
                     <item id="nav" href="nav.xhtml" media-type="application/xhtml+xml" properties="nav"/>
-                    <item id="ch1" href="ch1.xhtml" media-type="application/xhtml+xml"/>
+                    ${(1..chapters).joinToString("\n                    ") { "<item id=\"ch$it\" href=\"ch$it.xhtml\" media-type=\"application/xhtml+xml\"/>" }}
                   </manifest>
-                  <spine><itemref idref="ch1"/></spine>
+                  <spine>${(1..chapters).joinToString("") { "<itemref idref=\"ch$it\"/>" }}</spine>
                 </package>
                 """
                     .trimIndent()
@@ -78,7 +79,7 @@ object TestEpub {
                 <!DOCTYPE html>
                 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops">
                   <head><title>Contents</title></head>
-                  <body><nav epub:type="toc"><ol><li><a href="ch1.xhtml">Start</a></li></ol></nav></body>
+                  <body><nav epub:type="toc"><ol>${(1..chapters).joinToString("") { "<li><a href=\"ch$it.xhtml\">Chapter $it</a></li>" }}</ol></nav></body>
                 </html>
                 """
                     .trimIndent()
@@ -90,19 +91,21 @@ object TestEpub {
                 zip.write(cover)
             }
 
-            zip.putNextEntry(ZipEntry("OEBPS/ch1.xhtml"))
-            zip.write(
-                """
-                <?xml version="1.0" encoding="UTF-8"?>
-                <!DOCTYPE html>
-                <html xmlns="http://www.w3.org/1999/xhtml">
-                  <head><title>Start</title></head>
-                  <body><h1>Start</h1><p>Imported on the phone.</p></body>
-                </html>
-                """
-                    .trimIndent()
-                    .toByteArray()
-            )
+            (1..chapters).forEach { chapter ->
+                zip.putNextEntry(ZipEntry("OEBPS/ch$chapter.xhtml"))
+                zip.write(
+                    """
+                    <?xml version="1.0" encoding="UTF-8"?>
+                    <!DOCTYPE html>
+                    <html xmlns="http://www.w3.org/1999/xhtml">
+                      <head><title>Chapter $chapter</title></head>
+                      <body><h1>Chapter $chapter</h1><p>Imported on the phone.</p></body>
+                    </html>
+                    """
+                        .trimIndent()
+                        .toByteArray()
+                )
+            }
         }
         return target
     }
