@@ -18,6 +18,10 @@ irrelevant to it.
   (`rm -rf mobile/android/app/src/main/jniLibs`) before any build.
 - `mise-tools` — required when a `mise.toml`-declared binary returns
   `command not found` (for example `uniffi-bindgen` or the Android SDK tools).
+- [`android`](../.agents/skills/android/SKILL.md) — read before building,
+  installing, testing or looking at the app: the task map, the three dev loops,
+  and the traps (install does not build, connected tests drop app data, a
+  worktree needs its own secrets).
 
 ## Commands
 
@@ -137,22 +141,16 @@ once generated. The committed files to watch in this mobile repo are
 `mobile/android/core/designsystem/src/main/kotlin/.../LivtetRadius.kt`; both
 have GENERATED-file headers.
 
-### Known constraint: `onPrimary` on the brand fill
+### Filled roles pair with the light ink
 
-The generated schemes pick `onPrimary` from the *theme's* text colour
-(`TextLight.Normal` in light, `TextDark.Normal` in dark), while `primary` is
-`LivtetColors.Brand` — a dark green — in **both** schemes. A Material component
-that fills with `primary` and writes with `onPrimary` is therefore only legible
-in dark mode. Measured from the emulator:
+`onPrimary`, `onSecondary`, `onTertiary` and `onError` are the light ink
+(`TextDark.Normal`) in **both** schemes, because the colours they sit on are dark
+in both: `#00673d` brand, `#5b584c` neutral, `#1f634a` success, `#874465`
+danger. The generator picks each by the fill's luminance rather than by the
+theme, so a Material component that fills with `primary` and writes with
+`onPrimary` reads at 5.19:1 in light mode as well as dark.
 
-| label                          | fill (`#00673d`) | contrast          |
-| ------------------------------ | ---------------- | ----------------- |
-| `TextLight.Normal` #272117     | brand            | 2.29:1 — fails AA |
-| `TextDark.Normal` #E2DED3      | brand            | 5.19:1            |
-| `SurfaceLight.Default` #f0ebdc | brand            | 5.86:1            |
-
-A brand-green surface needs the light ink in both schemes. Do not paper over it
-with a hard-coded colour in a screen: fix the pairing in `livtet-branding`
-(`scripts/lib.ts`, the `schemeKt` template — `onPrimary` should follow the fill,
-not the theme) and regenerate. The home screen's empty-state `Button` is the one
-control that currently shows it.
+A role added later needs the same treatment: choose its `on…` from the fill. Do
+not derive it from `TextLight`/`TextDark` — those describe text on the theme's
+own surface, and pairing them with a fill is the mistake this replaced (ink on
+the brand green was 2.29:1).

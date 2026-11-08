@@ -580,10 +580,9 @@ private fun EmptyShelf(prompt: HomePrompt, onPrimary: () -> Unit, onImport: () -
             )
             Spacer(modifier = Modifier.height(14.dp))
             Row(verticalAlignment = Alignment.CenterVertically) {
-                // It fills with `primary` and writes with `onPrimary`, which the
-                // light scheme defines as ink — 2.29:1 on the brand green. The
-                // pairing is wrong in the generated tokens, not here; see
-                // "Known constraint: onPrimary on the brand fill" in android/AGENTS.md.
+                // Fill `primary`, label `onPrimary` — the tokens pair them for
+                // 5.19:1 in both schemes; see "Filled roles pair with the light
+                // ink" in android/AGENTS.md before giving this button its own colours.
                 Button(onClick = onPrimary) { Text(prompt.primaryLabel) }
                 Spacer(modifier = Modifier.width(12.dp))
                 TextButton(onClick = onImport) { Text("Import a file") }
