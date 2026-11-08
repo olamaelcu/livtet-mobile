@@ -148,4 +148,91 @@ internal object SyncNotifications {
                 .build(),
         )
     }
+    private const val PROGRESS_CHANNEL = "sync-progress"
+    private const val PROGRESS_ID = 2
+
+    private fun canNotify(context: Context): Boolean =
+        Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU ||
+            ContextCompat.checkSelfPermission(
+                context,
+                Manifest.permission.POST_NOTIFICATIONS,
+            ) == PackageManager.PERMISSION_GRANTED
+
+    private fun progressChannel(context: Context) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            NotificationManagerCompat.from(context)
+                .createNotificationChannel(
+                    NotificationChannel(
+                        PROGRESS_CHANNEL,
+                        "Synchronization",
+                        NotificationManager.IMPORTANCE_LOW,
+                    )
+                )
+        }
+    }
+
+    private fun progressBuilder(
+        context: Context,
+        title: String,
+        text: String,
+    ): NotificationCompat.Builder =
+        NotificationCompat.Builder(context, PROGRESS_CHANNEL)
+            .setSmallIcon(R.drawable.logo)
+            .setContentTitle(title)
+            .setContentText(text)
+            .setPriority(NotificationCompat.PRIORITY_LOW)
+            .setSilent(true)
+            .setOnlyAlertOnce(true)
+
+    /** One pass started; [peers] bounds the step counter the pass updates. */
+    fun progressStart(context: Context, peers: Int) {
+        if (!canNotify(context)) return
+        progressChannel(context)
+        NotificationManagerCompat.from(context)
+            .notify(
+                PROGRESS_ID,
+                progressBuilder(context, "Syncing", "Pulling from $peers device(s)…")
+                    .setOngoing(true)
+                    .setProgress(peers, 0, false)
+                    .build(),
+            )
+    }
+
+    fun progressStep(context: Context, done: Int, total: Int) {
+        if (!canNotify(context)) return
+        NotificationManagerCompat.from(context)
+            .notify(
+                PROGRESS_ID,
+                progressBuilder(context, "Syncing", "Pulled $done of $total device(s)")
+                    .setOngoing(true)
+                    .setProgress(total, done, false)
+                    .build(),
+            )
+    }
+
+    /** Report what arrived, or drop the notification when a pass found nothing to say. */
+    fun progressDone(context: Context, applied: Int, conflicts: Int, offers: Int) {
+        if (!canNotify(context)) return
+        if (applied + conflicts + offers == 0) {
+            cancelProgress(context)
+            return
+        }
+        val parts =
+            buildList {
+                if (applied > 0) add("$applied change(s)")
+                if (conflicts > 0) add("$conflicts conflict(s)")
+                if (offers > 0) add("$offers new offer(s)")
+            }
+        val notification =
+            progressBuilder(context, "Sync complete", parts.joinToString(" · "))
+                .setOngoing(false)
+                .setAutoCancel(true)
+                .setTimeoutAfter(3_000)
+                .build()
+        NotificationManagerCompat.from(context).notify(PROGRESS_ID, notification)
+    }
+
+    fun cancelProgress(context: Context) {
+        NotificationManagerCompat.from(context).cancel(PROGRESS_ID)
+    }
 }

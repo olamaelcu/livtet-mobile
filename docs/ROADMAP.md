@@ -64,6 +64,10 @@ The goals for the platform are:
       advertises while the app is open once a device is paired. Verified end to
       end on 2026-11-08:
       [`docs/SYNC_VERIFICATION.md`](SYNC_VERIFICATION.md).
+- [x] Visible polling — the app pulls every paired device every 30 s while it
+      is on screen and posts a transient, silent "Sync complete — N change(s)"
+      notification when a pass brings something; the 15-minute worker remains
+      for the background.
 
 ### Reader (Android)
 

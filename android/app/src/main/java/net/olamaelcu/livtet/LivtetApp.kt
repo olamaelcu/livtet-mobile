@@ -34,6 +34,10 @@ class LivtetApp : Application() {
         // and only then. An unpaired install has nobody to serve and binds nothing.
         SyncAdvertisement.install(this)
 
+        // The visible app also pulls on a short interval, so a change on the desktop lands
+        // inside a minute instead of waiting on the 15-minute worker.
+        SyncPoller.install(this)
+
         // The feed's covers are URLs, so the shared loader needs a network fetcher. Installed
         // once here rather than per screen: a screen-built loader would re-create the disk cache.
         SingletonImageLoader.setSafe { context ->

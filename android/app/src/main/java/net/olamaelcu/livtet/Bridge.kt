@@ -428,6 +428,17 @@ object Bridge {
      * re-fetching the whole library every time.
      */
     suspend fun refreshOffers(): List<SyncOfferSummary> {
+        pullAllPeers()
+        return pendingOffers()
+    }
+
+    /**
+     * Pull every paired peer, one page chain per peer.
+     *
+     * [onPeer] fires for each successful pull so a foreground poller can report progress without
+     * the sync path knowing about notifications.
+     */
+    suspend fun pullAllPeers(onPeer: ((SyncPullReport) -> Unit)? = null) {
         pairedDevices()
             .filter { it.nodeId != null }
             .forEach { device ->
@@ -454,12 +465,12 @@ object Bridge {
                                 Timber.w(error, "sync: pull from %s failed", nodeId.take(8))
                             }
                             .getOrNull()
+                    if (report != null) onPeer?.invoke(report)
                     // `repeat` cannot break; a `for` can, and must: one page per pull is
                     // usually the whole backlog, and each pull re-reads the peer's log.
                     if (report == null || !report.hasMore) break
                 }
             }
-        return pendingOffers()
     }
 
     /** Where received books and covers land, created on first use. */
