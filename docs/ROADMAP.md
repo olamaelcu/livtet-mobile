@@ -137,6 +137,16 @@ The goals for the platform are:
 - [ ] **Cover picking from the book view** — search Bibliograph
       (`CatalogClient` already wraps `searchEditions`) or pick a local file and
       adopt it as the cover.
+- [ ] **Formats as a syncable entity** — `formats` is migration-seeded with
+      fixed ids but has no change-log triggers and no dump entry. Sync the full
+      row (change log + dump, with the dump field defaulting to empty so
+      versions interoperate) so a peer can learn a format row it lacks.
+- [ ] **Progress indicators** — a stripe on every card surface fed by
+      `reading_progress`, and a transient "Resumed at N%" chip in the reader.
+      Depends on reading progress syncing.
+- [ ] **Push path and a background advertisement** — a way for the phone to
+      send local change-log rows on demand, and moving the advertised sync
+      endpoint into a service that outlives the app process.
 
 ## How to read this
 
