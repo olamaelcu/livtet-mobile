@@ -115,7 +115,9 @@ if [ "$LIST" = true ]; then
         is_running=false
         rserial=""
         for serial in $running_serials; do
-          serial_name=$("$ADB" -s "$serial" emu avd name 2>/dev/null | tr -d ' \r' || true)
+          # `emu avd name` answers "<name>\nOK"; only the name identifies the AVD,
+          # so the status line is dropped before comparing.
+          serial_name=$("$ADB" -s "$serial" emu avd name 2>/dev/null | head -1 | tr -d ' \r' || true)
           if [ "$serial_name" = "$current_name" ]; then
             is_running=true
             rserial="$serial"
