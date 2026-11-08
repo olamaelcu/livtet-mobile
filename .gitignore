@@ -24,6 +24,9 @@
 age.key
 local.properties
 
+# direnv: the local file is per-developer; the template is committed
+!.envrc.example
+
 # Cargo cross-compile output lives inside the core/ submodule workspace.
 # We build from there (`cd core && cargo build ...`); the resulting target/
 # tree is repo-specific and not versionable.

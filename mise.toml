@@ -17,6 +17,11 @@ python = "3.12"  # used by _cargo_marker.py, ios-dev-init inline Python, scripts
 "aqua:koalaman/shellcheck" = "0.11.0"  # lint the mise task shell scripts
 "aqua:mvdan/sh" = "3.12.0"  # shfmt — format the mise task shell scripts
 
+# Repo task list (Taskwarrior). See docs/tasks.md; the database is committed so
+# every checkout and agent reads the same list.
+taskwarrior = "3.4.2"
+"pipx:taskwarrior-mcp" = "0.2.0"
+
 # SOPS / secrets
 "aqua:age" = "1.3.1"
 "aqua:getsops/sops" = "3.13.2"
@@ -46,6 +51,8 @@ xcbeautify = { version = "0.16.0", os = ["macos"] }
 [env]
 RUST_BACKTRACE = "full"
 RUST_LOG = "tao=warn,wry=warn,tantivy=info,log=warn"
+TASKRC = "{{ [config_root, '.taskrc']   | join_path }}"
+TASKDATA = "{{ [config_root, '.taskdata'] | join_path }}"
 PKG_CONFIG_PATH = { value = "{{ tools.sqlite.path }}/lib/pkgconfig:${PKG_CONFIG_PATH:-}", tools = true }
 ANDROID_NDK_VERSION = "27.1.12297006"  # source of truth for the NDK; consumed by android-dev-init (sdkmanager install)
 

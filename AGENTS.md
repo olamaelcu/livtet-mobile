@@ -10,7 +10,9 @@ per-platform files — start there.
 | ------------------------------------------ | --------------------------------------------------------------------------------- |
 | [android/AGENTS.md](android/AGENTS.md)     | Android app — Kotlin / Compose / Gradle / FFI / Labs flags                         |
 | [ios/AGENTS.md](ios/AGENTS.md)             | iOS app — SwiftUI / XcodeGen / UniFFI / xcframework / 6-letter form `Livtet`       |
-| [CONTRIBUTING.md](CONTRIBUTING.md)         | Worktree workflow, commit message style, DCO signoff, AI attribution, secrets     |
+|[CONTRIBUTING.md](CONTRIBUTING.md)|Worktree workflow, commit message style, DCO signoff, AI attribution, secrets|
+|[docs/ROADMAP.md](docs/ROADMAP.md)|Plan so far: implemented, in progress, backlog|
+|[docs/tasks.md](docs/tasks.md)|Repo task list (Taskwarrior) and the across-device workflow|
 | [README.md](README.md)                     | Repo overview, architecture diagram, quick start                                   |
 | [GETTING_STARTED.md](GETTING_STARTED.md)   | Toolchain installation and the `core/` submodule                                   |
 | `core/`                                    | Git submodule — Rust workspace; has its own `AGENTS.md` and `CONTRIBUTING.md`      |
@@ -58,6 +60,13 @@ versioned independently from this repository. Read `core/CONTRIBUTING.md`
 and `core/AGENTS.md` before touching Rust code, and follow the "land Rust
 first, regenerate bindings second" flow documented in
 [CONTRIBUTING.md](CONTRIBUTING.md#working-with-the-core-submodule).
+
+### Task tracking
+
+The repo task list is Taskwarrior, committed in `.taskdata/` so every checkout
+and agent shares it ([docs/tasks.md](docs/tasks.md)). Add tasks with
+`livtet_component:mobile`, pull before starting, and commit `.taskdata` with the
+work. The plan itself is [docs/ROADMAP.md](docs/ROADMAP.md).
 
 ### Required Skills
 

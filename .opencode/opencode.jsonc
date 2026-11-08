@@ -5,6 +5,11 @@
       "type": "local",
       "command": ["mise", "x", "--", "npx", "-y", "@mobilenext/mobile-mcp@latest"],
       "enabled": true
+    },
+    "taskwarrior": {
+      "type": "local",
+      "command": ["mise", "x", "--", "taskwarrior-mcp"],
+      "enabled": true
     }
-  }
+
 }
