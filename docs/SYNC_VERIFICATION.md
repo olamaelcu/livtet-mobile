@@ -9,18 +9,27 @@ is only verified when a position written on one device reads back on the other.
 
 | Field | Value |
 | --- | --- |
-| Last verified | _pending_ |
-| Mobile commit | _pending_ |
-| core submodule | _pending_ |
-| Phone (model / Android / serial) | _pending_ |
-| Desktop build | _pending_ |
-| `cargo test -p livtet-sync -p livtet-ffi` | _pending_ |
-| Instrumented `BridgeSyncTest` | _pending_ |
-| Phone → desktop: position arrives | _pending_ |
-| Desktop → phone: position arrives | _pending_ |
-| Orphan row: counted as `skipped`, page kept | _pending_ |
-| Unpaired install: nothing advertised | _pending_ |
-| Deviations / follow-ups | _pending_ |
+| Last verified | 2026-11-08 |
+| Mobile commit | `d796709` + core `0f8d119` (the installed APK was built from the same tree; the claim fix is committed as `0f8d119`) |
+| core submodule | `0f8d119` |
+| Phone (model / Android / serial) | SM-G991U / Android 14 / `192.168.1.105:5555` |
+| Desktop build | `livtet-desktop` `b085e81`, daemon core `7d5bf7f` (predates the skip change; it only receives in this run) |
+| `cargo test -p livtet-sync -p livtet-ffi` | pass; `livtet-sync-server` lib 21/21 after the claim fix |
+| Instrumented `BridgeSyncTest` | 24/24 on SM-G991U, including `anUnpairedAppStartBindsNothing` and `aPairedAppStartBindsTheEndpoint` |
+| Phone → desktop: position arrives | pass — phone wrote `0.0805` / 69 s / `OEBPS/909196632077550380_1342-h-1.htm.html` (Chapter IV, 8%); the daemon pull at 19:25:09 stored the same locator |
+| Desktop → phone: position arrives | pass — desktop wrote `OEBPS/desktop-marker.html` at version 4060; the phone pull applied it (`applied=71 conflicts=11`, latest change won) and the row carries the marker |
+| Orphan row: counted as `skipped`, page kept | pass — a progress row planted for edition `01a0…aa01` produced `applied=0 skipped=1 cursor=4061`, no FK error and nothing written; the next pull reported `skipped=0` |
+| Unpaired install: nothing advertised | pass in the instrumented suite; not re-run on this paired install |
+| Deviations / follow-ups | The instrumented run reset app data, so pairing was recreated. The reverse claim first failed with `this device has no valid id` (hex host id); fixed in core `0f8d119`. The phone keeps one row per edition (unique edition+format), and row ids converged after the first cross-pull. Backfill pulls recorded conflicts as designed, with the latest change applying. |
+
+### Run notes
+
+```
+SyncAdvertisement: sync: advertising while the app is open as 6862e5c3
+SyncAdvertisement$pause: sync: stopped advertising; the app is in the background
+Bridge: sync: 86cc2985 applied=0 conflicts=0 skipped=1 offers=0 cursor=4061 more=false
+Bridge: sync: 86cc2985 applied=0 conflicts=0 skipped=0 offers=0 cursor=4061 more=false
+```
 
 ## What this verifies
 
