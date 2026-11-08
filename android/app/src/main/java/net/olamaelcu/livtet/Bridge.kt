@@ -1,5 +1,6 @@
 package net.olamaelcu.livtet
 
+import android.os.Build
 import android.util.Log
 import java.io.File
 import java.text.SimpleDateFormat
@@ -229,6 +230,9 @@ object Bridge {
     /** This device's stable id, shared by pairing and by the sync screen. */
     fun deviceId(): String = deviceIdForPeer()
 
+    /** The name peers see for this device, on a pairing claim and on its advertisement. */
+    fun deviceName(): String = "${Build.MODEL} (Livtet)"
+
     /**
      * Announce this device on `_livtet-sync._tcp` and start answering peers.
      *
@@ -435,10 +439,12 @@ object Bridge {
                         runCatching { syncOnce(peerNodeId = nodeId, deviceId = deviceIdForPeer()) }
                             .onSuccess { pulled ->
                                 Timber.d(
-                                    "sync: %s applied=%d conflicts=%d offers=%d cursor=%d more=%s",
+                                    "sync: %s applied=%d conflicts=%d skipped=%d offers=%d " +
+                                        "cursor=%d more=%s",
                                     nodeId.take(8),
                                     pulled.applied.toLong(),
                                     pulled.conflicts.toLong(),
+                                    pulled.skipped.toLong(),
                                     pulled.offers.size,
                                     pulled.cursor,
                                     pulled.hasMore,

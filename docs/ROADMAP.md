@@ -94,6 +94,13 @@ The goals for the platform are:
 
 ## In progress
 
+- [~] **Sync reading progress across devices.** The whole `reading_progress`
+      row travels on the pull, the latest change version wins, and the phone
+      advertises while the app is open once a device is paired; a row for an
+      edition this device no longer holds is counted (`skipped`) instead of
+      failing the page. Runbook and its status table:
+      [`docs/SYNC_VERIFICATION.md`](SYNC_VERIFICATION.md) — the phone↔desktop
+      round trip has not been recorded yet.
 - [~] **iOS feature parity and verification.** iOS is a launcher today: it
       opens the store but has no library, feed, inbox, or reader UI. The
       verification runbook and its status table live in
@@ -120,9 +127,7 @@ The goals for the platform are:
       (PUBLIC_LINKS.md) describes native handling for three platform URLs, but
       `AndroidManifest.xml` currently claims only the OAuth callback. Decide
       whether to restore the native screens or retire the document.
-- [ ] **Sync reading progress across devices** — `reading_progress` rows
-      already sync as core entities; verify the mobile pull/push path and pin
-      the conflict rule (latest position per edition wins).
+
 - [ ] **Confirm Readium progress persistence (Android)** — the reader should
       persist and restore its position through `ReaderSession`; prove it across
       a cold start before relying on it for progress sync.

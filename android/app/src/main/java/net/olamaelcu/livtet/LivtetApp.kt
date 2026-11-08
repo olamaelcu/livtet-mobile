@@ -30,6 +30,10 @@ class LivtetApp : Application() {
         // Paired devices are polled on a schedule, not only when the offers screen opens.
         SyncPoll.schedule(this)
 
+        // A peer pulls from this phone, so the endpoint has to answer while the app is open —
+        // and only then. An unpaired install has nobody to serve and binds nothing.
+        SyncAdvertisement.install(this)
+
         // The feed's covers are URLs, so the shared loader needs a network fetcher. Installed
         // once here rather than per screen: a screen-built loader would re-create the disk cache.
         SingletonImageLoader.setSafe { context ->

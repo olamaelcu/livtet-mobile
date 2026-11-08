@@ -5,7 +5,6 @@ import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
 import android.graphics.Color
-import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
@@ -58,9 +57,10 @@ import net.olamaelcu.livtet.ffi.SyncPendingPairing
  * this device be found, answer whoever asks to pair, and pair outward with a peer seen on the
  * network.
  *
- * Advertising stops when the screen closes. A phone that advertised forever would answer pairing
- * requests nobody is looking at, and the desktop's claim would sit unanswered — better to be
- * reachable while the screen that can answer is open.
+ * Advertising outlives this screen while the app is open: the app owns the endpoint
+ * ([SyncAdvertisement]), because a peer pulling a book or a reading position must find this phone
+ * without the reader having left this screen open. The call below is what binds it for a reader who
+ * opened this screen first.
  */
 class SyncActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -75,9 +75,6 @@ class SyncActivity : ComponentActivity() {
     }
 
     companion object {
-        /** The name peers see for this device. */
-        fun deviceName(): String = "${Build.MODEL} (Livtet)"
-
         fun intent(context: Context): Intent = Intent(context, SyncActivity::class.java)
     }
 }
@@ -101,7 +98,7 @@ private fun SyncRoute(onBack: () -> Unit) {
     // state: otherwise the first poll's "not advertising yet" sticks forever.
     var advertiseError by remember { mutableStateOf<String?>(null) }
 
-    val name = SyncActivity.deviceName()
+    val name = Bridge.deviceName()
 
     suspend fun refresh() {
         try {
@@ -146,11 +143,6 @@ private fun SyncRoute(onBack: () -> Unit) {
             discovery.close()
         }
     }
-
-    // Advertising belongs to the screen, not to the node id: keying the effect
-    // above on the id means this must not live there, or the first recomposition
-    // after advertising succeeds would tear the advertisement down again.
-    DisposableEffect(Unit) { onDispose { Bridge.stopAdvertising() } }
 
     /**
      * Claim a peer by node id.

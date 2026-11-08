@@ -4,8 +4,12 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import java.io.File
 import kotlinx.coroutines.runBlocking
+import net.olamaelcu.livtet.ffi.SyncPairedDevice
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -64,6 +68,42 @@ class BridgeSyncTest {
             rejected = true
         }
         assertTrue("a permalink is not a pairing link", rejected)
+    }
+
+    /**
+     * The app-start path is what keeps a phone pullable, so it must bind only when there is a peer
+     * to serve: an unpaired install has nothing to answer with and must not open an endpoint.
+     */
+    @Test
+    fun anUnpairedAppStartBindsNothing() = runBlocking {
+        Bridge.init(databasePath)
+
+        val nodeId = SyncAdvertisement.advertise { emptyList() }
+        assertNull("an unpaired app start has no node id to give out", nodeId)
+        assertFalse(
+            "nothing answers, so a claim cannot even be listed",
+            runCatching { Bridge.pendingPairings() }.isSuccess,
+        )
+    }
+
+    /** With a peer on record the same path binds the endpoint a pull needs. */
+    @Test
+    fun aPairedAppStartBindsTheEndpoint() = runBlocking {
+        Bridge.init(databasePath)
+        val peer =
+            SyncPairedDevice(
+                deviceId = "01ARZ3NDEKTSV4RRFFQ69G5FAW",
+                nodeId = "peer-node-id",
+                name = "Desktop",
+                outbound = false,
+            )
+
+        val nodeId = SyncAdvertisement.advertise { listOf(peer) }
+        assertNotNull("a paired app start advertises", nodeId)
+        assertTrue(
+            "the endpoint answers once it is advertised",
+            runCatching { Bridge.pendingPairings() }.isSuccess,
+        )
     }
 
     private companion object {
