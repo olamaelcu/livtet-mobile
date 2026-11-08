@@ -116,7 +116,12 @@ class ImportBookTest {
     fun theSameFileTwiceIsOneBook() = runBlocking {
         Bridge.init(File(context.filesDir, "import-book-test.db").absolutePath)
 
-        val source = TestEpub.write(context, "Arriving Twice")
+        // Unique per run: the device keeps app data between instrumented runs, so
+        // a fixed name would count leftovers from earlier runs — and the package
+        // bytes carry the title, so the digest is unique too and cannot dedupe
+        // against a previous run's import.
+        val title = "Arriving Twice ${System.nanoTime()}"
+        val source = TestEpub.write(context, title)
         val first = ImportBook.from(context, Uri.fromFile(source))
         val second = ImportBook.from(context, Uri.fromFile(source))
 
@@ -126,13 +131,13 @@ class ImportBookTest {
             "only one copy of the bytes is kept",
             1,
             File(context.filesDir, "books").listFiles().orEmpty().count {
-                it.name.endsWith("Arriving Twice.epub")
+                it.name.endsWith("$title.epub")
             },
         )
         assertEquals(
             "and only one work",
             1,
-            Bridge.listBooks(limit = 200).count { it.title == "Arriving Twice" },
+            Bridge.listBooks(limit = 200).count { it.title == title },
         )
     }
 }
