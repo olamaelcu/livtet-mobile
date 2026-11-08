@@ -14,8 +14,19 @@ import org.w3c.dom.Element
  * of bytes out of the zip, no rendering, no network.
  */
 object EpubMetadataReader {
-    /** Title, first creator and first identifier, any of which may be absent. */
-    data class Metadata(val title: String?, val author: String?, val identifier: String?)
+    /**
+     * What the package says about itself. Every field may be absent; a book with a file-name title
+     * is still a book.
+     *
+     * [coverHref] is the zip entry holding the cover image, already resolved against the package
+     * document's directory — the caller reads the bytes.
+     */
+    data class Metadata(
+        val title: String?,
+        val author: String?,
+        val identifier: String?,
+        val coverHref: String? = null,
+    )
 
     /**
      * Read the package document behind `META-INF/container.xml`.
@@ -57,12 +68,75 @@ object EpubMetadataReader {
                                 title = firstText("title"),
                                 author = firstText("creator"),
                                 identifier = firstText("identifier"),
+                                coverHref = coverHref(opf, rootPath),
                             )
                         }
                     }
                 }
             }
             .getOrNull()
+
+    /**
+     * The zip entry the package names as its cover, if any.
+     *
+     * EPUB 3 marks it with `properties="cover-image"`; EPUB 2 names an item in `<meta name="cover"
+     * content="id">`. Both are common enough that neither can be skipped, and a package with
+     * neither still often has a file whose name says what it is — which is the last resort, not the
+     * first.
+     */
+    private fun coverHref(opf: org.w3c.dom.Document, packagePath: String): String? {
+        val items = opf.getElementsByTagNameNS("*", "item")
+        val manifest = (0 until items.length).mapNotNull { index -> items.item(index) as? Element }
+
+        fun resolve(href: String?): String? {
+            val clean = href?.trim()?.takeIf { it.isNotEmpty() } ?: return null
+            val directory = packagePath.substringBeforeLast('/', "")
+            val joined = if (directory.isEmpty()) clean else "$directory/$clean"
+            // Normalise `..` and `.` the way a zip reader expects.
+            val parts = ArrayDeque<String>()
+            joined.split('/').forEach { part ->
+                when (part) {
+                    "",
+                    "." -> Unit
+                    ".." -> parts.removeLastOrNull()
+                    else -> parts.addLast(part)
+                }
+            }
+            return parts.joinToString("/").takeIf { it.isNotEmpty() }
+        }
+
+        val propertyCover = manifest.firstOrNull {
+            it.getAttribute("properties").split(' ').contains("cover-image")
+        }
+        propertyCover?.let {
+            return resolve(it.getAttribute("href"))
+        }
+
+        val metaId =
+            opf.getElementsByTagNameNS("*", "meta").let { metas ->
+                (0 until metas.length)
+                    .mapNotNull { metas.item(it) as? Element }
+                    .firstOrNull { it.getAttribute("name").equals("cover", ignoreCase = true) }
+                    ?.getAttribute("content")
+                    ?.trim()
+                    ?.takeIf { it.isNotEmpty() }
+            }
+        metaId?.let { id ->
+            manifest
+                .firstOrNull { it.getAttribute("id") == id }
+                ?.let {
+                    return resolve(it.getAttribute("href"))
+                }
+        }
+
+        return manifest
+            .firstOrNull {
+                it.getAttribute("media-type").startsWith("image/") &&
+                    (it.getAttribute("id").contains("cover", ignoreCase = true) ||
+                        it.getAttribute("href").contains("cover", ignoreCase = true))
+            }
+            ?.let { resolve(it.getAttribute("href")) }
+    }
 
     /** Parse a small XML document, with DTDs and external entities refused. */
     private fun parse(stream: InputStream): org.w3c.dom.Document =

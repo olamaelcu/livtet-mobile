@@ -17,6 +17,7 @@ object TestEpub {
         context: Context,
         title: String,
         author: String? = null,
+        cover: ByteArray? = null,
         directory: File = context.cacheDir,
     ): File {
         val target = File(directory, "$title.epub")
@@ -59,6 +60,7 @@ object TestEpub {
                     <meta property="dcterms:modified">2026-01-01T00:00:00Z</meta>
                   </metadata>
                   <manifest>
+                    ${if (cover != null) "<item id=\"cover\" href=\"images/cover.png\" media-type=\"image/png\" properties=\"cover-image\"/>" else ""}
                     <item id="nav" href="nav.xhtml" media-type="application/xhtml+xml" properties="nav"/>
                     <item id="ch1" href="ch1.xhtml" media-type="application/xhtml+xml"/>
                   </manifest>
@@ -82,6 +84,11 @@ object TestEpub {
                     .trimIndent()
                     .toByteArray()
             )
+
+            if (cover != null) {
+                zip.putNextEntry(ZipEntry("OEBPS/images/cover.png"))
+                zip.write(cover)
+            }
 
             zip.putNextEntry(ZipEntry("OEBPS/ch1.xhtml"))
             zip.write(

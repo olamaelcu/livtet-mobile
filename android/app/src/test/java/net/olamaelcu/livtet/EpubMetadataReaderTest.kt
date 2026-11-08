@@ -37,6 +37,14 @@ class EpubMetadataReaderTest {
     }
 
     @Test
+    fun readsTheCoverFromThePackage() {
+        val png = byteArrayOf(0x89.toByte(), 0x50, 0x4E, 0x47)
+        val metadata = EpubMetadataReader.read(epub("Covered", cover = png))
+
+        assertEquals("OEBPS/images/cover.png", metadata?.coverHref)
+    }
+
+    @Test
     fun somethingThatIsNotAPackageIsNotABook() {
         val file = File.createTempFile("not-a-book", ".epub").apply { writeText("plain text") }
 
@@ -48,6 +56,7 @@ class EpubMetadataReaderTest {
         title: String,
         author: String? = null,
         identifier: String = "urn:uuid:9d1c8f3e-1111-4a2b-9c3d-000000000001",
+        cover: ByteArray? = null,
     ): File {
         val target = File.createTempFile(title.replace(' ', '-'), ".epub")
         ZipOutputStream(target.outputStream()).use { zip ->
@@ -87,6 +96,7 @@ class EpubMetadataReaderTest {
                     ${author?.let { "<dc:creator>$it</dc:creator>" }.orEmpty()}
                   </metadata>
                   <manifest>
+                    ${if (cover != null) "<item id=\"cover\" href=\"images/cover.png\" media-type=\"image/png\" properties=\"cover-image\"/>" else ""}
                     <item id="ch1" href="ch1.xhtml" media-type="application/xhtml+xml"/>
                   </manifest>
                   <spine><itemref idref="ch1"/></spine>
@@ -95,6 +105,10 @@ class EpubMetadataReaderTest {
                     .trimIndent()
                     .toByteArray()
             )
+            if (cover != null) {
+                zip.putNextEntry(ZipEntry("OEBPS/images/cover.png"))
+                zip.write(cover)
+            }
         }
         assertTrue(target.length() > 0)
         return target

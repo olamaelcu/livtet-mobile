@@ -5,6 +5,7 @@ import android.net.Uri
 import android.provider.OpenableColumns
 import java.io.File
 import java.security.MessageDigest
+import java.util.zip.ZipFile
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -95,8 +96,40 @@ object ImportBook {
                 sizeBytes = target.length(),
             )
             manifest.record(digest, editionId, title)
+            if (format == "epub") {
+                // The package names its own cover; copying it out is what stops an
+                // imported book from being the only one on the shelf without a face.
+                runCatching { storeCover(context, target, editionId, metadata?.coverHref) }
+            }
             Imported(editionId = editionId, title = title, path = target.absolutePath)
         }
+
+    /** Covers live beside the library, so they survive the file being replaced. */
+    private suspend fun storeCover(
+        context: Context,
+        epub: File,
+        editionId: String,
+        coverHref: String?,
+    ) {
+        val href = coverHref ?: return
+        val extension = href.substringAfterLast('.', "jpg").lowercase().take(4)
+        if (extension !in setOf("jpg", "jpeg", "png", "webp", "gif")) return
+
+        val covers = File(context.filesDir, "covers").apply { mkdirs() }
+        val target = File(covers, "$editionId.$extension")
+        val bytes =
+            ZipFile(epub).use { zip ->
+                val entry = zip.getEntry(href) ?: return
+                if (entry.size > MAX_COVER_BYTES) return
+                zip.getInputStream(entry).use { it.readBytes() }
+            }
+        if (bytes.isEmpty()) return
+        target.writeBytes(bytes)
+        Bridge.setEditionCoverUrl(editionId = editionId, coverUrl = target.absolutePath)
+    }
+
+    /** A cover larger than this is not a cover; it is an accident. */
+    private const val MAX_COVER_BYTES = 8L * 1024 * 1024
 
     /** The name the picker showed for this document, falling back to the path. */
     private fun displayName(context: Context, uri: Uri): String {

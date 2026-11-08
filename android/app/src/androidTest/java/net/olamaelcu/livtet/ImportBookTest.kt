@@ -94,6 +94,25 @@ class ImportBookTest {
     }
 
     @Test
+    fun thePackageCoverBecomesTheEditionsCover() = runBlocking {
+        Bridge.init(File(context.filesDir, "import-book-test.db").absolutePath)
+
+        val png = byteArrayOf(0x89.toByte(), 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A)
+        val source = TestEpub.write(context, "With A Face", cover = png)
+
+        val imported = ImportBook.from(context, Uri.fromFile(source))
+
+        // The edition carries the copied cover as a local path, which is what the
+        // shelf's `localCover` decodes.
+        val book = Bridge.listBooks(limit = 200).first { it.primaryEditionId == imported.editionId }
+        val cover = book.coverUrl
+        assertTrue("the work reports a cover: $cover", cover != null)
+        val file = File(cover!!)
+        assertTrue("the cover is a file on disk", file.isFile)
+        assertTrue("the cover bytes match the package", file.readBytes().contentEquals(png))
+    }
+
+    @Test
     fun theSameFileTwiceIsOneBook() = runBlocking {
         Bridge.init(File(context.filesDir, "import-book-test.db").absolutePath)
 
