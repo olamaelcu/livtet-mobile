@@ -20,6 +20,34 @@ import kotlinx.coroutines.withContext
  * task, and the reader expects a book to still be there next week. It carries its own metadata, so
  * the title and author come from the package rather than from its file name.
  */
+
+/**
+ * The URN the import API expects, from the identifier text an EPUB carries.
+ *
+ * A package may write `urn:isbn:9780593714263` and may just as well write the bare ISBN; the FFI
+ * parses only URNs, and the old code handed it the text verbatim, so a bare ISBN failed the whole
+ * import. Anything that is not an ISBN or an already-formed URN is dropped rather than failing the
+ * book.
+ */
+internal fun identifierUrn(raw: String?): String? {
+    val text = raw?.trim()?.takeIf { it.isNotEmpty() } ?: return null
+    if (text.startsWith("urn:", ignoreCase = true)) return text
+    val digits = buildString {
+        text.forEach { character ->
+            when {
+                character.isDigit() -> append(character)
+                character == 'x' || character == 'X' -> append('X')
+            }
+        }
+    }
+    // ISBN-10 is ten characters and may end in X; ISBN-13 is thirteen digits.
+    return when (digits.length) {
+        10,
+        13 -> "urn:isbn:$digits"
+        else -> null
+    }
+}
+
 object ImportBook {
     /** File extensions the reader can open, mapped to the format they are recorded as. */
     private val FORMATS = mapOf("epub" to "epub", "pdf" to "pdf")
@@ -85,9 +113,7 @@ object ImportBook {
                             ?.takeIf { it.isNotBlank() }
                             ?.let { listOf(ContributorInput(name = it, role = "author")) }
                             ?: emptyList(),
-                    identifiers =
-                        metadata?.identifier?.takeIf { it.isNotBlank() }?.let { listOf(it) }
-                            ?: emptyList(),
+                    identifiers = identifierUrn(metadata?.identifier)?.let { listOf(it) }.orEmpty(),
                 )
             Bridge.attachFile(
                 editionId = editionId,

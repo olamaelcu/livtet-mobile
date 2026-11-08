@@ -65,10 +65,7 @@ class AndroidApplicationLintConventionPlugin : Plugin<Project> {
             extensions.configure<DetektExtension> {
                 config = rootProject.files("config/detekt/detekt.yml")
                 buildUponDefaultConfig = true
-                // autoCorrect defaults to false; the `--fix` flag in
-                // `mise run android-lint` passes `--auto-correct` on
-                // the gradle CLI, which toggles per-run without
-                // rewriting this config.
+                // Analysis only: auto-correct would rewrite sources behind ktfmt's back.
                 autoCorrect = false
             }
         }

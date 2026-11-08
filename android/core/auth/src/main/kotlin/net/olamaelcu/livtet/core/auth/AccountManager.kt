@@ -2,6 +2,8 @@ package net.olamaelcu.livtet.core.auth
 
 import android.content.Context
 import dagger.hilt.android.qualifiers.ApplicationContext
+import javax.inject.Inject
+import javax.inject.Singleton
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -16,8 +18,6 @@ import net.olamaelcu.livtet.core.auth.provider.AuthProvider
 import net.olamaelcu.livtet.core.auth.provider.GoogleAuthProvider
 import net.olamaelcu.livtet.core.auth.storage.SecureTokenStore
 import timber.log.Timber
-import javax.inject.Inject
-import javax.inject.Singleton
 
 @Singleton
 class AccountManager
@@ -44,20 +44,25 @@ constructor(
             val did = atprotoAuthService.getDid() ?: ""
             val handle = atprotoAuthService.getHandle() ?: ""
             if (did.isNotEmpty()) {
-                val profile = try {
-                    atprotoAuthService.fetchProfile(did)
-                } catch (_: Exception) { null }
+                val profile =
+                    try {
+                        atprotoAuthService.fetchProfile(did)
+                    } catch (_: Exception) {
+                        null
+                    }
                 val atprotoProvider = AuthProvider.Atproto(did = did, handle = handle)
-                restored[atprotoProvider] = ProviderAccount(
-                    provider = atprotoProvider,
-                    displayName = profile?.displayName?.ifEmpty { handle } ?: handle,
-                    email = null,
-                    avatarUrl = profile?.avatarCid?.let {
-                        "https://biblio.livtet.olamaelcu.net/xrpc/com.atproto.sync.getBlob?did=$did&cid=$it"
-                    },
-                    signedInAt = System.currentTimeMillis(),
-                    atprotoProfile = profile,
-                )
+                restored[atprotoProvider] =
+                    ProviderAccount(
+                        provider = atprotoProvider,
+                        displayName = profile?.displayName?.ifEmpty { handle } ?: handle,
+                        email = null,
+                        avatarUrl =
+                            profile?.avatarCid?.let {
+                                "https://biblio.livtet.olamaelcu.net/xrpc/com.atproto.sync.getBlob?did=$did&cid=$it"
+                            },
+                        signedInAt = System.currentTimeMillis(),
+                        atprotoProfile = profile,
+                    )
             }
         }
 
@@ -123,20 +128,25 @@ constructor(
         val did = atprotoAuthService.getDid() ?: ""
         val handle = atprotoAuthService.getHandle() ?: ""
 
-        val profile = if (did.isNotEmpty()) {
-            atprotoAuthService.fetchProfile(did)
-        } else {
-            null
-        }
+        val profile =
+            if (did.isNotEmpty()) {
+                atprotoAuthService.fetchProfile(did)
+            } else {
+                null
+            }
 
-        val account = ProviderAccount(
-            provider = AuthProvider.Atproto(did = did, handle = handle),
-            displayName = profile?.displayName?.ifEmpty { handle } ?: handle,
-            email = null,
-            avatarUrl = profile?.avatarCid?.let { "https://biblio.livtet.olamaelcu.net/xrpc/com.atproto.sync.getBlob?did=$did&cid=$it" },
-            signedInAt = System.currentTimeMillis(),
-            atprotoProfile = profile,
-        )
+        val account =
+            ProviderAccount(
+                provider = AuthProvider.Atproto(did = did, handle = handle),
+                displayName = profile?.displayName?.ifEmpty { handle } ?: handle,
+                email = null,
+                avatarUrl =
+                    profile?.avatarCid?.let {
+                        "https://biblio.livtet.olamaelcu.net/xrpc/com.atproto.sync.getBlob?did=$did&cid=$it"
+                    },
+                signedInAt = System.currentTimeMillis(),
+                atprotoProfile = profile,
+            )
         val newProviders = _accountState.value.providers + (account.provider to account)
         _accountState.value = AccountState(newProviders)
         Timber.tag(TAG).d("completeAtprotoLogin: success did=$did handle=$handle")
@@ -154,8 +164,9 @@ constructor(
 
     private fun updateAtprotoProfile(profile: AtprotoProfile) {
         val currentAtproto =
-            _accountState.value.providers.keys.filterIsInstance<AuthProvider.Atproto>().firstOrNull()
-                ?: return
+            _accountState.value.providers.keys
+                .filterIsInstance<AuthProvider.Atproto>()
+                .firstOrNull() ?: return
         val existing = _accountState.value.providers[currentAtproto] ?: return
         val updated = existing.copy(atprotoProfile = profile)
         val newProviders = _accountState.value.providers + (currentAtproto to updated)

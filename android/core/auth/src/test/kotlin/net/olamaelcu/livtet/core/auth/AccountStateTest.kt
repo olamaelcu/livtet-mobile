@@ -7,7 +7,6 @@ import kotlin.test.assertTrue
 import net.olamaelcu.livtet.core.auth.provider.AuthProvider
 
 class AccountStateTest {
-
     @Test
     fun `empty state has no providers`() {
         val state = AccountState(emptyMap())

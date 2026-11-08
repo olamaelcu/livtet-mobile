@@ -16,9 +16,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.KeyboardOptions
@@ -185,7 +183,7 @@ private fun ShelvesRoute(onBack: () -> Unit) {
     }
 
     Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
-        Column(modifier = Modifier.fillMaxSize().statusBarsPadding()) {
+        Column(modifier = Modifier.fillMaxSize().appHeaderInset()) {
             Row(
                 modifier = Modifier.fillMaxWidth().padding(horizontal = 4.dp),
                 verticalAlignment = Alignment.CenterVertically,
@@ -343,18 +341,15 @@ private fun RenameDialog(shelf: ShelfView, onDismiss: () -> Unit, onRename: (Str
 }
 
 /**
- * The shelves a book can be filed on, plus a way to make one here.
+ * Pick a shelf for books chosen in the library's bulk toolbar.
  *
- * Reached from a library row rather than from the shelves screen: the book is already chosen, so
- * the dialog asks the only remaining question.
+ * Separate from [AddToShelfDialog], which files one edition as it opens: a bulk action has already
+ * chosen the books, so all this needs is the shelf's name.
  */
 @Composable
-internal fun AddToShelfDialog(editionId: String, onDismiss: () -> Unit) {
-    val context = LocalContext.current
-    val scope = rememberCoroutineScope()
+internal fun BulkShelfDialog(count: Int, onDismiss: () -> Unit, onPick: (String) -> Unit) {
     var shelves by remember { mutableStateOf<List<Bridge.Shelf>?>(null) }
     var failure by remember { mutableStateOf<String?>(null) }
-    var newName by remember { mutableStateOf("") }
 
     LaunchedEffect(Unit) {
         shelves =
@@ -363,17 +358,9 @@ internal fun AddToShelfDialog(editionId: String, onDismiss: () -> Unit) {
                 .getOrDefault(emptyList())
     }
 
-    fun fileOn(shelfId: String) {
-        scope.launch {
-            runCatching { Bridge.addToShelf(shelfId, editionId) }
-                .onSuccess { onDismiss() }
-                .onFailure { failure = it.message }
-        }
-    }
-
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Add to a shelf") },
+        title = { Text(if (count == 1) "Shelve this book" else "Shelve $count books") },
         text = {
             Column {
                 failure?.let {
@@ -384,51 +371,27 @@ internal fun AddToShelfDialog(editionId: String, onDismiss: () -> Unit) {
                     )
                 }
                 val current = shelves
-                if (current == null) {
-                    CircularProgressIndicator(strokeWidth = 2.dp)
-                } else if (current.isEmpty()) {
-                    Text(
-                        text = "No shelves yet.",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
-                    )
-                } else {
-                    current.forEach { shelf ->
-                        TextButton(
-                            onClick = { fileOn(shelf.id) },
-                            modifier = Modifier.fillMaxWidth(),
-                        ) {
-                            Text(shelf.name, modifier = Modifier.fillMaxWidth())
+                when {
+                    current == null -> CircularProgressIndicator(strokeWidth = 2.dp)
+                    current.isEmpty() ->
+                        Text(
+                            text = "No shelves yet. Make one from Shelves first.",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
+                        )
+                    else ->
+                        current.forEach { shelf ->
+                            TextButton(
+                                onClick = { onPick(shelf.id) },
+                                modifier = Modifier.fillMaxWidth(),
+                            ) {
+                                Text(shelf.name, modifier = Modifier.fillMaxWidth())
+                            }
                         }
-                    }
-                }
-                Spacer(modifier = Modifier.height(8.dp))
-                OutlinedTextField(
-                    value = newName,
-                    onValueChange = { newName = it },
-                    singleLine = true,
-                    label = { Text("Or make a shelf") },
-                )
-                TextButton(
-                    onClick = {
-                        val name = newName.trim()
-                        if (name.isEmpty()) return@TextButton
-                        scope.launch {
-                            runCatching { Bridge.createShelf(name) }
-                                .onSuccess { shelf ->
-                                    newName = ""
-                                    shelves = (shelves ?: emptyList()) + shelf
-                                    fileOn(shelf.id)
-                                }
-                                .onFailure { failure = it.message }
-                        }
-                    },
-                    enabled = newName.isNotBlank(),
-                ) {
-                    Text("Create and add")
                 }
             }
         },
-        confirmButton = { TextButton(onClick = onDismiss) { Text("Close") } },
+        confirmButton = {},
+        dismissButton = { TextButton(onClick = onDismiss) { Text("Cancel") } },
     )
 }

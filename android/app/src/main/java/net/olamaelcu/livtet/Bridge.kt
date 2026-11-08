@@ -32,6 +32,7 @@ import net.olamaelcu.livtet.types.PublishedDate
 import net.olamaelcu.livtet.types.SortDirection
 import net.olamaelcu.livtet.types.WorkSortBy
 import net.olamaelcu.livtet.types.WorkStatus
+import timber.log.Timber
 
 /** A book (work) row for the Library screen (`Bridge.listBooks`). */
 data class Book(
@@ -117,6 +118,7 @@ data class PluginHitMobile(
 object Bridge {
     @Volatile private var store: LivtetStore? = null
     private val initMutex = kotlinx.coroutines.sync.Mutex()
+
     /** The database path handed to [init], which peer sync reopens per call. */
     @Volatile private var databaseFile: String? = null
 
@@ -324,11 +326,14 @@ object Bridge {
         sessionToken: String? = null,
         deviceId: String,
         sinceVersion: Long = FROM_STORED_CURSOR,
-        limit: Long = 0L,
+        limit: Long = SYNC_PAGE,
     ): SyncPullReport {
         // A negative value means "wherever this peer left off", which is the
         // stored cursor; 0 asks for a fresh bootstrap on purpose.
         val since = if (sinceVersion == FROM_STORED_CURSOR) syncCursor(peerNodeId) else sinceVersion
+        // The wire hands the page size straight to SQL: a 0 becomes `LIMIT 0`, which answers an
+        // empty page with `has_more` set and leaves the cursor where it was.
+        val page = if (limit > 0) limit else SYNC_PAGE
         return net.olamaelcu.livtet.ffi.syncPull(
             secretKeyPath = secretKeyPath(),
             sessionToken =
@@ -339,7 +344,8 @@ object Bridge {
             deviceId = deviceId,
             peerNodeId = peerNodeId,
             sinceVersion = since,
-            limit = limit,
+            limit = page,
+            coversDir = coversDir(),
         )
     }
 
@@ -422,7 +428,30 @@ object Bridge {
             .filter { it.nodeId != null }
             .forEach { device ->
                 val nodeId = device.nodeId ?: return@forEach
-                runCatching { syncOnce(peerNodeId = nodeId, deviceId = deviceIdForPeer()) }
+                // A page is bounded; a backlog needs the pages after it. Each pull stores its
+                // cursor, so asking again walks the peer's log from where the last page ended.
+                for (page in 0 until SYNC_MAX_PAGES) {
+                    val report =
+                        runCatching { syncOnce(peerNodeId = nodeId, deviceId = deviceIdForPeer()) }
+                            .onSuccess { pulled ->
+                                Timber.d(
+                                    "sync: %s applied=%d conflicts=%d offers=%d cursor=%d more=%s",
+                                    nodeId.take(8),
+                                    pulled.applied.toLong(),
+                                    pulled.conflicts.toLong(),
+                                    pulled.offers.size,
+                                    pulled.cursor,
+                                    pulled.hasMore,
+                                )
+                            }
+                            .onFailure { error ->
+                                Timber.w(error, "sync: pull from %s failed", nodeId.take(8))
+                            }
+                            .getOrNull()
+                    // `repeat` cannot break; a `for` can, and must: one page per pull is
+                    // usually the whole backlog, and each pull re-reads the peer's log.
+                    if (report == null || !report.hasMore) break
+                }
             }
         return pendingOffers()
     }
@@ -449,6 +478,13 @@ object Bridge {
 
     /** Pass as `sinceVersion` to resume from the peer's stored cursor. */
     const val FROM_STORED_CURSOR: Long = -1L
+
+    /** One wire page of changes. */
+    private const val SYNC_PAGE: Long = 100L
+
+    /** How many pages one poll may walk, so a huge backlog cannot hang the worker. */
+    private const val SYNC_MAX_PAGES: Int = 10
+
     /** Where the reader's display choices are kept. */
     private const val READER_DISPLAY_KEY: String = "reader.display"
 

@@ -11,13 +11,13 @@ import org.readium.r2.shared.publication.Locator
  * store, and pulled by the desktop means the same thing on both sides without a translation table.
  */
 data class ReadingPosition(
-    /// The toolkit's `Locator` as JSON.
+    // / The toolkit's `Locator` as JSON.
     val locatorJson: String,
-    /// Progress through the publication, in `[0, 1]`.
+    // / Progress through the publication, in `[0, 1]`.
     val progression: Double,
 ) {
     companion object {
-        /// The position a navigator reports, in storable form.
+        // / The position a navigator reports, in storable form.
         fun of(locator: Locator): ReadingPosition =
             ReadingPosition(
                 locatorJson = locator.toJSON().toString(),

@@ -11,16 +11,16 @@ import org.readium.r2.shared.util.http.DefaultHttpClient
 import org.readium.r2.streamer.PublicationOpener
 import org.readium.r2.streamer.parser.DefaultPublicationParser
 
-/// Why a file could not be read as a publication.
+// / Why a file could not be read as a publication.
 sealed class ReaderError(message: String) : Exception(message) {
-    /// The path does not name a readable file.
+    // / The path does not name a readable file.
     class MissingFile(path: String) : ReaderError("no book file at $path")
 
-    /// The file is there but the toolkit could not read it.
+    // / The file is there but the toolkit could not read it.
     class Unreadable(path: String, reason: String?) :
         ReaderError("could not read $path: ${reason ?: "unknown reason"}")
 
-    /// The file was read but did not parse into a publication.
+    // / The file was read but did not parse into a publication.
     class Unsupported(path: String, reason: String?) :
         ReaderError("could not open $path: ${reason ?: "unknown reason"}")
 }
@@ -37,23 +37,23 @@ sealed class ReaderError(message: String) : Exception(message) {
  */
 class ReaderSession
 private constructor(
-    /// The parsed publication: metadata, table of contents, reading order.
+    // / The parsed publication: metadata, table of contents, reading order.
     val publication: Publication,
-    /// The file it was opened from.
+    // / The file it was opened from.
     val file: File,
 ) {
-    /// The title the publication declares, if any.
+    // / The title the publication declares, if any.
     val title: String?
         get() = publication.metadata.title
 
-    /// Whether this is an EPUB, i.e. whether the EPUB navigator can render it.
+    // / Whether this is an EPUB, i.e. whether the EPUB navigator can render it.
     val isEpub: Boolean
         get() = publication.conformsTo(Publication.Profile.EPUB)
 
-    /// The factory that builds and restores the EPUB navigator.
-    ///
-    /// Null for a publication the EPUB navigator cannot render; the caller must
-    /// check [isEpub] before offering a reading screen.
+    // / The factory that builds and restores the EPUB navigator.
+    // /
+    // / Null for a publication the EPUB navigator cannot render; the caller must
+    // / check [isEpub] before offering a reading screen.
     val navigatorFactory: EpubNavigatorFactory? by lazy {
         if (isEpub) EpubNavigatorFactory(publication) else null
     }

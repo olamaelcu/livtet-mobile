@@ -9,9 +9,7 @@ plugins {
 
 // Hilt 2.58 bundles kotlin-metadata-jvm 2.3.x which cannot read
 // metadata format 2.4.0 emitted by Kotlin 2.4.0.
-configurations.all {
-    resolutionStrategy.force("org.jetbrains.kotlin:kotlin-metadata-jvm:2.4.0")
-}
+configurations.all { resolutionStrategy.force("org.jetbrains.kotlin:kotlin-metadata-jvm:2.4.0") }
 
 android {
     namespace = "net.olamaelcu.livtet.core.auth"

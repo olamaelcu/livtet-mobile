@@ -112,6 +112,13 @@ dependencies {
     coreLibraryDesugaring(libs.desugar.jdk.libs)
     // Hosts Readium's EpubNavigatorFragment; the toolkit ships it as a Fragment.
     implementation(libs.androidx.fragment.ktx)
+    // Feed covers are URLs from the platform's catalog, not files beside the source, so the feed
+    // needs a network image loader; the library's own covers are decoded from the EPUB.
+    implementation(libs.coil.compose)
+    implementation(libs.coil.network.okhttp)
+    // The background poll of paired devices: an offer waits for a pull, so something has to pull
+    // while the reader is not on the offers screen.
+    implementation(libs.androidx.work.runtime.ktx)
 
     // Hilt
     implementation(libs.hilt.android)
@@ -134,6 +141,8 @@ dependencies {
     androidTestImplementation(libs.junit)
     // The offer-inbox presentation rule is plain Kotlin and tested on the JVM.
     testImplementation(libs.junit)
+    // The catalog cache round-trips JSON; the Android artifact stubs org.json for unit tests.
+    testImplementation("org.json:json:20240303")
     androidTestImplementation(libs.androidx.test.runner)
     androidTestImplementation(libs.androidx.test.ext.junit)
 }

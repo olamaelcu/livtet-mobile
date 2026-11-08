@@ -6,6 +6,8 @@
          multicast lock on some OEM builds. Both are normal permissions. -->
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.CHANGE_WIFI_MULTICAST_STATE" />
+    <!-- The background poll announces books a paired device offered. -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <application android:name=".LivtetApp"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"

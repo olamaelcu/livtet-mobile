@@ -199,7 +199,7 @@ private fun ReaderRoute(editionId: String, onBack: () -> Unit) {
         // The page sits on the theme's own surface: the window background is the
         // brand color, which is right for a cold start and wrong behind a book.
         Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
-            Column(modifier = Modifier.fillMaxSize()) {
+            Column(modifier = Modifier.fillMaxSize().appHeaderInset()) {
                 Row(
                     modifier = Modifier.fillMaxWidth().padding(horizontal = 4.dp),
                     verticalAlignment = Alignment.CenterVertically,

@@ -10,7 +10,6 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNull
 
 class SecureTokenStoreTest {
-
     private val prefs: SharedPreferences = mockk(relaxed = true)
     private val editor: SharedPreferences.Editor = mockk(relaxed = true)
     private val context: Context = mockk {

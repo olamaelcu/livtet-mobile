@@ -63,7 +63,9 @@ object TestEpub {
                   <manifest>
                     ${if (cover != null) "<item id=\"cover\" href=\"images/cover.png\" media-type=\"image/png\" properties=\"cover-image\"/>" else ""}
                     <item id="nav" href="nav.xhtml" media-type="application/xhtml+xml" properties="nav"/>
-                    ${(1..chapters).joinToString("\n                    ") { "<item id=\"ch$it\" href=\"ch$it.xhtml\" media-type=\"application/xhtml+xml\"/>" }}
+                    ${(1..chapters).joinToString(
+                    "\n                    "
+                ) { "<item id=\"ch$it\" href=\"ch$it.xhtml\" media-type=\"application/xhtml+xml\"/>" }}
                   </manifest>
                   <spine>${(1..chapters).joinToString("") { "<itemref idref=\"ch$it\"/>" }}</spine>
                 </package>
@@ -79,7 +81,9 @@ object TestEpub {
                 <!DOCTYPE html>
                 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops">
                   <head><title>Contents</title></head>
-                  <body><nav epub:type="toc"><ol>${(1..chapters).joinToString("") { "<li><a href=\"ch$it.xhtml\">Chapter $it</a></li>" }}</ol></nav></body>
+                  <body><nav epub:type="toc"><ol>${(1..chapters).joinToString(
+                    ""
+                ) { "<li><a href=\"ch$it.xhtml\">Chapter $it</a></li>" }}</ol></nav></body>
                 </html>
                 """
                     .trimIndent()

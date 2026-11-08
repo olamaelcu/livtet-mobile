@@ -17,11 +17,16 @@ import org.json.JSONObject
  * guessing at fields that are absent.
  */
 data class FeedEntry(
+    val uri: String?,
     val kind: Kind,
     val author: String?,
     val bookTitle: String?,
+    val bookCoverUrl: String?,
+    val bookUri: String?,
     val text: String?,
+    val rating: Double?,
     val shelf: String?,
+    val status: String?,
     val createdAt: String?,
 ) {
     enum class Kind {
@@ -165,11 +170,17 @@ object FeedClient {
                 else -> FeedEntry.Kind.UNKNOWN
             }
         return FeedEntry(
+            uri = json.optString("uri").takeIf { it.isNotEmpty() },
             kind = kind,
             author = json.optJSONObject("author")?.optString("handle")?.takeIf { it.isNotEmpty() },
             bookTitle = json.optString("bookTitle").takeIf { it.isNotEmpty() },
+            bookCoverUrl = json.optString("bookCoverUrl").takeIf { it.isNotEmpty() },
+            bookUri = json.optString("bookUri").takeIf { it.isNotEmpty() },
             text = json.optString("text").takeIf { it.isNotEmpty() },
+            rating =
+                if (json.has("rating")) json.optDouble("rating").takeIf { !it.isNaN() } else null,
             shelf = json.optString("shelf").takeIf { it.isNotEmpty() },
+            status = json.optString("status").takeIf { it.isNotEmpty() },
             createdAt = json.optString("createdAt").takeIf { it.isNotEmpty() },
         )
     }

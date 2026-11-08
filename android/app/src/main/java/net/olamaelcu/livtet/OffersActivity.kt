@@ -118,8 +118,11 @@ private fun OffersRoute(onBack: () -> Unit) {
                         object : TransferProgressListener {
                             override fun onProgress(done: ULong, total: ULong) {
                                 progress =
-                                    if (total == 0UL) 0f
-                                    else (done.toFloat() / total.toFloat()).coerceIn(0f, 1f)
+                                    if (total == 0UL) {
+                                        0f
+                                    } else {
+                                        (done.toFloat() / total.toFloat()).coerceIn(0f, 1f)
+                                    }
                             }
                         }
                     Bridge.acceptOffer(offer, listener)
@@ -161,7 +164,7 @@ private fun OffersRoute(onBack: () -> Unit) {
     }
 
     Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
-        Column(modifier = Modifier.fillMaxSize()) {
+        Column(modifier = Modifier.fillMaxSize().appHeaderInset()) {
             Row(
                 modifier = Modifier.fillMaxWidth().padding(horizontal = 4.dp),
                 verticalAlignment = Alignment.CenterVertically,

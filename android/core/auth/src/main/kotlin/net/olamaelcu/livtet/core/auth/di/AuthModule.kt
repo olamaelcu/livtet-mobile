@@ -13,21 +13,19 @@ import io.ktor.client.plugins.logging.LogLevel
 import io.ktor.client.plugins.logging.Logger
 import io.ktor.client.plugins.logging.Logging
 import io.ktor.serialization.kotlinx.json.json
+import javax.inject.Named
+import javax.inject.Singleton
 import kotlinx.serialization.json.Json
 import net.olamaelcu.livtet.core.auth.storage.AndroidOAuthSessionStore
 import net.olamaelcu.livtet.core.auth.storage.SecureTokenStore
-import javax.inject.Named
-import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
 object AuthModule {
-
     @Provides
     @Singleton
     @Named("atproto")
-    fun provideAtprotoHttpClient(): HttpClient =
-        HttpClient(OkHttp)
+    fun provideAtprotoHttpClient(): HttpClient = HttpClient(OkHttp)
 
     @Provides
     @Singleton
@@ -35,11 +33,12 @@ object AuthModule {
     fun provideAppHttpClient(): HttpClient =
         HttpClient(OkHttp) {
             install(Logging) {
-                logger = object : Logger {
-                    override fun log(message: String) {
-                        timber.log.Timber.tag("HttpClient").d(message)
+                logger =
+                    object : Logger {
+                        override fun log(message: String) {
+                            timber.log.Timber.tag("HttpClient").d(message)
+                        }
                     }
-                }
                 level = LogLevel.ALL
             }
             install(ContentNegotiation) {

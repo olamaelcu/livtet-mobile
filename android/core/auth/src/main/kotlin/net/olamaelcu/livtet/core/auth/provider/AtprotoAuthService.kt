@@ -10,15 +10,15 @@ import io.ktor.client.request.header
 import io.ktor.client.request.parameter
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.HttpHeaders
+import javax.inject.Inject
+import javax.inject.Named
+import javax.inject.Singleton
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import net.olamaelcu.livtet.core.auth.model.AtprotoProfile
 import net.olamaelcu.livtet.core.auth.storage.AndroidOAuthSessionStore
 import timber.log.Timber
-import javax.inject.Inject
-import javax.inject.Named
-import javax.inject.Singleton
 
 @Singleton
 class AtprotoAuthService
@@ -34,8 +34,10 @@ constructor(
             redirectUri = REDIRECT_URI,
             sessionStore = sessionStore,
             httpClient = httpClient,
-            // Scopes must be a subset of the ones the client metadata registers at CLIENT_METADATA_URL;
-            // `net.olamaelcu.livtet.bookReview` is the legacy collection and is not registered there,
+            // Scopes must be a subset of the ones the client metadata registers at
+            // CLIENT_METADATA_URL;
+            // `net.olamaelcu.livtet.bookReview` is the legacy collection and is not registered
+            // there,
             // so requesting it fails the pushed authorization request with HTTP 400.
             scope =
                 "atproto repo:net.olamaelcu.livtet.actor.profile " +
@@ -60,7 +62,9 @@ constructor(
     }
 
     suspend fun createClient(): XrpcClient {
-        cachedClient?.let { return it }
+        cachedClient?.let {
+            return it
+        }
         return oauth.createClient().also { cachedClient = it }
     }
 
@@ -78,13 +82,13 @@ constructor(
 
     suspend fun fetchProfile(did: String): AtprotoProfile {
         return try {
-            val session = sessionStore.load()
-                ?: return AtprotoProfile(did, "", "", "", null)
+            val session = sessionStore.load() ?: return AtprotoProfile(did, "", "", "", null)
             val url = "$APP_VIEW_URL/xrpc/net.olamaelcu.livtet.biblio.getActorProfile"
-            val response = httpClient.get(url) {
-                parameter("did", did)
-                header(HttpHeaders.Authorization, "Bearer ${session.accessToken}")
-            }
+            val response =
+                httpClient.get(url) {
+                    parameter("did", did)
+                    header(HttpHeaders.Authorization, "Bearer ${session.accessToken}")
+                }
             val body = response.bodyAsText()
             val json = Json { ignoreUnknownKeys = true }
             val element = json.parseToJsonElement(body)

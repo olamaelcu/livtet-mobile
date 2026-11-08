@@ -21,8 +21,8 @@ android {
     flavorDimensions += "store"
     productFlavors {
         create("playstore") { dimension = "store" }
-        create("fdroid")    { dimension = "store" }
-        create("generic")   { dimension = "store" }
+        create("fdroid") { dimension = "store" }
+        create("generic") { dimension = "store" }
     }
 
     compileOptions {

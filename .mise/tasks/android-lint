@@ -1,57 +1,39 @@
 #!/usr/bin/env bash
-#MISE description="Run ktfmt, ktlint, and detekt against every Android module"
+#MISE description="Check Kotlin formatting (ktfmt), ktlint and detekt across the Android build"
 #MISE sources=["android/**/*.kt", "android/**/*.kts", "android/build-logic/**/*.kt"]
 #MISE outputs=[]
-#USAGE flag "--flavor <flavor>" help="Android product flavor (or 'all' for all flavors)" default="generic" {
-#USAGE   choices "all" "generic" "playstore" "fdroid"
-#USAGE }
-#USAGE flag "--fix" help="Auto-fix lint violations via ktfmtFormat + ktlintFormat + detekt --auto-correct"
+#USAGE flag "--fix" help="Rewrite files with ktfmtFormat (the formatter of record), then run the checks"
 
 set -e
 # shellcheck disable=SC1091
 source "$(dirname "${BASH_SOURCE[0]}")/_os-check" && require_os linux
 
-FLAVOR="${usage_flavor:-generic}"
-
-echo "=== android-lint: flavor=$FLAVOR${usage_fix:+ fix} ==="
+echo "=== android-lint:${usage_fix:+ fix} ==="
 
 cd android
 
-# `ktfmtCheck` / `ktlintCheck` are top-level Gradle tasks per module
-# that cover every source set (main, test, androidTest, …). They are
-# *not* per-flavor — invoking them once per module is correct.
+# Task names here are Gradle's, not a wrapper's: `ktfmtCheck` / `ktfmtFormat` come
+# from the ktfmt Gradle plugin, `ktlintCheck` / `ktlintFormat` from the ktlint
+# plugin, and both are aggregated at the root, so every module (`:app` and each
+# `:core:*`) is covered without a list to keep in sync.
 #
-# `detekt` on `:app` is per-variant (the plugin emits a separate
-# report for each `*Debug` / `*Release` variant), so we still loop
-# over flavors for detekt only. Library modules get a single top-level
-# `detekt` task.
-run_lint() {
-	local flavor="$1"
-	local cap
-	cap="${flavor^^}"
+# There is no flavor dimension to these: formatting and static analysis see the
+# same sources whichever product flavor is built. The detekt variant tasks do
+# exist per flavor, but `detekt` at the root runs each module's analysis once,
+# which is what a lint pass needs.
+#
+# Only ktfmt may rewrite sources. ktlint's formatter disagrees with ktfmt's
+# KotlinLang style (the convention plugins say so where they install it), so a
+# `ktlintFormat` after `ktfmtFormat` leaves files that `ktfmtCheck` rejects.
+# Here ktlint and detekt are analysis only.
 
-	if [ "${usage_fix:-false}" = "true" ]; then
-		echo "  [$flavor] Auto-fix: ktfmtFormat + ktlintFormat + detekt --auto-correct"
-		gradle \
-			":app:ktfmtFormat" ":core:designsystem:ktfmtFormat" \
-			":app:ktlintFormat" ":core:designsystem:ktlintFormat" \
-			":app:detekt${cap}Debug" ":core:designsystem:detekt" \
-			--auto-correct --no
-	else
-		echo "  [$flavor] Check: ktfmtCheck + ktlintCheck + detekt"
-		gradle \
-			":app:ktfmtCheck" ":core:designsystem:ktfmtCheck" \
-			":app:ktlintCheck" ":core:designsystem:ktlintCheck" \
-			":app:detekt${cap}Debug" ":core:designsystem:detekt"
-	fi
-}
-
-if [ "$FLAVOR" = "all" ]; then
-	for f in generic playstore fdroid; do
-		run_lint "$f"
-	done
+if [ "${usage_fix:-false}" = "true" ]; then
+	echo "  Auto-fix: ktfmtFormat, then ktfmtCheck + ktlintCheck + detekt"
+	gradle ktfmtFormat
+	gradle ktfmtCheck ktlintCheck detekt
 else
-	run_lint "$FLAVOR"
+	echo "  Check: ktfmtCheck + ktlintCheck + detekt"
+	gradle ktfmtCheck ktlintCheck detekt
 fi
 
 echo "=== android-lint: done ==="

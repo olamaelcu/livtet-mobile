@@ -45,6 +45,7 @@ class AndroidLibraryLintConventionPlugin : Plugin<Project> {
             extensions.configure<DetektExtension> {
                 config = rootProject.files("config/detekt/detekt.yml")
                 buildUponDefaultConfig = true
+                // Analysis only: auto-correct would rewrite sources behind ktfmt's back.
                 autoCorrect = false
             }
         }

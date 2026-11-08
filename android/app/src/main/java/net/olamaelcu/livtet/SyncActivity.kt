@@ -228,9 +228,11 @@ private fun SyncRoute(onBack: () -> Unit) {
                 .onSuccess { token ->
                     notice =
                         if (accept) {
-                            if (token == null) "Approved"
-                            else
+                            if (token == null) {
+                                "Approved"
+                            } else {
                                 "Approved \u2014 this device can now serve books to ${request.name ?: "the peer"}"
+                            }
                         } else {
                             "Declined"
                         }
@@ -245,6 +247,7 @@ private fun SyncRoute(onBack: () -> Unit) {
         Column(
             modifier =
                 Modifier.fillMaxSize()
+                    .appHeaderInset()
                     .verticalScroll(rememberScrollState())
                     .padding(horizontal = 16.dp)
         ) {
