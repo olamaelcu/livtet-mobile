@@ -66,3 +66,6 @@ first, regenerate bindings second" flow documented in
 - `mise-tools` — applies when a `mise.toml`-declared binary returns
   `command not found` (for example `uniffi-bindgen` or the platform tools).
 - `model-attribution` — applies to commit messages and DCO signoff lines.
+- [`android`](.agents/skills/android/SKILL.md) — applies when building,
+  installing, testing, or looking at the Android app; it is the task map, the
+  three loops, and the traps (install does not build, tests uninstall data).
