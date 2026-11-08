@@ -34,6 +34,15 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Button
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import org.readium.r2.navigator.Selection
+import org.readium.r2.navigator.Decoration
+import org.readium.r2.navigator.DecorableNavigator
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.delay
+import kotlin.math.roundToInt
+import androidx.compose.ui.unit.IntOffset
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.layout.offset
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.foundation.clickable
@@ -133,6 +142,8 @@ private fun ReaderRoute(editionId: String, onBack: () -> Unit) {
     var showNotes by remember { mutableStateOf(false) }
     var notes by remember { mutableStateOf<List<Bridge.AnnotationView>>(emptyList()) }
     var openNote by remember { mutableStateOf<Bridge.AnnotationView?>(null) }
+    var selection by remember { mutableStateOf<Selection?>(null) }
+    var pendingNoteLocation by remember { mutableStateOf<String?>(null) }
     var writingNote by remember { mutableStateOf<String?>(null) }
     var noteFailure by remember { mutableStateOf<String?>(null) }
     var formatId: String? by remember(editionId) { mutableStateOf(null) }
@@ -190,9 +201,50 @@ private fun ReaderRoute(editionId: String, onBack: () -> Unit) {
                 }
     }
 
-    // A note is a point, not a text range: the stored locator has a progress and a
-    // position but no fragment, so the toolkit has nothing to tint. The sheet lists
-    // a row, the row opens the preview card, and the card jumps to the passage.
+    // Readium exposes selection as a one-shot call, so a visible reader polls it and
+    // offers to turn the selection into a note. The note then stores a quote locator,
+    // which is what the decoration resolver can turn back into a DOM range.
+    LaunchedEffect(navigator) {
+        val live = navigator ?: return@LaunchedEffect
+        while (isActive) {
+            selection = runCatching { live.currentSelection() }.getOrNull()
+            delay(250)
+        }
+    }
+
+    LaunchedEffect(navigator, notes) {
+        val live = navigator ?: return@LaunchedEffect
+        // A decoration applied before the page publishes a location lands before the
+        // page exists and is dropped.
+        runCatching { live.currentLocator.first() }
+        val decorations =
+            notes.mapNotNull { note ->
+                val locator = ReadingPosition.locator(note.location) ?: return@mapNotNull null
+                // Progress-only locators have no element to tint; the resolver would log
+                // and draw nothing. Only quote-bearing locators become decorations.
+                if (locator.text?.highlight.isNullOrBlank()) return@mapNotNull null
+                Decoration(note.id, locator, Decoration.Style.Highlight(NOTE_TINT))
+            }
+        live.applyDecorations(decorations, NOTE_GROUP)
+    }
+
+    DisposableEffect(navigator) {
+        val live = navigator
+            ?: return@DisposableEffect onDispose {}
+        val listener =
+            object : DecorableNavigator.Listener {
+                override fun onDecorationActivated(
+                    event: DecorableNavigator.OnActivatedEvent
+                ): Boolean {
+                    val note =
+                        notes.firstOrNull { it.id == event.decoration.id } ?: return false
+                    openNote = note
+                    return true
+                }
+            }
+        live.addDecorationListener(NOTE_GROUP, listener)
+        onDispose { live.removeDecorationListener(listener) }
+    }
 
     // A change of display re-lays the page and is remembered for the next book;
     // waiting on `displayLoaded` keeps the first frame from saving the default
@@ -325,18 +377,23 @@ private fun ReaderRoute(editionId: String, onBack: () -> Unit) {
                         onSave = { content ->
                             scope.launch {
                                 val location =
-                                    navigator?.currentLocator?.value?.let {
-                                        ReadingPosition.of(it).locatorJson
-                                    }
+                                    pendingNoteLocation
+                                        ?: navigator?.currentLocator?.value?.let {
+                                            ReadingPosition.of(it).locatorJson
+                                        }
                                 runCatching { Bridge.addAnnotation(editionId, content, location) }
                                     .onSuccess {
+                                        pendingNoteLocation = null
                                         writingNote = null
                                         reloadNotes()
                                     }
                                     .onFailure { noteFailure = it.message }
                             }
                         },
-                        onDismiss = { writingNote = null },
+                        onDismiss = {
+                            writingNote = null
+                            pendingNoteLocation = null
+                        },
                     )
                 }
 
@@ -442,6 +499,36 @@ private fun ReaderRoute(editionId: String, onBack: () -> Unit) {
                                     }
                                 },
                             )
+                    }
+
+                    selection?.let { selected ->
+                        val rect = selected.rect ?: return@let
+                        Surface(
+                            modifier =
+                                Modifier.offset {
+                                    IntOffset(
+                                        rect.centerX().roundToInt() - 56,
+                                        (rect.top - 56).roundToInt().coerceAtLeast(0),
+                                    )
+                                },
+                            shape = RoundedCornerShape(20.dp),
+                            color = MaterialTheme.colorScheme.primary,
+                        ) {
+                            TextButton(
+                                onClick = {
+                                    pendingNoteLocation = selected.locator.toJSON().toString()
+                                    navigator?.clearSelection()
+                                    selection = null
+                                    writingNote = ""
+                                }
+                            ) {
+                                Text(
+                                    text = "Add note",
+                                    style = MaterialTheme.typography.labelLarge,
+                                    color = MaterialTheme.colorScheme.onPrimary,
+                                )
+                            }
+                        }
                     }
                 }
             }
@@ -616,6 +703,12 @@ private fun ContentsDialog(links: List<Link>, onOpen: (Link) -> Unit, onDismiss:
     )
 }
 
+/** The group every note decoration is applied under. */
+private const val NOTE_GROUP = "notes"
+
+/** Translucent amber: visible on paper and on the dark and sepia themes. */
+private const val NOTE_TINT = 0x55F4B860
+
 /** The pull-up index of this edition's notes. */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -735,13 +828,21 @@ private fun NoteRow(
 
 /** "34% through · Chapter IV", or what the row can say without a passage. */
 private fun passageLabel(location: String?, chapter: String?): String {
+    val locator = location?.let { ReadingPosition.locator(it) }
+    val quote =
+        locator
+            ?.text
+            ?.highlight
+            ?.takeIf { it.isNotBlank() }
+            ?.let { "\u201C${it.take(60)}\u201D" }
     val percent =
-        location
-            ?.let { ReadingPosition.locator(it) }
+        locator
             ?.locations
             ?.totalProgression
             ?.let { "${(it * 100).toInt()}% through" }
-    return listOfNotNull(percent, chapter).joinToString(" · ").ifBlank { "no passage recorded" }
+    return listOfNotNull(quote ?: percent, chapter)
+        .joinToString(" · ")
+        .ifBlank { "no passage recorded" }
 }
 
 /** The chapter a href names in the table of contents, if it names one. */
