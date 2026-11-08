@@ -120,6 +120,23 @@ The goals for the platform are:
       (PUBLIC_LINKS.md) describes native handling for three platform URLs, but
       `AndroidManifest.xml` currently claims only the OAuth callback. Decide
       whether to restore the native screens or retire the document.
+- [ ] **Sync reading progress across devices** — `reading_progress` rows
+      already sync as core entities; verify the mobile pull/push path and pin
+      the conflict rule (latest position per edition wins).
+- [ ] **Confirm Readium progress persistence (Android)** — the reader should
+      persist and restore its position through `ReaderSession`; prove it across
+      a cold start before relying on it for progress sync.
+- [ ] **Mobile PDF reader** — PDFs import as files today; decide the viewer
+      (native PDF view vs webview) and cover both platforms.
+- [ ] **Mobile book view** — a detail screen reached from every shelf card,
+      showing cover, title, authors, and file info, hosting the two actions
+      below.
+- [ ] **Reading status and PDS sync** — set a book's reading status from the
+      book view and publish it to the reader's PDS; decide the platform record
+      schema first and queue writes while offline.
+- [ ] **Cover picking from the book view** — search Bibliograph
+      (`CatalogClient` already wraps `searchEditions`) or pick a local file and
+      adopt it as the cover.
 
 ## How to read this
 

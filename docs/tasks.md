@@ -18,12 +18,12 @@ First-time (once per clone):
 ```sh
 mise install                  # installs taskwarrior 3.4.2 + pipx:taskwarrior-mcp
 direnv allow .                # exports mise env vars into the shell
-mise run task-init            # creates .taskdata/ if missing
 ```
 
-Daily, `task` and the MCP server work without further setup. `TASKRC` and
-`TASKDATA` are set by `mise.toml`'s `[env]` block and point at `.taskrc` and
-`.taskdata/` at the repo root.
+The database is committed, so `task` works immediately after cloning; a missing
+`.taskdata/` is recreated by the first `task` command. `TASKRC` and `TASKDATA`
+are set by `mise.toml`'s `[env]` block and point at `.taskrc` and `.taskdata/`
+at the repo root.
 
 ## File layout
 
@@ -32,7 +32,6 @@ Daily, `task` and the MCP server work without further setup. `TASKRC` and
 | `mise.toml`                   | Declares `taskwarrior` + `pipx:taskwarrior-mcp`; sets env   | yes |
 | `.taskrc`                     | Taskwarrior config + `livtet_component` UDA                 | yes |
 | `.taskdata/`                  | Taskwarrior 3.x database (Taskchampion SQLite)              | yes |
-| `.mise/tasks/task-init`       | Idempotent bootstrap that creates `.taskdata/`              | yes |
 | `.envrc.example`              | Template for the per-developer `.envrc`                     | yes |
 | `.envrc`                      | Local dev env (`eval "$(mise env -s bash)"`)                | no  |
 | `.opencode/opencode.jsonc`    | Wires the `taskwarrior-mcp` MCP server                      | yes |
@@ -114,7 +113,8 @@ workstream: the core repo (`olamaelcu/livtet`) has no task list of its own.
 - The MCP server reads the wrong list — opencode is not running with the mise
   env; confirm the command is `mise x -- taskwarrior-mcp`.
 - A fresh clone has no `.taskdata/` — it is tracked, so a normal checkout brings
-  it; if it is missing, `mise run task-init` recreates an empty one.
+  it; if it is missing, the first `task` command recreates an empty one. Restore
+  it from git to get the shared list back rather than leaving it empty.
 
 ## Relationship to the roadmap
 
