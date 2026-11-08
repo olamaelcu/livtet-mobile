@@ -50,8 +50,8 @@ The goals for the platform are:
 - [x] Pair with a desktop or phone by scanning a QR ticket or typing the peer's
       node id; the peer's advertised name is carried into the pin.
       `PairingTicket.kt`, `NearbyPeers.kt`.
-- [x] Library pull with a per-peer cursor, and push of local changes.
-      `Bridge.kt`, `SyncActivity.kt`.
+- [x] Library pull with a per-peer cursor; a paired peer pulls this device's
+      own changes. `Bridge.kt`, `SyncActivity.kt`.
 - [x] Offers inbox — a peer's offered book waits here until the reader accepts
       or declines; accepting downloads the file and cover and registers the
       book locally. `OffersActivity.kt`, `OfferPresentation.kt`.
@@ -59,6 +59,11 @@ The goals for the platform are:
       new offers in a notification. `SyncPoll.kt`, `LivtetApp.kt`.
 - [x] Device files stay device-local: absolute file paths are never synced, so
       each side records only its own copy.
+- [x] Reading progress syncs across paired devices — whole row (locator,
+      progression, reading time), latest change version wins, and a phone
+      advertises while the app is open once a device is paired. Verified end to
+      end on 2026-11-08:
+      [`docs/SYNC_VERIFICATION.md`](SYNC_VERIFICATION.md).
 
 ### Reader (Android)
 
@@ -94,13 +99,6 @@ The goals for the platform are:
 
 ## In progress
 
-- [~] **Sync reading progress across devices.** The whole `reading_progress`
-      row travels on the pull, the latest change version wins, and the phone
-      advertises while the app is open once a device is paired; a row for an
-      edition this device no longer holds is counted (`skipped`) instead of
-      failing the page. Runbook and its status table:
-      [`docs/SYNC_VERIFICATION.md`](SYNC_VERIFICATION.md) — the phone↔desktop
-      round trip has not been recorded yet.
 - [~] **iOS feature parity and verification.** iOS is a launcher today: it
       opens the store but has no library, feed, inbox, or reader UI. The
       verification runbook and its status table live in
