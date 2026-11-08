@@ -136,3 +136,23 @@ once generated. The committed files to watch in this mobile repo are
 `mobile/android/core/designsystem/src/main/kotlin/.../LucideIcons.kt` and
 `mobile/android/core/designsystem/src/main/kotlin/.../LivtetRadius.kt`; both
 have GENERATED-file headers.
+
+### Known constraint: `onPrimary` on the brand fill
+
+The generated schemes pick `onPrimary` from the *theme's* text colour
+(`TextLight.Normal` in light, `TextDark.Normal` in dark), while `primary` is
+`LivtetColors.Brand` — a dark green — in **both** schemes. A Material component
+that fills with `primary` and writes with `onPrimary` is therefore only legible
+in dark mode. Measured from the emulator:
+
+| label                          | fill (`#00673d`) | contrast          |
+| ------------------------------ | ---------------- | ----------------- |
+| `TextLight.Normal` #272117     | brand            | 2.29:1 — fails AA |
+| `TextDark.Normal` #E2DED3      | brand            | 5.19:1            |
+| `SurfaceLight.Default` #f0ebdc | brand            | 5.86:1            |
+
+A brand-green surface needs the light ink in both schemes. Do not paper over it
+with a hard-coded colour in a screen: fix the pairing in `livtet-branding`
+(`scripts/lib.ts`, the `schemeKt` template — `onPrimary` should follow the fill,
+not the theme) and regenerate. The home screen's empty-state `Button` is the one
+control that currently shows it.
