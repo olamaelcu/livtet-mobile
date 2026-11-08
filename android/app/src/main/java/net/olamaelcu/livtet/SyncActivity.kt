@@ -22,6 +22,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
@@ -93,6 +94,7 @@ private fun SyncRoute(onBack: () -> Unit) {
     var busy by remember { mutableStateOf<String?>(null) }
     var failure by remember { mutableStateOf<String?>(null) }
     var typedTicket by remember { mutableStateOf("") }
+    var unpairTarget by remember { mutableStateOf<SyncPairedDevice?>(null) }
 
     // Advertising is what makes polling possible, so its failure is its own
     // state: otherwise the first poll's "not advertising yet" sticks forever.
@@ -187,6 +189,28 @@ private fun SyncRoute(onBack: () -> Unit) {
     }
 
     fun pair(peer: NearbyPeer) = pairNode(peer.nodeId, peer.label)
+
+    /** Forget a paired device. The peer keeps its row until it revokes. */
+    fun unpair(device: SyncPairedDevice) {
+        scope.launch {
+            failure = null
+            try {
+                val removed = Bridge.revokePairedDevice(device.deviceId)
+                notice =
+                    if (removed) {
+                        "Unpaired from " + (device.name?.takeIf { it.isNotBlank() } ?: "that device")
+                    } else {
+                        "That device was already unpaired"
+                    }
+            } catch (error: Exception) {
+                notice = null
+                failure = error.message ?: error.toString()
+            } finally {
+                unpairTarget = null
+                refresh()
+            }
+        }
+    }
 
     /** Pair with whatever the reader pasted: a node id, or a pairing link. */
     fun pairTyped() {
@@ -374,22 +398,30 @@ private fun SyncRoute(onBack: () -> Unit) {
                 )
             } else {
                 paired.forEach { device ->
-                    Column(modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)) {
-                        Text(
-                            text =
-                                device.name?.takeIf { it.isNotBlank() } ?: device.deviceId.take(8),
-                            style = MaterialTheme.typography.bodyMedium,
-                        )
-                        Text(
-                            text =
-                                if (device.outbound) {
-                                    "You can pull books from this device"
-                                } else {
-                                    "This device can pull books from you"
-                                },
-                            style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
-                        )
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text =
+                                    device.name?.takeIf { it.isNotBlank() }
+                                        ?: device.deviceId.take(8),
+                                style = MaterialTheme.typography.bodyMedium,
+                            )
+                            Text(
+                                text =
+                                    if (device.outbound) {
+                                        "You can pull books from this device"
+                                    } else {
+                                        "This device can pull books from you"
+                                    },
+                                style = MaterialTheme.typography.labelSmall,
+                                color =
+                                    MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
+                            )
+                        }
+                        TextButton(onClick = { unpairTarget = device }) { Text("Unpair") }
                     }
                 }
             }
@@ -413,6 +445,31 @@ private fun SyncRoute(onBack: () -> Unit) {
             }
             Spacer(modifier = Modifier.height(24.dp))
         }
+    }
+
+    unpairTarget?.let { target ->
+        AlertDialog(
+            onDismissRequest = { unpairTarget = null },
+            title = {
+                Text(
+                    "Unpair " +
+                        (target.name?.takeIf { it.isNotBlank() } ?: target.deviceId.take(8)) +
+                        "?"
+                )
+            },
+            text = {
+                Text(
+                    "This device keeps its own pairing until it revokes; it will no longer " +
+                        "authorize or dial this one."
+                )
+            },
+            confirmButton = {
+                TextButton(onClick = { unpair(target) }) { Text("Unpair") }
+            },
+            dismissButton = {
+                TextButton(onClick = { unpairTarget = null }) { Text("Cancel") }
+            },
+        )
     }
 }
 

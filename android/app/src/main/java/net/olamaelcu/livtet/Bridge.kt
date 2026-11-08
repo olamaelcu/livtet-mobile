@@ -315,6 +315,10 @@ object Bridge {
     suspend fun pairedDevices(): List<SyncPairedDevice> =
         net.olamaelcu.livtet.ffi.syncPairedDevices(requireDatabaseFile())
 
+    /** Forget one paired device; the peer keeps its own row until it revokes. */
+    suspend fun revokePairedDevice(deviceId: String): Boolean =
+        net.olamaelcu.livtet.ffi.syncRevokePairedDevice(requireDatabaseFile(), deviceId)
+
     /** Offer a book this device holds to a paired peer. */
     suspend fun sendBook(editionId: String, deviceId: String): SyncSentBook =
         net.olamaelcu.livtet.ffi.syncSendBook(secretKeyPath(), editionId, deviceId)
