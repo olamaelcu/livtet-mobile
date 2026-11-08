@@ -52,6 +52,11 @@
         <activity android:name=".FeedActivity"
             android:exported="false"
             android:theme="@style/Theme.Livtet" />
+        <!-- Named reading lists. Not exported: reached from the library and the
+             home screen. -->
+        <activity android:name=".ShelvesActivity"
+            android:exported="false"
+            android:theme="@style/Theme.Livtet" />
         <!-- Every book on this device, filterable. Reached from the home
              shelf's "See all"; not exported. -->
         <activity android:name=".LibraryActivity"

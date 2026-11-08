@@ -85,6 +85,7 @@ private fun LibraryRoute(onBack: () -> Unit) {
     var loading by remember { mutableStateOf(true) }
     var failure by remember { mutableStateOf<String?>(null) }
     var pendingDelete by remember { mutableStateOf<LibraryEntry?>(null) }
+    var shelving by remember { mutableStateOf<String?>(null) }
 
     suspend fun page(offset: Int): List<LibraryEntry> =
         Bridge.listBooks(limit = PAGE_SIZE, offset = offset, sortBy = sort).map { book ->
@@ -142,6 +143,10 @@ private fun LibraryRoute(onBack: () -> Unit) {
                 }
                 .onFailure { failure = readable(it) }
         }
+    }
+
+    shelving?.let { editionId ->
+        AddToShelfDialog(editionId = editionId, onDismiss = { shelving = null })
     }
 
     pendingDelete?.let { entry ->
@@ -271,6 +276,11 @@ private fun LibraryRoute(onBack: () -> Unit) {
                                                 alpha = 0.6f
                                             ),
                                     )
+                                }
+                                entry.editionId?.let { editionId ->
+                                    TextButton(onClick = { shelving = editionId }) {
+                                        Text("Shelve")
+                                    }
                                 }
                                 if (entry.readable && entry.editionId != null) {
                                     val editionId = entry.editionId

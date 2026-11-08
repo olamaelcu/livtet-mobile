@@ -340,6 +340,7 @@ private fun HomeRoute(
                     onDevices = { context.startActivity(SyncActivity.intent(context)) },
                     onOffers = { context.startActivity(OffersActivity.intent(context)) },
                     onFeed = { context.startActivity(FeedActivity.intent(context)) },
+                    onShelves = { context.startActivity(ShelvesActivity.intent(context)) },
                 )
         }
     }
@@ -361,6 +362,7 @@ private fun HomeContent(
     onDevices: () -> Unit,
     onOffers: () -> Unit,
     onFeed: () -> Unit,
+    onShelves: () -> Unit,
 ) {
     Column(
         modifier =
@@ -418,6 +420,7 @@ private fun HomeContent(
             Row(verticalAlignment = Alignment.CenterVertically) {
                 TextButton(onClick = onImport) { Text("Add a book") }
                 Spacer(modifier = Modifier.weight(1f))
+                TextButton(onClick = onShelves) { Text("Shelves") }
                 TextButton(onClick = onSeeAll) { Text("See all") }
             }
         }
