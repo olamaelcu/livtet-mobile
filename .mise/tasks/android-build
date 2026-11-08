@@ -2,7 +2,7 @@
 #MISE description="Build native libs (core/livtet-ffi), generate bindings, and assemble Android APK"
 #MISE env={_.file=".mise/secrets.env"}
 #MISE depends=["secrets-export-env"]
-#MISE sources=["core/livtet-ffi/**/*.rs", "core/livtet-core/**/*.rs", "core/livtet-types/**/*.rs", "core/livtet-search/**/*.rs", "core/livtet-temporal-quotes/**/*.rs", "android/**/*.kt", "android/**/*.kts", "android/app/src/main/res/**", "android/app/src/**/AndroidManifest.xml"]
+#MISE sources=["core/livtet-ffi/**/*.rs", "core/livtet-core/**/*.rs", "core/livtet-types/**/*.rs", "core/livtet-search/**/*.rs", "core/livtet-data/**/*.rs", "core/livtet-sync/**/*.rs", "core/livtet-sync-iroh/**/*.rs", "core/livtet-sync-server/**/*.rs", "core/livtet-temporal-quotes/**/*.rs", "android/**/*.kt", "android/**/*.kts", "android/app/src/main/res/**", "android/app/src/**/AndroidManifest.xml"]
 #USAGE flag "--flavor <flavor>" help="Android product flavor" default="generic" {
 #USAGE   choices "generic" "playstore" "fdroid"
 #USAGE }
