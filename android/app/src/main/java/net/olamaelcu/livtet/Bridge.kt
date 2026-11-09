@@ -319,6 +319,14 @@ object Bridge {
     suspend fun revokePairedDevice(deviceId: String): Boolean =
         net.olamaelcu.livtet.ffi.syncRevokePairedDevice(requireDatabaseFile(), deviceId)
 
+    /** Revoke on both sides, best-effort; the local row is always removed. */
+    suspend fun revokePeer(nodeId: String): Boolean =
+        net.olamaelcu.livtet.ffi.syncRevokePeer(
+            secretKeyPath(),
+            requireDatabaseFile(),
+            nodeId,
+        )
+
     /** Offer a book this device holds to a paired peer. */
     suspend fun sendBook(editionId: String, deviceId: String): SyncSentBook =
         net.olamaelcu.livtet.ffi.syncSendBook(secretKeyPath(), editionId, deviceId)

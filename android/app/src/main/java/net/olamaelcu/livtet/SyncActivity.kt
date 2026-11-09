@@ -222,6 +222,31 @@ private fun SyncRoute(onBack: () -> Unit) {
         }
     }
 
+    /** Revoke both sides, then file a fresh claim. */
+    fun repair(device: SyncPairedDevice) {
+        val peerNodeId =
+            device.nodeId ?: run {
+                failure = "This pairing has no node id; unpair it instead."
+                return
+            }
+        scope.launch {
+            busy = peerNodeId
+            failure = null
+            notice = "Revoking the pairing on both devices\u2026"
+            try {
+                Bridge.revokePeer(peerNodeId)
+                refresh()
+            } catch (error: Exception) {
+                notice = null
+                failure = error.message ?: error.toString()
+                return@launch
+            } finally {
+                busy = null
+            }
+            pairNode(peerNodeId, device.name?.takeIf { it.isNotBlank() } ?: "Peer")
+        }
+    }
+
     /** Pair with whatever the reader pasted: a node id, or a pairing link. */
     fun pairTyped() {
         val input = typedTicket.trim()
@@ -430,6 +455,9 @@ private fun SyncRoute(onBack: () -> Unit) {
                                 color =
                                     MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
                             )
+                        }
+                        if (device.nodeId != null && busy != device.nodeId) {
+                            TextButton(onClick = { repair(device) }) { Text("Repair") }
                         }
                         TextButton(onClick = { unpairTarget = device }) { Text("Unpair") }
                     }
